@@ -5,13 +5,27 @@ import SignUpLayout from "./components/auth/SignUpLayout";
 
 function App() {
   const [showSignUp, setShowSignUp] = useState(false);
+  const [notice, setNotice] = useState("");
 
   return (
     <>
       {showSignUp ? (
-        <SignUpLayout onBackToLogin={() => setShowSignUp(false)} />
+        <SignUpLayout
+          onBackToLogin={() => setShowSignUp(false)}
+          onRegistered={(message) => {
+            setNotice(message);
+            setShowSignUp(false);
+          }}
+        />
       ) : (
-        <AuthLayout onSignUp={() => setShowSignUp(true)} />
+        <AuthLayout
+          onSignUp={() => {
+            setNotice("");
+            setShowSignUp(true);
+          }}
+          notice={notice}
+          onLoginSuccess={(message) => setNotice(message)}
+        />
       )}
     </>
   );

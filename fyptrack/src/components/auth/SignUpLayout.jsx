@@ -2,7 +2,7 @@ import mainImage from "../../assets/main.jpg";
 import BrandingPanel from "./BrandingPanel";
 import SignUpForm from "./SignUpForm";
 
-function SignUpLayout({ onBackToLogin }) {
+function SignUpLayout({ onBackToLogin, onRegistered }) {
   return (
     <div
       className="relative min-h-screen bg-cover bg-center"
@@ -13,7 +13,10 @@ function SignUpLayout({ onBackToLogin }) {
       <div className="relative z-10 flex min-h-screen items-center justify-start gap-8 px-16 py-8">
         <BrandingPanel />
 
-        <SignUpForm onBackToLogin={onBackToLogin} />
+        <SignUpForm
+          onBackToLogin={onBackToLogin}
+          onRegistered={onRegistered}
+        />
       </div>
     </div>
   );

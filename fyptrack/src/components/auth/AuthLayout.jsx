@@ -2,7 +2,7 @@ import mainImage from "../../assets/main.jpg";
 import BrandingPanel from "./BrandingPanel";
 import AuthForm from "./AuthForm";
 
-function AuthLayout({ onSignUp }) {
+function AuthLayout({ onSignUp, notice, onLoginSuccess }) {
   return (
     <div
       className="relative min-h-screen bg-cover bg-center"
@@ -13,7 +13,11 @@ function AuthLayout({ onSignUp }) {
       <div className="relative z-10 flex min-h-screen items-center justify-start gap-8 px-16 py-4 rounded-t-3xl">
         <BrandingPanel />
 
-        <AuthForm onSignUp={onSignUp} />
+        <AuthForm
+          onSignUp={onSignUp}
+          notice={notice}
+          onLoginSuccess={onLoginSuccess}
+        />
       </div>
     </div>
   );

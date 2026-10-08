@@ -1,7 +1,27 @@
 import { useState } from "react";
+import { logIn } from "../../services/auth";
 
-function AuthForm({ onSignUp }) {
+function AuthForm({ onSignUp, notice, onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await logIn({ email, password });
+      onLoginSuccess(response.welcome_message);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <div className="w-[450px] rounded-3xl border border-white/30 bg-white/75 p-8 shadow-2xl ">
@@ -18,7 +38,7 @@ function AuthForm({ onSignUp }) {
       </div>
 
       {/* Form */}
-      <form className="mt-8">
+      <form className="mt-8" onSubmit={handleSubmit}>
 
         {/* Email */}
         <div>
@@ -28,7 +48,12 @@ function AuthForm({ onSignUp }) {
 
           <input
             type="email"
+            name="email"
+            autoComplete="email"
+            required
             placeholder="Enter your email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
             className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-orange-50 focus:ring-2 focus:ring-blue-100"
           />
         </div>
@@ -42,7 +67,12 @@ function AuthForm({ onSignUp }) {
           <div className="relative mt-2">
             <input
               type={showPassword ? "text" : "password"}
+              name="password"
+              autoComplete="current-password"
+              required
               placeholder="Enter your password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 pr-20 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
 
@@ -69,12 +99,23 @@ function AuthForm({ onSignUp }) {
         {/* Login Button */}
         <button
           type="submit"
-          className="mt-6 w-full rounded-xl bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] cursor-pointer"
+          disabled={isSubmitting}
+          className="mt-6 w-full rounded-xl bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
         >
-          Login
+          {isSubmitting ? "Logging in..." : "Login"}
         </button>
 
       </form>
+
+      {(notice || error) && (
+        <p
+          className={`mt-4 text-sm ${error ? "text-red-600" : "text-emerald-700"}`}
+          role="status"
+          aria-live="polite"
+        >
+          {error || notice}
+        </p>
+      )}
 
       {/* Sign Up */}
       <p className="mt-6 text-center text-sm text-slate-500">
