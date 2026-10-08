@@ -5,7 +5,7 @@ function SignUpForm({ onBackToLogin }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
-    <div className="w-[450px] rounded-3xl border border-white/30 bg-white/75 p-8 shadow-2xl backdrop-blur-md">
+    <div className="w-[450px] rounded-3xl border border-white/30 bg-white/75 p-8 shadow-2xl ">
 
       {/* Heading */}
       <div>
