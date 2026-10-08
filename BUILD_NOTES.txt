@@ -1,0 +1,149 @@
+FYPTRACK BUILD NOTES
+====================
+
+PROJECT PURPOSE
+---------------
+FYPTrack is an Intelligent Final Year Project Management and Automation System for universities. Its planned users are students, supervisors, and coordinators. The repository currently contains a React frontend and an incremental FastAPI backend.
+
+CURRENT STACK
+-------------
+Frontend:
+- React and JavaScript
+- Vite development server and build tooling
+- Tailwind CSS
+- Browser fetch() for requests to the backend
+
+Backend:
+- Python 3.10 or newer
+- FastAPI and Uvicorn
+- Pydantic request/response validation
+- pydantic-settings for environment configuration
+- SQLAlchemy ORM
+- PostgreSQL accessed using psycopg2
+- Alembic database migrations
+- bcrypt password hashing
+- JWT signing and verification with python-jose using HS256
+
+BACKEND STRUCTURE AND RESPONSIBILITIES
+--------------------------------------
+fyptrack/backend/main.py
+- Creates the FastAPI application.
+- Configures API metadata, CORS, and the versioned API router.
+- Provides the root endpoint.
+
+fyptrack/backend/core/config.py
+- Reads settings from environment variables and a backend .env file.
+- Includes database, JWT, API, and frontend CORS settings.
+
+fyptrack/backend/database/connection.py
+- Declares the SQLAlchemy Base.
+- Creates the configured SQLAlchemy engine and session factory.
+- Provides a FastAPI dependency that supplies and closes database sessions.
+
+fyptrack/backend/models/user.py
+- Defines the SQLAlchemy users table model.
+- Stores full name, normalized email, password hash, role, and timestamps.
+- Allows only student, supervisor, and coordinator roles.
+
+fyptrack/backend/schemas/auth.py
+- Validates signup and login request bodies.
+- Defines safe user and authentication response schemas.
+- Does not expose password hashes in API responses.
+
+fyptrack/backend/services/auth_service.py
+- Performs account creation, duplicate-email checks, bcrypt hashing and verification, JWT creation and verification, and role-specific welcome message selection.
+- Public registration always assigns the student role.
+
+fyptrack/backend/routes/auth.py
+- Defines POST /api/v1/auth/signup.
+- Defines POST /api/v1/auth/login.
+- Defines GET /api/v1/auth/me, which requires a bearer access token.
+
+fyptrack/backend/routes/health.py and router.py
+- Provide GET /api/v1/health and register versioned API routes.
+
+fyptrack/backend/alembic.ini, alembic/env.py, and alembic/versions/0001_create_users.py
+- Configure Alembic and define the initial users-table migration.
+
+FRONTEND AUTHENTICATION FLOW
+----------------------------
+fyptrack/src/components/auth/AuthForm.jsx
+- Collects login email/password and displays API errors or the returned welcome message.
+
+fyptrack/src/components/auth/SignUpForm.jsx
+- Collects full name, email, password, and password confirmation.
+- Checks that password and confirmation match before sending signup.
+
+fyptrack/src/components/auth/AuthLayout.jsx and SignUpLayout.jsx
+- Place the login and signup forms inside their existing layouts.
+
+fyptrack/src/services/auth.js
+- Sends JSON requests to the backend.
+- Defaults to http://127.0.0.1:8000/api/v1.
+- VITE_API_BASE_URL can override the API base URL.
+
+fyptrack/src/App.jsx
+- Switches between signup and login and displays the feedback passed from the API.
+
+REQUEST AND DATA FLOW
+---------------------
+1. The browser displays React from the Vite server, normally http://localhost:5173.
+2. The auth service sends a JSON request to FastAPI at http://127.0.0.1:8000/api/v1.
+3. FastAPI applies CORS rules and routes the request to the auth endpoint.
+4. Pydantic validates the request.
+5. The auth service uses a SQLAlchemy session to read/write PostgreSQL.
+6. Signup hashes the password using bcrypt and stores only the hash.
+7. Login verifies the hash and returns a signed JWT, public user details, and a greeting for the database role.
+
+pgAdmin is a PostgreSQL administration client. FastAPI connects directly to the PostgreSQL server; pgAdmin is not in the application's request path.
+
+DATABASE AND LOCAL CONFIGURATION
+--------------------------------
+1. Start the PostgreSQL server.
+2. Create a database named fyptrack using pgAdmin or another PostgreSQL client.
+3. Copy fyptrack/backend/.env.example to fyptrack/backend/.env.
+4. Set FYPTRACK_DATABASE_URL to the local PostgreSQL URL, for example:
+   postgresql+psycopg2://postgres:YOUR_PASSWORD@localhost:5432/fyptrack
+5. Replace FYPTRACK_JWT_SECRET with a long, private random value.
+6. From fyptrack/backend, run:
+   py -m pip install -r requirements.txt
+   alembic upgrade head
+   uvicorn main:app --reload
+7. In a second terminal, from fyptrack, run:
+   npm ci
+   npm run dev
+8. Open the Vite URL shown in the terminal and try signup followed by login.
+
+Keep .env private. The repository ignores .env files. Never put real passwords or JWT secrets into BUILD_NOTES.txt, README.md, or source code.
+
+CURRENT API
+-----------
+GET  /                         API root/status
+GET  /api/v1/health            Health check
+POST /api/v1/auth/signup       Create student account
+POST /api/v1/auth/login        Verify account and return JWT/greeting
+GET  /api/v1/auth/me           Return current user from a bearer token
+GET  /docs                     FastAPI Swagger UI
+
+CURRENT ROLE RULES
+------------------
+- Public signup does not accept a role and always creates a student.
+- The database permits student, supervisor, and coordinator roles.
+- Login selects Welcome student, Welcome supervisor, or Welcome coordinator based on the role stored in the database.
+- No supervisor/coordinator administration workflow or role-based endpoint authorization system has been built yet.
+
+VERIFICATION AND LIMITATIONS
+----------------------------
+- Signup/login, duplicate-email rejection, password verification, JWT creation, /me, validation behavior, and welcome message selection were checked using a temporary SQLite test database in the development environment.
+- The initial Alembic migration was smoke-tested with SQLite.
+- The actual PostgreSQL server has not been verified because FYPTRACK_DATABASE_URL is not configured in the current workspace.
+- The browser UI currently displays the successful-login message. It does not yet persist the JWT for reloads or protected feature pages.
+- No automated test suite has been added yet.
+- Projects, proposals, milestones, documents, feedback, evaluations, notifications, deadlines, reports, audit logs, similarity checking, and supervisor recommendation are future modules.
+
+WHAT TO SHARE WHEN REQUESTING DATABASE HELP
+-------------------------------------------
+Share the PostgreSQL host, port, database name, the command you ran, and the exact error message. A connection URL may be shared only after masking its password, for example:
+postgresql+psycopg2://postgres:***@localhost:5432/fyptrack
+
+Do not share the real database password, the .env file, or the JWT secret. If a password or secret needs to be changed, edit the local .env file on your computer and share only the resulting sanitized error.
