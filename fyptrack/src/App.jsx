@@ -1,12 +1,18 @@
-import AuthForm from "./components/auth/AuthForm";
+import { useState } from "react";
+
 import AuthLayout from "./components/auth/AuthLayout";
-import BrandingPanel from "./components/auth/BrandingPanel";
+import SignUpLayout from "./components/auth/SignUpLayout";
 
 function App() {
+  const [showSignUp, setShowSignUp] = useState(false);
+
   return (
     <>
-    <AuthLayout />
-   
+      {showSignUp ? (
+        <SignUpLayout onBackToLogin={() => setShowSignUp(false)} />
+      ) : (
+        <AuthLayout onSignUp={() => setShowSignUp(true)} />
+      )}
     </>
   );
 }

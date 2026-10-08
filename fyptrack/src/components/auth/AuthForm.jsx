@@ -1,10 +1,10 @@
 import { useState } from "react";
 
-function AuthForm() {
+function AuthForm({ onSignUp }) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="w-[450px] rounded-3xl border border-white/30 bg-white/75 p-8 shadow-2xl ">
+    <div className="w-[450px] rounded-3xl border border-white/30 bg-white/75 p-8 shadow-2xl backdrop-blur-md">
 
       {/* Heading */}
       <div>
@@ -81,6 +81,7 @@ function AuthForm() {
         Don't have an account?{" "}
         <button
           type="button"
+          onClick={onSignUp}
           className="font-semibold text-blue-600 transition hover:text-blue-700 cursor-pointer"
         >
           Sign Up
