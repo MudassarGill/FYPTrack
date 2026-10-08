@@ -38,6 +38,7 @@ FYPTrack/
 └── fyptrack/
 		├── backend/
 		│   ├── .env.example
+		│   ├── requirements.txt
 		│   ├── alembic.ini
 		│   ├── alembic/
 		│   │   ├── env.py
@@ -53,6 +54,7 @@ FYPTrack/
 		│   └── services/auth_service.py
 		├── src/
 		│   ├── components/auth/
+		│   │   └── WelcomePage.jsx
 		│   ├── services/auth.js
 		│   └── App.jsx
 		├── package.json
@@ -189,7 +191,7 @@ Public signup does not accept a role. This prevents users from choosing supervis
 1. The login form posts `email` and `password` to `POST /api/v1/auth/login`.
 2. The backend finds the user, verifies the password hash, and signs a JWT.
 3. The response includes `access_token`, user details, and a greeting based on the stored role: `Welcome student`, `Welcome supervisor`, or `Welcome coordinator`.
-4. After successful login, the frontend opens a new tab and displays `Welcome student`, `Welcome supervisor`, or `Welcome coordinator`, based on the role returned by the API. If the browser blocks the new tab, the greeting appears on the login page instead. The token is returned by the API but the current UI does not yet retain it for later page loads or send it to protected feature routes.
+4. After successful login, the frontend opens a new tab and displays `Welcome student`, `Welcome supervisor`, or `Welcome coordinator`, based on the role returned by the API. If the browser blocks the new tab, the greeting appears on the login page instead. The welcome page is only a greeting: its role query parameter does not authorize access. The token is returned by the API but the current UI does not yet retain it for later page loads or send it to protected feature routes.
 
 ## API Endpoints
 
@@ -237,7 +239,7 @@ When asking for help with PostgreSQL, share the host, port, database name, usern
 
 ## Current Limitations and Next Work
 
-- A live PostgreSQL connection has not yet been verified in this development workspace because no database URL is configured.
+- PostgreSQL connectivity depends on the local `fyptrack/backend/.env` settings. Do not commit that file; a successful migration on one developer machine does not configure PostgreSQL for another clone.
 - There is not yet an automated test suite in the repository.
 - The current browser flow displays a greeting but does not retain the JWT or implement a dashboard/session persistence.
 - The welcome tab is only a greeting screen, not a role-protected dashboard. The role in its URL is used for display only and must not be treated as authorization.
