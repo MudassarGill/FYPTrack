@@ -9,8 +9,19 @@ Currently, two official plugins are available:
 
 ## React Compiler
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+# FYPTrack Frontend
 
-## Expanding the ESLint configuration
+The React/Vite frontend for FYPTrack. For full project setup, PostgreSQL configuration, backend instructions, API endpoints, and troubleshooting, see the [repository README](../README.md).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Run the Frontend
+
+From this directory, install dependencies and start Vite:
+
+```powershell
+npm ci
+npm run dev
+```
+
+Open the URL printed by Vite, normally `http://localhost:5173`. The FastAPI backend must also be running for signup and login. The frontend calls `http://127.0.0.1:8000/api/v1` by default; set `VITE_API_BASE_URL` in a local `.env` file here to override it.
+
+After successful login, FYPTrack opens a new browser tab with a role-specific welcome message. If the browser blocks popups, the message appears on the login page instead. This welcome screen is not a role-protected dashboard.

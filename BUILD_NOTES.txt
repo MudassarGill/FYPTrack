@@ -69,6 +69,7 @@ FRONTEND AUTHENTICATION FLOW
 ----------------------------
 fyptrack/src/components/auth/AuthForm.jsx
 - Collects login email/password and displays API errors or the returned welcome message.
+- Opens a new browser tab during login submission and navigates it to the role welcome screen after successful API authentication.
 
 fyptrack/src/components/auth/SignUpForm.jsx
 - Collects full name, email, password, and password confirmation.
@@ -84,6 +85,10 @@ fyptrack/src/services/auth.js
 
 fyptrack/src/App.jsx
 - Switches between signup and login and displays the feedback passed from the API.
+
+fyptrack/src/components/auth/WelcomePage.jsx
+- Displays the role-specific welcome message in the new tab after successful login.
+- This is a greeting screen only; role query parameters do not provide authorization and no dashboard exists yet.
 
 REQUEST AND DATA FLOW
 ---------------------
@@ -137,7 +142,8 @@ VERIFICATION AND LIMITATIONS
 - Signup/login, duplicate-email rejection, password verification, JWT creation, /me, validation behavior, and welcome message selection were checked using a temporary SQLite test database in the development environment.
 - The initial Alembic migration was smoke-tested with SQLite.
 - The actual PostgreSQL server has not been verified because FYPTRACK_DATABASE_URL is not configured in the current workspace.
-- The browser UI currently displays the successful-login message. It does not yet persist the JWT for reloads or protected feature pages.
+- Successful login opens a new tab with the role-specific greeting; if popups are blocked, the current tab displays the message.
+- The frontend does not yet persist the JWT for reloads or protected feature pages.
 - No automated test suite has been added yet.
 - Projects, proposals, milestones, documents, feedback, evaluations, notifications, deadlines, reports, audit logs, similarity checking, and supervisor recommendation are future modules.
 

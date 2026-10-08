@@ -12,7 +12,7 @@ This repository currently contains a React/Vite frontend and a modular FastAPI b
 - Alembic migration for the initial `users` table.
 - Public signup creates student accounts only.
 - Passwords are hashed with bcrypt; plaintext passwords are not stored or returned.
-- Login issues a signed JWT and returns a role-specific greeting.
+- Login issues a signed JWT and opens a new tab with a role-specific welcome message.
 - `/api/v1/auth/me` returns the current user when sent a valid bearer token.
 - CORS is configured for the local Vite frontend.
 
@@ -189,7 +189,7 @@ Public signup does not accept a role. This prevents users from choosing supervis
 1. The login form posts `email` and `password` to `POST /api/v1/auth/login`.
 2. The backend finds the user, verifies the password hash, and signs a JWT.
 3. The response includes `access_token`, user details, and a greeting based on the stored role: `Welcome student`, `Welcome supervisor`, or `Welcome coordinator`.
-4. The current frontend displays the greeting. The token is returned by the API but the current UI does not yet retain it for later page loads or send it to protected feature routes.
+4. After successful login, the frontend opens a new tab and displays `Welcome student`, `Welcome supervisor`, or `Welcome coordinator`, based on the role returned by the API. If the browser blocks the new tab, the greeting appears on the login page instead. The token is returned by the API but the current UI does not yet retain it for later page loads or send it to protected feature routes.
 
 ## API Endpoints
 
@@ -240,6 +240,7 @@ When asking for help with PostgreSQL, share the host, port, database name, usern
 - A live PostgreSQL connection has not yet been verified in this development workspace because no database URL is configured.
 - There is not yet an automated test suite in the repository.
 - The current browser flow displays a greeting but does not retain the JWT or implement a dashboard/session persistence.
+- The welcome tab is only a greeting screen, not a role-protected dashboard. The role in its URL is used for display only and must not be treated as authorization.
 - Supervisor and coordinator accounts must be created through a trusted administrative process; public signup only creates students.
 - Reusable role authorization dependencies and the planned FYPTrack modules are future milestones.
 
