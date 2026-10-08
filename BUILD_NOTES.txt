@@ -106,10 +106,10 @@ DATABASE AND LOCAL CONFIGURATION
 --------------------------------
 1. Start the PostgreSQL server.
 2. Create a database named fyptrack using pgAdmin or another PostgreSQL client.
-3. Copy fyptrack/backend/.env.example to fyptrack/backend/.env.
+3. Create fyptrack/backend/.env locally. Do not copy a real credential from another developer or commit this file.
 4. Set FYPTRACK_DATABASE_URL to the local PostgreSQL URL, for example:
    postgresql+psycopg2://postgres:YOUR_PASSWORD@localhost:5432/fyptrack
-5. Replace FYPTRACK_JWT_SECRET with a long, private random value.
+5. Set FYPTRACK_JWT_SECRET to a long, private random value generated on that computer.
 6. From fyptrack/backend, run:
    py -m pip install -r requirements.txt
    alembic upgrade head
@@ -118,6 +118,10 @@ DATABASE AND LOCAL CONFIGURATION
    npm ci
    npm run dev
 8. Open the Vite URL shown in the terminal and try signup followed by login.
+
+To verify a signup in pgAdmin, open the fyptrack database's Query Tool and run:
+SELECT id, full_name, email, role, created_at FROM users ORDER BY id DESC;
+Do not select or share the password_hash column.
 
 Keep .env private. The repository ignores .env files. Never put real passwords or JWT secrets into BUILD_NOTES.txt, README.md, or source code.
 
@@ -141,7 +145,7 @@ VERIFICATION AND LIMITATIONS
 ----------------------------
 - Signup/login, duplicate-email rejection, password verification, JWT creation, /me, validation behavior, and welcome message selection were checked using a temporary SQLite test database in the development environment.
 - The initial Alembic migration was smoke-tested with SQLite.
-- The actual PostgreSQL server has not been verified because FYPTRACK_DATABASE_URL is not configured in the current workspace.
+- The project owner has confirmed that PostgreSQL is working locally and successful signups are being stored. Each student cloning the repository must configure their own PostgreSQL server, database, and ignored .env file before running migrations.
 - Successful login opens a new tab with the role-specific greeting; if popups are blocked, the current tab displays the message.
 - The frontend does not yet persist the JWT for reloads or protected feature pages.
 - No automated test suite has been added yet.

@@ -2,7 +2,7 @@
 
 FYPTrack is an Intelligent Final Year Project Management and Automation System for universities. It is being developed to support students, supervisors, and coordinators through the final year project lifecycle.
 
-This repository currently contains a React/Vite frontend and a modular FastAPI backend. The current backend milestone includes the application foundation, PostgreSQL configuration, the initial user migration, and signup/login endpoints.
+This repository contains a React/Vite frontend and a modular FastAPI backend. The foundation, PostgreSQL connection, initial user migration, and signup/login flow are working on the project owner's local setup. Public signup saves student accounts to PostgreSQL; login verifies the saved account and opens a role-specific welcome tab.
 
 ## Current Features
 
@@ -37,7 +37,6 @@ FYPTrack/
 ├── BUILD_NOTES.txt
 └── fyptrack/
 		├── backend/
-		│   ├── .env.example
 		│   ├── requirements.txt
 		│   ├── alembic.ini
 		│   ├── alembic/
@@ -96,26 +95,21 @@ pgAdmin does not sit between FastAPI and PostgreSQL. FastAPI connects directly t
 
 ### 3. Configure backend environment variables
 
-From `fyptrack/backend`, create a private `.env` file from the example:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Edit `.env` and replace the example database password and JWT secret. The PostgreSQL URL format is:
+Create a file named `.env` inside `fyptrack/backend`. This file is local to each computer and is ignored by Git. Do not copy another developer's credentials. Add your own PostgreSQL connection and a private JWT signing secret:
 
 ```text
-postgresql+psycopg2://DATABASE_USER:DATABASE_PASSWORD@HOST:5432/fyptrack
+FYPTRACK_DATABASE_URL=postgresql+psycopg2://YOUR_USER:YOUR_PASSWORD@localhost:5432/fyptrack
+FYPTRACK_JWT_SECRET=REPLACE_WITH_A_LONG_RANDOM_SECRET
 ```
 
-For a local PostgreSQL server, `HOST` is commonly `localhost` and the port is commonly `5432`. If a password contains URL-reserved characters such as `@`, encode those characters in the URL.
+Create the `fyptrack` database in pgAdmin first. For a local PostgreSQL server, `localhost` and port `5432` are common; use the actual host, port, database user, and password configured on your computer. If the password contains URL-reserved characters such as `@`, encode them in the URL. Generate a random JWT secret locally; never put the real value in Git or share it in chat.
 
 Important settings in `.env`:
 
 | Variable | Purpose |
 | --- | --- |
 | `FYPTRACK_DATABASE_URL` | PostgreSQL connection details used by SQLAlchemy and Alembic. |
-| `FYPTRACK_JWT_SECRET` | Private signing key for access tokens. Replace the example with a long random secret and never commit it. |
+| `FYPTRACK_JWT_SECRET` | Private signing key for access tokens. Use a long random secret and never commit it. |
 | `FYPTRACK_JWT_ALGORITHM` | JWT signing algorithm; currently `HS256`. |
 | `FYPTRACK_ACCESS_TOKEN_EXPIRE_MINUTES` | JWT lifetime in minutes. |
 | `FYPTRACK_FRONTEND_ORIGINS` | Allowed browser origin(s), comma-separated. Default: `http://localhost:5173`. |
@@ -126,13 +120,13 @@ The root `.gitignore` excludes `.env`. Keep real database credentials and JWT se
 
 ### 4. Create the database tables
 
-Still in `fyptrack/backend`, run the initial Alembic migration:
+Still in `fyptrack/backend`, run the Alembic migration to create the `users` and `alembic_version` tables:
 
 ```powershell
 alembic upgrade head
 ```
 
-This creates the `users` table and Alembic version table. The `users` table contains the ID, full name, unique email, password hash, role, and created/updated timestamps. Roles are constrained to `student`, `supervisor`, or `coordinator`.
+The `users` table contains the ID, full name, unique email, password hash, role, and created/updated timestamps. Roles are constrained to `student`, `supervisor`, or `coordinator`. Confirm the applied revision with `alembic current`; it should show `0001_create_users (head)`.
 
 ### 5. Start the backend
 
@@ -192,6 +186,18 @@ Public signup does not accept a role. This prevents users from choosing supervis
 2. The backend finds the user, verifies the password hash, and signs a JWT.
 3. The response includes `access_token`, user details, and a greeting based on the stored role: `Welcome student`, `Welcome supervisor`, or `Welcome coordinator`.
 4. After successful login, the frontend opens a new tab and displays `Welcome student`, `Welcome supervisor`, or `Welcome coordinator`, based on the role returned by the API. If the browser blocks the new tab, the greeting appears on the login page instead. The welcome page is only a greeting: its role query parameter does not authorize access. The token is returned by the API but the current UI does not yet retain it for later page loads or send it to protected feature routes.
+
+### Verify a saved account in pgAdmin
+
+After signup succeeds, open the `fyptrack` database in pgAdmin, open its Query Tool, and run:
+
+```sql
+SELECT id, full_name, email, role, created_at
+FROM users
+ORDER BY id DESC;
+```
+
+This displays saved account details without selecting password hashes. A successful signup should show the new account with role `student`.
 
 ## API Endpoints
 
