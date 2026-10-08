@@ -1,1 +1,33 @@
 @import "tailwindcss";
+.welcome-text {
+  color: transparent;
+  -webkit-text-stroke: 1.5px #f97316;
+
+  background: linear-gradient(
+    to right,
+    #f97316 0%,
+    #f97316 100%
+  );
+
+  background-clip: text;
+  -webkit-background-clip: text;
+
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+
+  animation: fillText 10s ease-in-out infinite;
+}
+
+@keyframes fillText {
+  0% {
+    background-size: 0% 100%;
+  }
+
+  50% {
+    background-size: 100% 100%;
+  }
+
+  100% {
+    background-size: 0% 100%;
+  }
+}
