@@ -32,7 +32,8 @@ function SignUpForm({ onBackToLogin, onRegistered }) {
   }
 
   return (
-    <div className="w-[450px] rounded-3xl border border-white/30 bg-white/75 p-8 shadow-2xl ">
+    <div className="w-[450px] rounded-3xl border border-white/30
+     bg-white/75 p-8 shadow-2xl ">
 
       {/* Heading */}
       <div>

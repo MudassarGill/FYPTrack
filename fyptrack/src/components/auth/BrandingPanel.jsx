@@ -53,5 +53,4 @@ function BrandingPanel() {
     </div>
   );
 }
-
 export default BrandingPanel;

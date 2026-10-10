@@ -12,24 +12,11 @@ function AuthForm({ onSignUp, notice, onLoginSuccess }) {
     event.preventDefault();
     setError("");
     setIsSubmitting(true);
-    const welcomeTab = window.open("about:blank", "_blank");
-
-    if (welcomeTab) {
-      welcomeTab.opener = null;
-    }
 
     try {
       const response = await logIn({ email, password });
-      if (welcomeTab && !welcomeTab.closed) {
-        const welcomeUrl = new URL(window.location.href);
-        welcomeUrl.search = "";
-        welcomeUrl.searchParams.set("welcome", response.user.role);
-        welcomeTab.location.replace(welcomeUrl.toString());
-      } else {
-        onLoginSuccess(response.welcome_message);
-      }
+      onLoginSuccess(response);
     } catch (requestError) {
-      welcomeTab?.close();
       setError(requestError.message);
     } finally {
       setIsSubmitting(false);

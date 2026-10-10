@@ -25,3 +25,18 @@ export function signUp(payload) {
 export function logIn(payload) {
   return postAuthRequest("login", payload);
 }
+
+export async function getCurrentUser(token) {
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const detail = data.detail;
+    const message = typeof detail === "string" ? detail : "Your session could not be verified.";
+    throw new Error(message);
+  }
+
+  return data;
+}
