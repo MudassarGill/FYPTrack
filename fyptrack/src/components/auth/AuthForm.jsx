@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { logIn } from "../../services/auth";
 
-function AuthForm({ onSignUp, notice, onLoginSuccess }) {
+function AuthForm({ onSignUp, onActivateInvitation, notice, onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -126,6 +126,16 @@ function AuthForm({ onSignUp, notice, onLoginSuccess }) {
           className="font-semibold text-blue-600 transition hover:text-blue-700 cursor-pointer"
         >
           Sign Up
+        </button>
+      </p>
+      <p className="mt-3 text-center text-sm text-slate-500">
+        Have a supervisor invitation?{" "}
+        <button
+          type="button"
+          onClick={onActivateInvitation}
+          className="font-semibold text-blue-600 transition hover:text-blue-700"
+        >
+          Activate account
         </button>
       </p>
 

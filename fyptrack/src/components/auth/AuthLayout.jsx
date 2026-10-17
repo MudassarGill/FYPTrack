@@ -2,7 +2,7 @@ import mainImage from "../../assets/main.jpg";
 import BrandingPanel from "./BrandingPanel";
 import AuthForm from "./AuthForm";
 
-function AuthLayout({ onSignUp, notice, onLoginSuccess }) {
+function AuthLayout({ onSignUp, onActivateInvitation, notice, onLoginSuccess }) {
   return (
     <div
       className="relative min-h-screen bg-cover bg-center"
@@ -15,6 +15,7 @@ function AuthLayout({ onSignUp, notice, onLoginSuccess }) {
 
         <AuthForm
           onSignUp={onSignUp}
+          onActivateInvitation={onActivateInvitation}
           notice={notice}
           onLoginSuccess={onLoginSuccess}
         />

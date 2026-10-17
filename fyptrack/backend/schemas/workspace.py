@@ -3,7 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from schemas.auth import normalize_email
+from schemas.auth import UserResponse, normalize_email
 
 
 class ProjectRecord(BaseModel):
@@ -26,10 +26,17 @@ class StudentRecord(BaseModel):
     supervisor_name: str | None = None
 
 
+class SupervisorRecord(BaseModel):
+    id: int
+    full_name: str
+    email: str
+
+
 class WorkspaceResponse(BaseModel):
     role: Literal["student", "supervisor", "coordinator"]
     projects: list[ProjectRecord] = Field(default_factory=list)
     students: list[StudentRecord] = Field(default_factory=list)
+    supervisors: list[SupervisorRecord] = Field(default_factory=list)
     assigned_supervisor: str | None = None
 
 
@@ -83,4 +90,4 @@ class ActivateInvitationRequest(BaseModel):
 
 class ActivatedAccountResponse(BaseModel):
     message: str
-    user: dict
+    user: UserResponse

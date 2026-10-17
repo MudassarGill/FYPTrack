@@ -6,6 +6,13 @@ from sqlalchemy import engine_from_config, pool
 from core.config import settings
 from database.connection import Base
 from models.user import User
+from models.workspace import (
+    Invitation,
+    Project,
+    StudentProfile,
+    SupervisorAssignment,
+    SupervisorProfile,
+)
 
 config = context.config
 if config.config_file_name is not None:
