@@ -9,8 +9,8 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
-    UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -73,6 +73,13 @@ class SupervisorAssignment(Base):
     __tablename__ = "supervisor_assignments"
     __table_args__ = (
         Index("ix_supervisor_assignments_active", "supervisor_profile_id", "is_active"),
+        Index(
+            "uq_supervisor_assignments_active_student",
+            "student_profile_id",
+            unique=True,
+            postgresql_where=text("is_active = true"),
+            sqlite_where=text("is_active = 1"),
+        ),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

@@ -5,6 +5,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from database.connection import get_db
@@ -66,13 +67,21 @@ def assign_supervisor(
     db: Annotated[Session, Depends(get_db)],
 ) -> AssignmentResponse:
     student = db.scalar(
-        select(StudentProfile).where(
-            StudentProfile.user_id == payload.student_user_id
+        select(StudentProfile)
+        .join(User, User.id == StudentProfile.user_id)
+        .where(
+            StudentProfile.user_id == payload.student_user_id,
+            User.role == "student",
+            User.is_active.is_(True),
         )
     )
     supervisor = db.scalar(
-        select(SupervisorProfile).where(
-            SupervisorProfile.user_id == payload.supervisor_user_id
+        select(SupervisorProfile)
+        .join(User, User.id == SupervisorProfile.user_id)
+        .where(
+            SupervisorProfile.user_id == payload.supervisor_user_id,
+            User.role == "supervisor",
+            User.is_active.is_(True),
         )
     )
     if student is None or supervisor is None:
@@ -91,7 +100,14 @@ def assign_supervisor(
             assigned_by_user_id=coordinator.id,
         )
     )
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as error:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="The assignment changed concurrently. Refresh and try again.",
+        ) from error
     return AssignmentResponse(
         student_user_id=payload.student_user_id,
         supervisor_user_id=payload.supervisor_user_id,

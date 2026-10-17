@@ -6,6 +6,7 @@ from sqlalchemy import select
 from database.connection import SessionLocal
 from models.user import User
 from models.workspace import SupervisorProfile
+from schemas.auth import normalize_email
 from services.auth_service import hash_password
 
 
@@ -27,12 +28,18 @@ def main() -> None:
     if password != confirmation:
         parser.error("Passwords do not match.")
 
-    email = args.email.strip().lower()
+    try:
+        email = normalize_email(args.email)
+    except ValueError as error:
+        parser.error(str(error))
+    name = args.name.strip()
+    if len(name) < 2:
+        parser.error("Name must contain at least 2 characters.")
     with SessionLocal() as db:
         if db.scalar(select(User.id).where(User.email == email)) is not None:
             parser.error("An account already exists for this email.")
         user = User(
-            full_name=args.name.strip(),
+            full_name=name,
             email=email,
             password_hash=hash_password(password),
             role=args.role,

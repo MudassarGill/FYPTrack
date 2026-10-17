@@ -62,7 +62,7 @@ function SignUpForm({ onBackToLogin, onRegistered }) {
             placeholder="Enter your full name"
             value={fullName}
             onChange={(event) => setFullName(event.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-300 bg-white/80 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            className="mt-2 w-full rounded-xl border border-[#DDE2DC] bg-white px-4 py-3 text-sm text-[#1B2523] outline-none transition focus:border-[#E9B44C] focus:ring-2 focus:ring-[#E9B44C]/30"
           />
         </div>
 
@@ -80,7 +80,7 @@ function SignUpForm({ onBackToLogin, onRegistered }) {
             placeholder="Enter your email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-300 bg-white/80 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            className="mt-2 w-full rounded-xl border border-[#DDE2DC] bg-white px-4 py-3 text-sm text-[#1B2523] outline-none transition focus:border-[#E9B44C] focus:ring-2 focus:ring-[#E9B44C]/30"
           />
         </div>
 
@@ -100,13 +100,13 @@ function SignUpForm({ onBackToLogin, onRegistered }) {
               placeholder="Create a password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-white/80 px-4 py-3 pr-20 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-xl border border-[#DDE2DC] bg-white px-4 py-3 pr-20 text-sm text-[#1B2523] outline-none transition focus:border-[#E9B44C] focus:ring-2 focus:ring-[#E9B44C]/30"
             />
 
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-xs font-medium text-slate-500 transition hover:text-blue-600"
+              className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-xs font-medium text-[#5C6A66] transition hover:text-[#17302B]"
             >
               {showPassword ? "Hide" : "Show"}
             </button>
@@ -129,13 +129,13 @@ function SignUpForm({ onBackToLogin, onRegistered }) {
               placeholder="Confirm your password"
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-white/80 px-4 py-3 pr-20 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-xl border border-[#DDE2DC] bg-white px-4 py-3 pr-20 text-sm text-[#1B2523] outline-none transition focus:border-[#E9B44C] focus:ring-2 focus:ring-[#E9B44C]/30"
             />
 
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-xs font-medium text-slate-500 transition hover:text-blue-600"
+              className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-xs font-medium text-[#5C6A66] transition hover:text-[#17302B]"
             >
               {showConfirmPassword ? "Hide" : "Show"}
             </button>
@@ -146,7 +146,7 @@ function SignUpForm({ onBackToLogin, onRegistered }) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="mt-6 w-full rounded-xl bg-orange-500 py-3 font-semibold text-white transition hover:bg-orange-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+          className="mt-6 w-full cursor-pointer rounded-lg bg-[#E9B44C] py-3 font-semibold text-[#17302B] transition hover:bg-[#F1C76F] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "Creating account..." : "Create Account"}
         </button>
@@ -165,7 +165,7 @@ function SignUpForm({ onBackToLogin, onRegistered }) {
         <button
           type="button"
           onClick={onBackToLogin}
-          className="font-semibold text-blue-600 transition hover:text-blue-700 cursor-pointer"
+          className="cursor-pointer font-semibold text-[#17302B] transition hover:text-[#5C6A66]"
         >
           Login
         </button>

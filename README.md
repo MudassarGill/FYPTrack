@@ -2,22 +2,27 @@
 
 FYPTrack is an Intelligent Final Year Project Management and Automation System for universities. It is being developed to support students, supervisors, and coordinators through the final year project lifecycle.
 
-This repository contains a React/Vite frontend and a modular FastAPI backend. The foundation, PostgreSQL connection, initial user migration, and signup/login flow are working on the project owner's local setup. Public signup saves student accounts to PostgreSQL; student login verifies the saved account and opens the student dashboard.
+This repository contains a React/Vite frontend and a modular FastAPI backend. Public signup creates student accounts; authenticated users receive role-specific workspaces based on their database identity. PostgreSQL stores users, role profiles, projects, invitations, and supervisor assignments.
 
 ## Current Features
 
 - React 19 frontend built with Vite and Tailwind CSS.
 - FastAPI backend with interactive Swagger documentation at `/docs`.
 - PostgreSQL access through SQLAlchemy and psycopg2.
-- Alembic migration for the initial `users` table.
+- Alembic migrations for users, profiles, projects, supervisor assignments, and invitations.
 - Public signup creates student accounts only.
 - Passwords are hashed with bcrypt; plaintext passwords are not stored or returned.
-- Login issues a signed JWT; the student dashboard validates it through `/api/v1/auth/me` and keeps the session for the current browser session.
-- Student dashboard navigation includes overview, project, milestones, meetings, and documents. Project content is preview data until the related APIs are implemented.
+- Login issues a signed JWT; each workspace validates it through `/api/v1/auth/me` and uses the database-loaded role.
+- Student, supervisor, and coordinator use one shared dashboard shell with role-specific navigation and records.
+- Supervisors see only actively assigned students; students see only their own projects and supervisor; coordinators see university student/project records.
+- Coordinators can assign supervisors and issue single-use supervisor invitations.
+- Local provisioning tools create trusted privileged accounts and a two-supervisor/two-student demo scenario without checked-in passwords.
+- Users can update their profile name and saved email-update preference from the profile menu.
+- The student similarity lab compares a proposal with synthetic archive examples using a local word-overlap estimate; it is not a trained AI model or plagiarism verdict.
 - `/api/v1/auth/me` returns the current user when sent a valid bearer token.
 - CORS is configured for the local Vite frontend.
 
-The project is still under development. Project proposals, milestones, documents, evaluations, notifications, reports, and AI features are not implemented yet. Supervisor/coordinator provisioning and reusable role authorization rules are also future work.
+The project is still under development. Project creation/editing, milestones, documents, evaluations, meetings, notifications, reports, and a trained AI model are not implemented yet. Supervisor invitation tokens require manual delivery through a trusted channel; support email must be configured in the frontend environment.
 
 ## Technology
 
@@ -42,7 +47,7 @@ FYPTrack/
 		│   ├── alembic.ini
 		│   ├── alembic/
 		│   │   ├── env.py
-		│   │   └── versions/0001_create_users.py
+		│   │   └── versions/
 		│   ├── core/config.py
 		│   ├── database/connection.py
 		│   ├── main.py
@@ -127,7 +132,7 @@ Still in `fyptrack/backend`, run the Alembic migration to create the `users` and
 alembic upgrade head
 ```
 
-The `users` table contains the ID, full name, unique email, password hash, role, and created/updated timestamps. Roles are constrained to `student`, `supervisor`, or `coordinator`. Confirm the applied revision with `alembic current`; it should show `0001_create_users (head)`.
+The migrations create users, profiles, projects, supervisor assignments, invitations, and profile preferences. Existing student and supervisor accounts receive profiles during migration. Confirm the applied revision with `alembic current`; it should show `0003_profile_preferences (head)`.
 
 ### 5. Start the backend
 
@@ -153,7 +158,10 @@ Open the local URL printed by Vite, normally `http://localhost:5173`. The fronte
 
 ```text
 VITE_API_BASE_URL=http://127.0.0.1:8000/api/v1
+VITE_SUPPORT_EMAIL=your-university-support@example.edu
 ```
+
+Set `VITE_SUPPORT_EMAIL` to a real university support inbox to enable the footer contact form. Submitting opens the visitor's configured email application with the message addressed to that inbox; FYPTrack does not send or store contact messages.
 
 If Vite runs on a different host or port, also update `FYPTRACK_FRONTEND_ORIGINS` in `fyptrack/backend/.env` to match the browser URL exactly, then restart the backend.
 
@@ -185,8 +193,8 @@ Public signup does not accept a role. This prevents users from choosing supervis
 
 1. The login form posts `email` and `password` to `POST /api/v1/auth/login`.
 2. The backend finds the user, verifies the password hash, and signs a JWT.
-3. The response includes `access_token`, user details, and a greeting based on the stored role: `Welcome student`, `Welcome supervisor`, or `Welcome coordinator`.
-4. After successful student login, the frontend stores the JWT in `sessionStorage`, then verifies the account through `GET /api/v1/auth/me` before showing the dashboard. Signing out or closing the browser session removes the stored token. The dashboard's project, milestone, meeting, and document records are currently preview examples; their APIs and persistence are future work. Supervisor and coordinator dashboards are not implemented.
+3. The response includes `access_token` and safe user details.
+4. The frontend stores the JWT in `sessionStorage`, validates it through `GET /api/v1/auth/me`, and selects a shared workspace using the returned database role. Backend role dependencies independently authorize every private endpoint. Signing out or closing the browser session removes the stored token.
 
 ### Verify a saved account in pgAdmin
 
@@ -209,6 +217,13 @@ This displays saved account details without selecting password hashes. A success
 | `POST` | `/api/v1/auth/signup` | Create a student account. |
 | `POST` | `/api/v1/auth/login` | Verify credentials and return a JWT and role greeting. |
 | `GET` | `/api/v1/auth/me` | Return the authenticated user; requires `Authorization: Bearer <token>`. |
+| `PATCH` | `/api/v1/auth/me` | Update the authenticated user's name and email-update preference. |
+| `POST` | `/api/v1/auth/activate-invitation` | Activate a single-use supervisor invitation and set its password. |
+| `GET` | `/api/v1/student/workspace` | Return only the authenticated student's records. |
+| `GET` | `/api/v1/supervisor/workspace` | Return only students actively assigned to the authenticated supervisor. |
+| `GET` | `/api/v1/coordinator/workspace` | Return university student, project, and supervisor records. |
+| `POST` | `/api/v1/coordinator/assignments` | Create or replace an active student-supervisor assignment. |
+| `POST` | `/api/v1/coordinator/supervisor-invitations` | Create a seven-day, single-use supervisor invitation. |
 
 Example signup request:
 
@@ -230,6 +245,55 @@ Example login request:
 ```
 
 Use Swagger at `/docs` to try the endpoints. Signup/login currently use JSON request bodies, not HTML form data.
+
+## Multi-User Workflows
+
+### Trusted account provisioning
+
+Public signup accepts no role and always creates a student. A trusted local database operator can create an initial coordinator with a hidden interactive password prompt. Run from `fyptrack/backend`:
+
+```powershell
+python -m scripts.provision_account --role coordinator --name "FYP Coordinator" --email coordinator@university.example
+```
+
+Coordinator accounts must not be created through public APIs. In production, restrict this command to the deployment administrator and provision coordinator access through the university's approved identity process. A coordinator can invite supervisors from the coordinator workspace. The API returns the random activation token once; deliver it privately, and do not put it in source control, logs, or public issue trackers. The invited supervisor sets their own password in the activation form. Invitations expire after seven days and store only a SHA-256 token digest.
+
+### Repeatable local role scenario
+
+After applying migrations, run from `fyptrack/backend`:
+
+```powershell
+python -m scripts.provision_demo
+```
+
+The script prompts for five passwords without echoing or printing them. It creates one coordinator, two supervisors, and two students, creates one project per student, and assigns each student to a different supervisor. Demo emails use the reserved `.test` domain. Re-running the command updates those five local passwords and restores the two assignments; it does not seed production accounts. Keep each entered password handy for the manual dashboard walkthrough.
+
+All roles use the same frontend URL. Sign out from the profile menu before switching users, then log in with the matching email and password entered by the provisioner:
+
+| Role | Demo email | What should appear |
+| --- | --- | --- |
+| Coordinator | `coordinator.demo@example.test` | Two students, two projects, two supervisors, assignment and invitation controls. |
+| Supervisor one | `supervisor.one@example.test` | Student One and only that student's project. |
+| Supervisor two | `supervisor.two@example.test` | Student Two and only that student's project. |
+| Student one | `student.one@example.test` | Student One Project and Supervisor One. |
+| Student two | `student.two@example.test` | Student Two Project and Supervisor Two. |
+
+The backend database rows come from `provision_demo`. The six past-project archive entries and similarity results are synthetic frontend examples; enter a project title/abstract in Similarity Lab and analyze to recalculate matches. The profile menu opens settings where full name and email-update preference are saved to the database. Email delivery for that preference is not yet implemented.
+
+Coordinator assignment changes are available in the Assignments view. After changing a student assignment, sign in as the previous and new supervisors to confirm the student disappears from one list and appears in the other.
+
+### Authorization and test status
+
+Role checks are FastAPI dependencies. JWT `sub` identifies a stable database user ID; the backend reloads that user and role for each request and does not authorize from the JWT role claim, query parameters, or client-supplied identity. The database enforces one active supervisor assignment per student. Unauthenticated requests return `401`; role mismatches return `403`.
+
+The automated integration suite in `fyptrack/backend/tests` covers the five-account assignment scenario, supervisor isolation, student access denial, public signup role forcing, invitation activation/reuse, coordinator visibility, and database-role authority. Run it from `fyptrack/backend`:
+
+```powershell
+python -m pip install -r requirements.txt
+python -m pytest -q tests
+```
+
+In this delivery, a backend compile check was run before the final provisioning/test additions, and editor diagnostics were run on the final UI and selected API/schema files. The integration suite and PostgreSQL migration were not executed. Treat the documented login walkthrough as a test plan until those checks are run locally. The UI and APIs for project creation/editing, milestones, documents, meetings, and evaluations remain future work; private project records currently come from the local demo provisioner or trusted database administration.
 
 ## Troubleshooting
 

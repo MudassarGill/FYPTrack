@@ -9,6 +9,7 @@ from models.user import User
 from schemas.auth import (
     LoginRequest,
     LoginResponse,
+    ProfileSettingsRequest,
     SignUpRequest,
     SignUpResponse,
     UserResponse,
@@ -43,4 +44,19 @@ def login(payload: LoginRequest, db: Annotated[Session, Depends(get_db)]) -> Log
 def current_user(
     user: Annotated[User, Depends(get_current_user)],
 ) -> UserResponse:
+    return UserResponse.model_validate(user)
+
+
+@router.patch("/me", response_model=UserResponse, summary="Update profile settings")
+def update_current_user(
+    payload: ProfileSettingsRequest,
+    user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> UserResponse:
+    if payload.full_name is not None:
+        user.full_name = payload.full_name
+    if payload.email_updates_enabled is not None:
+        user.email_updates_enabled = payload.email_updates_enabled
+    db.commit()
+    db.refresh(user)
     return UserResponse.model_validate(user)

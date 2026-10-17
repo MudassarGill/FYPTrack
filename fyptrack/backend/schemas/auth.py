@@ -1,7 +1,7 @@
 import re
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 UserRole = Literal["student", "supervisor", "coordinator"]
@@ -50,6 +50,27 @@ class LoginRequest(BaseModel):
         return normalize_email(value)
 
 
+class ProfileSettingsRequest(BaseModel):
+    full_name: str | None = Field(default=None, min_length=2, max_length=120)
+    email_updates_enabled: bool | None = None
+
+    @field_validator("full_name")
+    @classmethod
+    def validate_full_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        name = value.strip()
+        if len(name) < 2:
+            raise ValueError("Full name must contain at least 2 characters.")
+        return name
+
+    @model_validator(mode="after")
+    def require_setting(self) -> "ProfileSettingsRequest":
+        if self.full_name is None and self.email_updates_enabled is None:
+            raise ValueError("Provide at least one profile setting to update.")
+        return self
+
+
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -57,6 +78,7 @@ class UserResponse(BaseModel):
     full_name: str
     email: str
     role: UserRole
+    email_updates_enabled: bool
 
 
 class SignUpResponse(BaseModel):

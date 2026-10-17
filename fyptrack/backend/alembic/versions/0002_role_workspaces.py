@@ -44,6 +44,10 @@ def upgrade() -> None:
         "INSERT INTO student_profiles (user_id) "
         "SELECT id FROM users WHERE role = 'student'"
     )
+    op.execute(
+        "INSERT INTO supervisor_profiles (user_id) "
+        "SELECT id FROM users WHERE role = 'supervisor'"
+    )
     op.create_table(
         "projects",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
@@ -91,6 +95,14 @@ def upgrade() -> None:
         "supervisor_assignments",
         ["supervisor_profile_id", "is_active"],
     )
+    op.create_index(
+        "uq_supervisor_assignments_active_student",
+        "supervisor_assignments",
+        ["student_profile_id"],
+        unique=True,
+        sqlite_where=sa.text("is_active = 1"),
+        postgresql_where=sa.text("is_active = true"),
+    )
     op.create_table(
         "invitations",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
@@ -117,6 +129,10 @@ def downgrade() -> None:
     op.drop_index("ix_invitations_token_hash", table_name="invitations")
     op.drop_index("ix_invitations_email", table_name="invitations")
     op.drop_table("invitations")
+    op.drop_index(
+        "uq_supervisor_assignments_active_student",
+        table_name="supervisor_assignments",
+    )
     op.drop_index(
         "ix_supervisor_assignments_active", table_name="supervisor_assignments"
     )

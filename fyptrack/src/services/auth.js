@@ -34,8 +34,9 @@ export async function getCurrentUser(token) {
 
   if (!response.ok) {
     const detail = data.detail;
-    const message = typeof detail === "string" ? detail : "Your session could not be verified.";
-    throw new Error(message);
+    const error = new Error(typeof detail === "string" ? detail : "Your session could not be verified.");
+    error.status = response.status;
+    throw error;
   }
 
   return data;
@@ -83,6 +84,13 @@ export function assignSupervisor(token, studentUserId, supervisorUserId) {
 export function inviteSupervisor(token, payload) {
   return authorizedRequest("coordinator/supervisor-invitations", token, {
     method: "POST",
+    body: payload,
+  });
+}
+
+export function updateProfile(token, payload) {
+  return authorizedRequest("auth/me", token, {
+    method: "PATCH",
     body: payload,
   });
 }
