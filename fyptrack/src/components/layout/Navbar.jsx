@@ -15,15 +15,18 @@ export default function Navbar() {
     function handleScroll() {
       setIsScrolled(window.scrollY > 15);
     }
+    function handleClickOutside(e) {
+      if (!e.target.closest("[data-menu-container]")) {
+        setProfileMenuOpen(false);
+      }
+    }
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("click", handleClickOutside);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("click", handleClickOutside);
+    };
   }, []);
-
-  // Close menus on route change
-  useEffect(() => {
-    setProfileMenuOpen(false);
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -130,7 +133,7 @@ export default function Navbar() {
           </div>
 
           {/* User Profile Icon & Dropdown */}
-          <div className="relative">
+          <div className="relative" data-menu-container="true">
             <button
               type="button"
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}
