@@ -10,7 +10,7 @@ function AuthLayout({ onSignUp, notice, onLoginSuccess }) {
     >
       <div className="absolute inset-0 bg-black/50"></div>
 
-      <div className="relative z-10 flex min-h-screen items-center justify-start gap-8 px-16 py-4 rounded-t-3xl">
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-start gap-4 px-4 py-6 sm:px-6 xl:flex-row xl:justify-start xl:gap-8 xl:px-16 xl:py-4">
         <BrandingPanel />
 
         <AuthForm

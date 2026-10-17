@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     app_name: str = "FYPTrack API"
     app_version: str = "0.1.0"
     api_v1_prefix: str = "/api/v1"
-    frontend_origins: str = "http://localhost:5173"
+    frontend_origins: str = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174"
     database_url: str | None = None
     jwt_secret: SecretStr | None = None
     jwt_algorithm: str = "HS256"

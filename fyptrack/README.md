@@ -24,4 +24,4 @@ npm run dev
 
 Open the URL printed by Vite, normally `http://localhost:5173`. The FastAPI backend must also be running for signup and login. The frontend calls `http://127.0.0.1:8000/api/v1` by default; set `VITE_API_BASE_URL` in a local `.env` file here to override it.
 
-After successful login, FYPTrack opens a new browser tab with a role-specific welcome message. If the browser blocks popups, the message appears on the login page instead. This welcome screen is not a role-protected dashboard.
+After successful student login, FYPTrack validates the JWT with `/api/v1/auth/me` and opens the student dashboard in the same tab. Dashboard project, milestone, meeting, and document records are preview content until their backend APIs are implemented. Supervisor and coordinator dashboards are not yet available.

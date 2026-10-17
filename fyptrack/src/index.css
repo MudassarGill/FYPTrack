@@ -4,8 +4,9 @@
   -webkit-text-stroke: 1.5px #f97316;
 
   background: linear-gradient(
-    to right,
+    90deg,
     #f97316 0%,
+    #fbbf24 50%,
     #f97316 100%
   );
 
@@ -15,19 +16,21 @@
   background-size: 0% 100%;
   background-repeat: no-repeat;
 
-  animation: fillText 10s ease-in-out infinite;
+  animation: fillText 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes fillText {
-  0% {
+  from {
     background-size: 0% 100%;
   }
+  to {
+    background-size: 0% 100%;
+  }
+}
 
-  50% {
+@media (prefers-reduced-motion: reduce) {
+  .welcome-text {
+    animation: none;
     background-size: 100% 100%;
-  }
-
-  100% {
-    background-size: 0% 100%;
   }
 }

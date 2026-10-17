@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from core.config import settings
 from models.user import User
+from models.workspace import StudentProfile
 from schemas.auth import LoginRequest, SignUpRequest
 
 
@@ -42,6 +43,7 @@ def register_user(db: Session, payload: SignUpRequest) -> User:
         role="student",
     )
     db.add(user)
+    db.add(StudentProfile(user=user))
     try:
         db.commit()
     except IntegrityError as error:
@@ -61,6 +63,12 @@ def authenticate_user(db: Session, payload: LoginRequest) -> tuple[User, str]:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password.",
             headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This account is not active.",
         )
 
     if settings.jwt_secret is None:
@@ -102,7 +110,7 @@ def get_user_from_token(db: Session, token: str) -> User:
         ) from error
 
     user = db.get(User, user_id)
-    if user is None:
+    if user is None or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired access token.",

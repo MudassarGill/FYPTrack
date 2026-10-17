@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import AuthLayout from "./components/auth/AuthLayout";
 import SignUpLayout from "./components/auth/SignUpLayout";
@@ -12,6 +12,16 @@ function App() {
   const [hasSession, setHasSession] = useState(() =>
     Boolean(sessionStorage.getItem("fyptrack_access_token")),
   );
+  const handleSignOut = useCallback(() => {
+    sessionStorage.removeItem("fyptrack_access_token");
+    setHasSession(false);
+    setNotice("You have been signed out.");
+  }, [setHasSession, setNotice]);
+  const handleSessionExpired = useCallback(() => {
+    sessionStorage.removeItem("fyptrack_access_token");
+    setHasSession(false);
+    setNotice("Your session has expired. Please log in again.");
+  }, [setHasSession, setNotice]);
 
   if (isWelcomeRole(welcomeRole)) {
     return <WelcomePage role={welcomeRole} />;
@@ -20,16 +30,8 @@ function App() {
   if (hasSession) {
     return (
       <StudentDashboard
-        onSignOut={() => {
-          sessionStorage.removeItem("fyptrack_access_token");
-          setHasSession(false);
-          setNotice("You have been signed out.");
-        }}
-        onSessionExpired={() => {
-          sessionStorage.removeItem("fyptrack_access_token");
-          setHasSession(false);
-          setNotice("Your session has expired. Please log in again.");
-        }}
+        onSignOut={handleSignOut}
+        onSessionExpired={handleSessionExpired}
       />
     );
   }

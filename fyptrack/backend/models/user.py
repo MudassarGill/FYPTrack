@@ -1,9 +1,13 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, DateTime, Index, Integer, String, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Boolean, CheckConstraint, DateTime, Index, Integer, String, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.connection import Base
+
+if TYPE_CHECKING:
+    from models.workspace import Invitation, StudentProfile, SupervisorProfile
 
 
 class User(Base):
@@ -23,6 +27,9 @@ class User(Base):
     role: Mapped[str] = mapped_column(
         String(20), nullable=False, default="student", server_default="student"
     )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default="true"
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -31,4 +38,13 @@ class User(Base):
         server_default=func.now(),
         onupdate=func.now(),
         nullable=False,
+    )
+    student_profile: Mapped["StudentProfile | None"] = relationship(
+        "StudentProfile", back_populates="user", uselist=False
+    )
+    supervisor_profile: Mapped["SupervisorProfile | None"] = relationship(
+        "SupervisorProfile", back_populates="user", uselist=False
+    )
+    sent_invitations: Mapped[list["Invitation"]] = relationship(
+        "Invitation", back_populates="invited_by"
     )

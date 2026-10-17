@@ -1,10 +1,11 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from database.connection import get_db
+from dependencies.auth import get_current_user
+from models.user import User
 from schemas.auth import (
     LoginRequest,
     LoginResponse,
@@ -15,7 +16,6 @@ from schemas.auth import (
 from services import auth_service
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
-bearer_scheme = HTTPBearer(auto_error=False)
 
 
 @router.post(
@@ -41,16 +41,6 @@ def login(payload: LoginRequest, db: Annotated[Session, Depends(get_db)]) -> Log
 
 @router.get("/me", response_model=UserResponse, summary="Get the current user")
 def current_user(
-    credentials: Annotated[
-        HTTPAuthorizationCredentials | None, Depends(bearer_scheme)
-    ],
-    db: Annotated[Session, Depends(get_db)],
+    user: Annotated[User, Depends(get_current_user)],
 ) -> UserResponse:
-    if credentials is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    user = auth_service.get_user_from_token(db, credentials.credentials)
     return UserResponse.model_validate(user)

@@ -2,7 +2,7 @@
 
 FYPTrack is an Intelligent Final Year Project Management and Automation System for universities. It is being developed to support students, supervisors, and coordinators through the final year project lifecycle.
 
-This repository contains a React/Vite frontend and a modular FastAPI backend. The foundation, PostgreSQL connection, initial user migration, and signup/login flow are working on the project owner's local setup. Public signup saves student accounts to PostgreSQL; login verifies the saved account and opens a role-specific welcome tab.
+This repository contains a React/Vite frontend and a modular FastAPI backend. The foundation, PostgreSQL connection, initial user migration, and signup/login flow are working on the project owner's local setup. Public signup saves student accounts to PostgreSQL; student login verifies the saved account and opens the student dashboard.
 
 ## Current Features
 
@@ -12,7 +12,8 @@ This repository contains a React/Vite frontend and a modular FastAPI backend. Th
 - Alembic migration for the initial `users` table.
 - Public signup creates student accounts only.
 - Passwords are hashed with bcrypt; plaintext passwords are not stored or returned.
-- Login issues a signed JWT and opens a new tab with a role-specific welcome message.
+- Login issues a signed JWT; the student dashboard validates it through `/api/v1/auth/me` and keeps the session for the current browser session.
+- Student dashboard navigation includes overview, project, milestones, meetings, and documents. Project content is preview data until the related APIs are implemented.
 - `/api/v1/auth/me` returns the current user when sent a valid bearer token.
 - CORS is configured for the local Vite frontend.
 
@@ -185,7 +186,7 @@ Public signup does not accept a role. This prevents users from choosing supervis
 1. The login form posts `email` and `password` to `POST /api/v1/auth/login`.
 2. The backend finds the user, verifies the password hash, and signs a JWT.
 3. The response includes `access_token`, user details, and a greeting based on the stored role: `Welcome student`, `Welcome supervisor`, or `Welcome coordinator`.
-4. After successful login, the frontend opens a new tab and displays `Welcome student`, `Welcome supervisor`, or `Welcome coordinator`, based on the role returned by the API. If the browser blocks the new tab, the greeting appears on the login page instead. The welcome page is only a greeting: its role query parameter does not authorize access. The token is returned by the API but the current UI does not yet retain it for later page loads or send it to protected feature routes.
+4. After successful student login, the frontend stores the JWT in `sessionStorage`, then verifies the account through `GET /api/v1/auth/me` before showing the dashboard. Signing out or closing the browser session removes the stored token. The dashboard's project, milestone, meeting, and document records are currently preview examples; their APIs and persistence are future work. Supervisor and coordinator dashboards are not implemented.
 
 ### Verify a saved account in pgAdmin
 
