@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
-import logoImg from "../../assets/logo.jpg";
+import logoImg from "../../assets/fyplogo.png";
 import { currentStudent } from "../../data/mock";
 import { getStoredUser, clearStoredSession } from "../../services/auth";
 
@@ -59,16 +59,16 @@ export default function Navbar({ mode = "auto" }) {
     <header className="sticky top-0 z-50 w-full shadow-lg" style={{ backgroundColor: "black" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Brand Logo - only the image, no text */}
+          {/* Brand Logo - shifted right with clear white background badge */}
           <Link
             to={isStudentPortal ? "/student/dashboard" : "/"}
-            className="flex items-center gap-3 group focus:outline-none"
+            className="flex items-center gap-3 group focus:outline-none ml-4 sm:ml-8 lg:ml-16 transition-transform hover:scale-105"
           >
-            <div className="w-10 h-10 rounded-xl overflow-hidden bg-white/10 p-0.5 border border-white/20 shadow-sm flex items-center justify-center shrink-0">
+            <div className="w-[48px] h-[48px] sm:w-[50px] sm:h-[50px] rounded-2xl bg-white overflow-hidden shadow-md border-2 border-white/60 flex items-center justify-center shrink-0">
               <img
                 src={logoImg}
                 alt="FYPTrack Logo"
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full object-contain"
               />
             </div>
           </Link>
@@ -181,7 +181,7 @@ export default function Navbar({ mode = "auto" }) {
               <>
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-xs font-semibold text-white hover:text-[#F59E0B] transition-colors"
+                  className="px-6 py-2 text-xs font-semibold text-white hover:text-[#F59E0B] transition-colors"
                 >
                   Log In
                 </Link>

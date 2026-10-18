@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { GraduationCap, UserCheck, ShieldCheck, Check } from "lucide-react";
 import Navbar from "../components/shared/Navbar";
 import Footer from "../components/shared/Footer";
 
@@ -27,9 +28,25 @@ const features = [
 ];
 
 const roles = [
-  { title: "Students", text: "Submit your idea, follow milestones and hear back from your supervisor.", items: ["Proposal and project details", "Milestones and deadlines", "Document uploads", "Supervisor feedback"] },
-  { title: "Supervisors", text: "Review work and guide the students assigned to you.", items: ["Assigned students", "Proposal and document review", "Progress monitoring", "Evaluation and marks"] },
-  { title: "FYP Coordinators", text: "Run the whole programme with a clear view of every project.", items: ["Proposal decisions", "AI supervisor recommendations", "Similarity analysis", "Reports and analytics"], dark: true },
+  {
+    title: "Students",
+    text: "Submit your idea, follow milestones and hear back from your supervisor.",
+    items: ["Proposal and project details", "Milestones and deadlines", "Document uploads", "Supervisor feedback"],
+    icon: GraduationCap,
+  },
+  {
+    title: "Supervisors",
+    text: "Review work and guide the students assigned to you.",
+    items: ["Assigned students", "Proposal and document review", "Progress monitoring", "Evaluation and marks"],
+    icon: UserCheck,
+  },
+  {
+    title: "FYP Coordinators",
+    text: "Run the whole programme with a clear view of every project.",
+    items: ["Proposal decisions", "AI supervisor recommendations", "Similarity analysis", "Reports and analytics"],
+    dark: true,
+    icon: ShieldCheck,
+  },
 ];
 
 const steps = [
@@ -111,7 +128,7 @@ export default function Home() {
           style={{
             background:
               "radial-gradient(circle at 94% 112%, rgba(235,180,75,.18) 0, rgba(235,180,75,.18) 190px, transparent 191px), linear-gradient(135deg,#17302A,#24493F)",
-            boxShadow: "0 30px 60px rgba(23,48,42,.35)",
+            boxShadow: "0 40px 60px rgba(23,48,42,.35)",
           }}
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
@@ -199,55 +216,72 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ============ FEATURES ============ */}
-      <section id="features" className={`${WRAP} py-[72px]`}>
-        <h2 className={H2}>Features</h2>
-        <p className="text-[#5F6B66] mb-7">Everything a department needs to run final year projects.</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map((f) => (
-            <div key={f.title} className={`group overflow-hidden bg-white border-[#E6E6E1] ${BASE} ${HEAVY}`}>
-              <div className="h-[170px] overflow-hidden">
-                <img
-                  src={f.img}
-                  alt={f.title}
-                  loading="lazy"
-                  className="w-full h-full object-cover block transition-transform duration-500 group-hover:scale-110"
-                />
+      {/* ============ FEATURES (full-width large box) ============ */}
+      <section id="features" className="w-full py-[72px] bg-[#E8EFEA] border-y border-[#D6E3D9]">
+        <div className="max-w-[1100px] mx-auto px-6">
+          <h2 className={H2}><span className="text-[#EA580C]">Features</span></h2>
+          <p className="text-[#5F6B66] mb-7">Everything a department needs to run final year projects.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {features.map((f) => (
+              <div key={f.title} className={`group overflow-hidden bg-white border border-[#E6E6E1] ${BASE} ${HEAVY}`}>
+                <div className="h-[170px] overflow-hidden bg-white">
+                  <img
+                    src={f.img}
+                    alt={f.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover block transition-transform duration-500 group-hover:scale-110"
+                  />
+                </div>
+                <div className="px-[22px] pt-5 pb-6 bg-white">
+                  <h3 className="font-['Bricolage_Grotesque'] text-lg font-bold mb-2 transition-colors duration-300 group-hover:text-[#C2410C]">
+                    {f.title}
+                  </h3>
+                  <p className="text-sm text-[#5F6B66] leading-relaxed">{f.text}</p>
+                </div>
               </div>
-              <div className="px-[22px] pt-5 pb-6">
-                <h3 className="font-['Bricolage_Grotesque'] text-lg font-bold mb-2 transition-colors duration-300 group-hover:text-[#C2410C]">
-                  {f.title}
-                </h3>
-                <p className="text-sm text-[#5F6B66] leading-relaxed">{f.text}</p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ============ ROLES ============ */}
       <section id="roles" className={`${WRAP} pb-[72px]`}>
-        <h2 className={H2}>Roles</h2>
+        <h2 className={H2}><span className="text-[#EA580C]">Roles</span></h2>
         <p className="text-[#5F6B66] mb-7">Each user sees only what their role allows.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {roles.map((r) => (
-            <div
-              key={r.title}
-              className={`${BASE} ${HEAVY} p-6 ${
-                r.dark ? "bg-[#17302A] border-[#17302A] text-white" : "bg-white border-[#E6E6E1]"
-              }`}
-            >
-              <h3 className="font-['Bricolage_Grotesque'] text-[22px] font-bold mb-2">{r.title}</h3>
-              <p className={`text-sm leading-relaxed ${r.dark ? "text-[#C5D4CD]" : "text-[#5F6B66]"}`}>{r.text}</p>
-              <ul className="mt-4">
-                {r.items.map((item) => (
-                  <li key={item} className={r.dark ? "fy-check fy-check-dark" : "fy-check"}>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {roles.map((r) => {
+            const Icon = r.icon;
+            return (
+              <div
+                key={r.title}
+                className={`border rounded-2xl p-6 sm:p-7 shadow-[0_22px_44px_rgba(23,48,42,0.22),0_8px_16px_rgba(0,0,0,0.1)] hover:shadow-[0_42px_72px_rgba(23,48,42,0.36)] transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between ${
+                  r.dark ? "bg-[#17302A] border-[#17302A] text-white" : "bg-white border-[#E6E6E1]"
+                }`}
+              >
+                <div>
+                  <div
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${
+                      r.dark ? "bg-white/10 text-[#EBB44B] border border-white/15" : "bg-[#E1EFE8] text-[#17302A]"
+                    }`}
+                  >
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-['Bricolage_Grotesque'] text-[22px] font-bold mb-2">{r.title}</h3>
+                  <p className={`text-sm leading-relaxed mb-5 ${r.dark ? "text-[#C5D4CD]" : "text-[#5F6B66]"}`}>
+                    {r.text}
+                  </p>
+                </div>
+                <ul className="space-y-3 pt-3 border-t border-black/5 dark:border-white/10">
+                  {r.items.map((item) => (
+                    <li key={item} className="flex items-center gap-2.5 text-sm">
+                      <Check className={`w-4 h-4 shrink-0 ${r.dark ? "text-[#EBB44B]" : "text-[#17302A]"}`} />
+                      <span className={r.dark ? "text-[#D5E3DD]" : "text-[#4A5550]"}>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -275,74 +309,85 @@ export default function Home() {
 
       {/* ============ WHY FYPTRACK ============ */}
       <section className={`${WRAP} py-[72px]`}>
-        <h2 className={`${H2} !mb-5`}>Why FYPTrack</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className={`${BASE} ${HEAVY} bg-white border-[#E6E6E1] p-6`}>
-            <h3 className="font-['Bricolage_Grotesque'] text-xl font-bold">Without FYPTrack</h3>
-            <ul className="mt-4">
-              {without.map((i) => (
-                <li key={i} className="fy-dash">{i}</li>
-              ))}
-            </ul>
+        <h2 className={`${H2} !mb-6`}>Why FYPTrack</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+          <div className={`${BASE} ${HEAVY} bg-white border-[#E6E6E1] p-8 sm:p-10 lg:p-12 rounded-[24px] min-h-[300px] flex flex-col justify-between`}>
+            <div>
+              <h3 className="font-['Bricolage_Grotesque'] text-2xl font-bold mb-5">Without FYPTrack</h3>
+              <ul className="space-y-4">
+                {without.map((i) => (
+                  <li key={i} className="fy-dash text-[15px]">{i}</li>
+                ))}
+              </ul>
+            </div>
           </div>
-          <div className={`${BASE} ${HEAVY} bg-[#17302A] border-[#17302A] text-white p-6`}>
-            <h3 className="font-['Bricolage_Grotesque'] text-xl font-bold">With FYPTrack</h3>
-            <ul className="mt-4">
-              {withUs.map((i) => (
-                <li key={i} className="fy-check fy-check-dark">{i}</li>
-              ))}
-            </ul>
+          <div className={`${BASE} ${HEAVY} bg-[#17302A] border-[#17302A] text-white p-8 sm:p-10 lg:p-12 rounded-[24px] min-h-[300px] flex flex-col justify-between`}>
+            <div>
+              <h3 className="font-['Bricolage_Grotesque'] text-2xl font-bold mb-5">With FYPTrack</h3>
+              <ul className="space-y-4">
+                {withUs.map((i) => (
+                  <li key={i} className="fy-check fy-check-dark text-[15px]">{i}</li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ============ FAQ ============ */}
-      <section id="faq" className={`${WRAP} pb-[72px]`}>
+      {/* ============ FAQ (80% width) ============ */}
+      <section id="faq" className="w-[92%] lg:w-[80%] mx-auto pb-[72px]">
         <h2 className={H2}>FAQ</h2>
         <p className="text-[#5F6B66] mb-6">Quick answers before you start.</p>
-        {homeFAQ.map((item, idx) => {
-          const isOpen = openFaq === idx;
-          return (
-            <div key={item.q} className="bg-white border border-[#E6E6E1] rounded-xl px-[22px] py-[18px] mb-3 max-w-[650px]">
-              <button
-                type="button"
-                onClick={() => toggleFaq(idx)}
-                aria-expanded={isOpen}
-                className="w-full flex justify-between gap-4 text-left font-bold"
-              >
-                <span>{item.q}</span>
-                <span aria-hidden="true">{isOpen ? "\u2212" : "+"}</span>
-              </button>
-              {isOpen && <p className="mt-2 text-sm text-[#5F6B66]">{item.a}</p>}
-            </div>
-          );
-        })}
+        <div className="w-full space-y-3">
+          {homeFAQ.map((item, idx) => {
+            const isOpen = openFaq === idx;
+            return (
+              <div key={item.q} className="w-full bg-white border border-[#E6E6E1] rounded-xl px-[22px] py-[18px] shadow-sm hover:shadow transition-shadow">
+                <button
+                  type="button"
+                  onClick={() => toggleFaq(idx)}
+                  aria-expanded={isOpen}
+                  className="w-full flex justify-between gap-4 text-left font-bold cursor-pointer"
+                >
+                  <span>{item.q}</span>
+                  <span aria-hidden="true">{isOpen ? "\u2212" : "+"}</span>
+                </button>
+                {isOpen && <p className="mt-2 text-sm text-[#5F6B66] leading-relaxed">{item.a}</p>}
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* ============ CONTACT ============ */}
-      <section id="contact" className={`${WRAP} pb-[72px] grid grid-cols-1 lg:grid-cols-2 gap-5 items-start`}>
-        <div>
-          <h2 className={H2}>Contact</h2>
-          <p className="text-[#5F6B66] mb-6">
-            Questions about setting up FYPTrack for your department? Send us a message.
-          </p>
-          {contactInfo.map((c) => (
-            <div key={c.label} className="flex items-center gap-3 mb-4">
-              <div className="w-[38px] h-[38px] rounded-[10px] bg-[#E1EFE8] text-[#17302A] flex items-center justify-center shrink-0">
-                <Ico d={c.d} />
-              </div>
-              <div>
-                <div className="font-bold">{c.label}</div>
-                <div className="text-[13px] text-[#5F6B66]">{c.value}</div>
+      <section id="contact" className={`${WRAP} pb-[72px]`}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+          <div className="bg-white border border-[#E6E6E1] rounded-2xl p-[26px] shadow-[0_12px_28px_rgba(23,48,42,0.12)] flex flex-col justify-between">
+            <div>
+              <h2 className={H2}>Contact</h2>
+              <p className="text-[#5F6B66] mb-6">
+                Questions about setting up FYPTrack for your department? Send us a message.
+              </p>
+              <div className="space-y-4">
+                {contactInfo.map((c) => (
+                  <div key={c.label} className="flex items-center gap-3.5 p-3 rounded-xl bg-[#F8F9F8] border border-[#E6E6E1]">
+                    <div className="w-[38px] h-[38px] rounded-[10px] bg-[#E1EFE8] text-[#17302A] flex items-center justify-center shrink-0">
+                      <Ico d={c.d} />
+                    </div>
+                    <div>
+                      <div className="font-bold text-[#17302A]">{c.label}</div>
+                      <div className="text-[13px] text-[#5F6B66]">{c.value}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
+          </div>
 
-        <form
-          onSubmit={handleContactSubmit}
-          className="bg-white border border-[#E6E6E1] rounded-2xl p-[26px] shadow-[0_12px_28px_rgba(23,48,42,0.12)]"
-        >
+          <form
+            onSubmit={handleContactSubmit}
+            className="bg-white border border-[#E6E6E1] rounded-2xl p-[26px] shadow-[0_12px_28px_rgba(23,48,42,0.12)]"
+          >
           <label htmlFor="c-name" className={`${LABEL} !mt-0`}>Full name</label>
           <input
             id="c-name"
@@ -380,6 +425,7 @@ export default function Home() {
             Send message
           </button>
         </form>
+        </div>
       </section>
 
       {/* ============ CTA ============ */}
