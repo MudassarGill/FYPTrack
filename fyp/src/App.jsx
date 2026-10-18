@@ -1,127 +1,164 @@
-import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { useState } from "react";
+
+// Existing Auth Components (preserved exactly as requested)
 import AuthLayout from "./components/Auth/AuthLayout";
 import SignUpLayout from "./components/Auth/SignUpLayout";
 import ForgotPasswordLayout from "./components/Auth/ForgotPasswordLayout";
 import ResetPasswordLayout from "./components/Auth/ResetPasswordLayout";
 import WelcomePage from "./components/Auth/WelcomePage";
+
+// Services
 import {
-  getStoredToken,
   getStoredUser,
-  clearStoredSession,
   setStoredSession,
+  clearStoredSession,
 } from "./services/auth";
+
+// Public Pages
+import Home from "./pages/Home";
+
+// Portal Layout & Protected Route
+import ProtectedRoute from "./components/ProtectedRoute";
+import StudentLayout from "./layouts/StudentLayout";
+
+// Student Portal Pages
+import Dashboard from "./pages/student/Dashboard";
+import Proposal from "./pages/student/Proposal";
+import Project from "./pages/student/Project";
+import Milestones from "./pages/student/Milestones";
+import Documents from "./pages/student/Documents";
+import Feedback from "./pages/student/Feedback";
+import Notifications from "./pages/student/Notifications";
+import Profile from "./pages/student/Profile";
+
 import "./App.css";
 
-function App() {
-  const [view, setView] = useState("login"); // 'login' | 'signup' | 'forgot-password' | 'reset-password' | 'welcome'
-  const [currentUser, setCurrentUser] = useState(null);
+/* ============================================================
+   Auth Route Wrappers (Preserving existing component contracts)
+   ============================================================ */
+function LoginPage() {
+  const navigate = useNavigate();
   const [notice, setNotice] = useState("");
-  const [authSource, setAuthSource] = useState("login"); // 'login' | 'signup'
-  const [resetToken, setResetToken] = useState("");
-
-  // Check URL query parameters on initial mount (e.g., reset password link)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const viewParam = params.get("view");
-    const tokenParam = params.get("token");
-
-    if (viewParam === "reset-password" && tokenParam) {
-      setResetToken(tokenParam);
-      setView("reset-password");
-      return;
-    }
-
-    // Check if user has an active saved session
-    const savedToken = getStoredToken();
-    const savedUser = getStoredUser();
-    if (savedToken && savedUser) {
-      setCurrentUser(savedUser);
-      // We can start at welcome if user is already logged in
-      setView("welcome");
-    }
-  }, []);
-
-  function handleLoginSuccess(response) {
-    if (response?.user) {
-      setCurrentUser(response.user);
-      setStoredSession(response.access_token, response.user);
-    }
-    setNotice("");
-    setAuthSource("login");
-    setView("welcome");
-  }
-
-  function handleSignUpSuccess(response) {
-    if (response?.user) {
-      setCurrentUser(response.user);
-      if (response.access_token) {
-        setStoredSession(response.access_token, response.user);
-      }
-    } else {
-      // In case response is just a string message
-      setNotice(typeof response === "string" ? response : "Registration successful!");
-    }
-    setAuthSource("signup");
-    setView("welcome");
-  }
-
-  function handleLogout() {
-    clearStoredSession();
-    setCurrentUser(null);
-    setNotice("You have been signed out successfully.");
-    setView("login");
-  }
-
-  function handleBackToLogin() {
-    setNotice("");
-    setView("login");
-  }
 
   return (
     <div className="min-h-screen w-full bg-slate-900 font-sans antialiased text-slate-800">
-      {view === "welcome" && (
-        <WelcomePage
-          user={currentUser}
-          role={currentUser?.role}
-          source={authSource}
-          onLogout={handleLogout}
-        />
-      )}
-
-      {view === "login" && (
-        <AuthLayout
-          notice={notice}
-          onSignUp={() => {
-            setNotice("");
-            setView("signup");
-          }}
-          onLoginSuccess={handleLoginSuccess}
-          onForgotPassword={() => {
-            setNotice("");
-            setView("forgot-password");
-          }}
-        />
-      )}
-
-      {view === "signup" && (
-        <SignUpLayout
-          onBackToLogin={handleBackToLogin}
-          onRegistered={handleSignUpSuccess}
-        />
-      )}
-
-      {view === "forgot-password" && (
-        <ForgotPasswordLayout onBackToLogin={handleBackToLogin} />
-      )}
-
-      {view === "reset-password" && (
-        <ResetPasswordLayout
-          token={resetToken}
-          onBackToLogin={handleBackToLogin}
-        />
-      )}
+      <AuthLayout
+        notice={notice}
+        onSignUp={() => navigate("/signup")}
+        onLoginSuccess={(response) => {
+          if (response?.user) {
+            setStoredSession(response.access_token, response.user);
+          }
+          navigate("/student/dashboard");
+        }}
+        onForgotPassword={() => navigate("/forgot-password")}
+      />
     </div>
   );
 }
 
-export default App;
+function SignUpPage() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen w-full bg-slate-900 font-sans antialiased text-slate-800">
+      <SignUpLayout
+        onBackToLogin={() => navigate("/login")}
+        onRegistered={(response) => {
+          if (response?.user && response?.access_token) {
+            setStoredSession(response.access_token, response.user);
+          }
+          navigate("/student/dashboard");
+        }}
+      />
+    </div>
+  );
+}
+
+function ForgotPasswordPage() {
+  const navigate = useNavigate();
+  return (
+    <div className="min-h-screen w-full bg-slate-900 font-sans antialiased text-slate-800">
+      <ForgotPasswordLayout onBackToLogin={() => navigate("/login")} />
+    </div>
+  );
+}
+
+function ResetPasswordPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token") || "";
+
+  return (
+    <div className="min-h-screen w-full bg-slate-900 font-sans antialiased text-slate-800">
+      <ResetPasswordLayout
+        token={token}
+        onBackToLogin={() => navigate("/login")}
+      />
+    </div>
+  );
+}
+
+function WelcomePageRoute() {
+  const navigate = useNavigate();
+  const user = getStoredUser();
+
+  return (
+    <div className="min-h-screen w-full bg-slate-900 font-sans antialiased text-slate-800">
+      <WelcomePage
+        user={user}
+        role={user?.role || "student"}
+        source="login"
+        onLogout={() => {
+          clearStoredSession();
+          navigate("/login");
+        }}
+      />
+    </div>
+  );
+}
+
+/* ============================================================
+   Main Application Router
+   ============================================================ */
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Public Home Page */}
+        <Route path="/" element={<Home />} />
+
+        {/* Existing Authentication Routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/welcome" element={<WelcomePageRoute />} />
+
+        {/* Protected Student Portal */}
+        <Route
+          path="/student"
+          element={
+            <ProtectedRoute>
+              <StudentLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="/student/dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="proposal" element={<Proposal />} />
+          <Route path="project" element={<Project />} />
+          <Route path="milestones" element={<Milestones />} />
+          <Route path="documents" element={<Documents />} />
+          <Route path="feedback" element={<Feedback />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="profile" element={<Profile />} />
+        </Route>
+
+        {/* Fallback Catch-all Route */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}

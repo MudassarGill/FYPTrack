@@ -1,8 +1,48 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Tailwind v4 Design Tokens
+   ============================================================ */
+@theme {
+  --font-heading: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, sans-serif;
+
+  --color-ink: #17302A;
+  --color-hero-from: #17302A;
+  --color-hero-to: #24493F;
+  --color-footer: #12201C;
+  --color-page-bg: #F4F4F2;
+  --color-border: #E6E6E1;
+  --color-muted: #5F6B66;
+  --color-amber: #EBB44B;
+  --color-amber-hover: #DDA53A;
+  --color-orange-accent: #F59E0B;
+  --color-heading-orange: #C2410C;
+  --color-nav-link: #CFE0D9;
+
+  --color-badge-green-bg: #E1F4EA;
+  --color-badge-green-text: #0B5A3E;
+  --color-badge-amber-bg: #FEF3D6;
+  --color-badge-amber-text: #6B4700;
+  --color-badge-blue-bg: #E3EEF9;
+  --color-badge-blue-text: #1E3A8A;
+  --color-badge-gray-bg: #ECECE8;
+  --color-badge-gray-text: #4A5651;
+
+  --color-progress-track: #E6E9E6;
+  --color-progress-fill: #17302A;
+
+  --color-input-border: #D3D8D4;
+
+  --color-banner-from: #B91C1C;
+  --color-banner-to: #7F1D1D;
+}
+
+/* ============================================================
+   Base Styles
+   ============================================================ */
 :root {
-  --sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  font-family: var(--sans);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -16,55 +56,217 @@ body {
   padding: 0;
   min-height: 100vh;
   width: 100%;
-  background-color: #0b0f19;
-  color: #1e293b;
+  background-color: var(--color-page-bg);
+  color: var(--color-ink);
   overflow-x: hidden;
 }
 
 #root {
   min-height: 100vh;
   width: 100%;
-  margin: 0;
-  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ============================================================
-   Welcome Text Stroke & Fill Animation
+   Navbar Animated Line
+   ============================================================ */
+@keyframes navGlow {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(333%); }
+}
+
+.nav-glow-line {
+  position: relative;
+  height: 3px;
+  background: rgba(255,255,255,0.16);
+  overflow: hidden;
+}
+
+.nav-glow-line::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #F59E0B, transparent);
+  animation: navGlow 2.4s linear infinite;
+}
+
+/* ============================================================
+   Nav Link Underline Animation
+   ============================================================ */
+.nav-link {
+  position: relative;
+  display: inline-block;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: #F59E0B;
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 250ms ease;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  transform: scaleX(1);
+}
+
+.nav-link.active {
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ============================================================
+   Card Hover
+   ============================================================ */
+.card-base {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 12px 28px rgba(23,48,42,0.14), 0 3px 8px rgba(0,0,0,0.06);
+  transition: transform 300ms ease, box-shadow 300ms ease;
+}
+
+.card-base.card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 30px 56px rgba(23,48,42,0.28);
+}
+
+.card-base.card-heavy:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 36px 64px rgba(23,48,42,0.32);
+}
+
+/* ============================================================
+   CSS Check Mark (for role lists / "With FYPTrack")
+   ============================================================ */
+.css-check {
+  position: relative;
+  padding-left: 28px;
+}
+.css-check::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 10px;
+  height: 6px;
+  border-left: 2.5px solid var(--color-amber);
+  border-bottom: 2.5px solid var(--color-amber);
+  transform: rotate(-45deg);
+}
+
+.css-check-dark::before {
+  border-left-color: var(--color-ink);
+  border-bottom-color: var(--color-ink);
+}
+
+/* ============================================================
+   CSS Dash (for "Without FYPTrack")
+   ============================================================ */
+.css-dash {
+  position: relative;
+  padding-left: 28px;
+}
+.css-dash::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 11px;
+  width: 14px;
+  height: 2.5px;
+  background: #999;
+  border-radius: 2px;
+}
+
+/* ============================================================
+   CSS Caret (for dropdowns)
+   ============================================================ */
+.css-caret {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  margin-left: 6px;
+  transition: transform 200ms ease;
+}
+.css-caret.open {
+  transform: rotate(-135deg);
+}
+
+/* ============================================================
+   Feature Image Zoom
+   ============================================================ */
+.feature-img-wrap {
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+}
+.feature-img-wrap img {
+  transition: transform 500ms ease;
+}
+.card-base:hover .feature-img-wrap img {
+  transform: scale(1.1);
+}
+
+/* ============================================================
+   Welcome Text Stroke & Fill Animation (existing auth pages)
    ============================================================ */
 .welcome-text {
   display: inline-block;
   color: transparent;
   -webkit-text-fill-color: transparent;
   -webkit-text-stroke: 1.5px #f97316;
-
-  background: linear-gradient(
-    90deg,
-    #f97316 0%,
-    #fbbf24 50%,
-    #f97316 100%
-  );
-
+  background: linear-gradient(90deg, #f97316 0%, #fbbf24 50%, #f97316 100%);
   background-clip: text;
   -webkit-background-clip: text;
-
   background-size: 0% 100%;
   background-repeat: no-repeat;
-
   animation: fillText 2.2s ease-in-out infinite alternate;
 }
 
 @keyframes fillText {
-  0% {
-    background-size: 0% 100%;
-  }
-  100% {
-    background-size: 100% 100%;
-  }
+  0%   { background-size: 0% 100%; }
+  100% { background-size: 100% 100%; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .welcome-text {
-    animation: none;
-    background-size: 100% 100%;
-  }
+/* ============================================================
+   FAQ Accordion
+   ============================================================ */
+.faq-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-ink);
+  transition: transform 300ms ease;
+  flex-shrink: 0;
+}
+.faq-toggle.open {
+  transform: rotate(45deg);
 }
