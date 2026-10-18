@@ -1,297 +1,369 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
-import logoImg from "../../assets/fyplogo.png";
-import { currentStudent } from "../../data/mock";
 import { getStoredUser, clearStoredSession } from "../../services/auth";
 
-export default function Navbar({ mode = "auto" }) {
+export default function Navbar({ mode = "public" }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
+  const loggedUser = getStoredUser();
   const isStudentPortal =
     mode === "student" || (mode === "auto" && location.pathname.startsWith("/student"));
-
-  const user = getStoredUser() || currentStudent;
 
   function handleLogout() {
     clearStoredSession();
     navigate("/login");
   }
 
-  // Scroll to section handler for public links
-  function scrollToSection(e, sectionId) {
-    // If we're already on the home page, scroll directly
+  // Close dropdown on outside click or Escape
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setMoreDropdownOpen(false);
+      }
+    }
+    function handleKeyDown(e) {
+      if (e.key === "Escape") {
+        setMoreDropdownOpen(false);
+        setMobileMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  // Smooth scroll handler for public landing page
+  function scrollTo(e, id) {
     if (location.pathname === "/") {
       e.preventDefault();
-      const el = document.getElementById(sectionId);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (id === "top") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
       }
       setMobileMenuOpen(false);
     }
-    // If on another page, the Link will navigate to /#section and smooth scroll will handle it
   }
 
-  const publicLinks = [
-    { label: "Home", href: "/", sectionId: null },
-    { label: "Features", href: "/#features", sectionId: "features" },
-    { label: "Roles", href: "/#roles", sectionId: "roles" },
-    { label: "Workflow", href: "/#workflow", sectionId: "workflow" },
-    { label: "FAQ", href: "/#faq", sectionId: "faq" },
-    { label: "Contact", href: "/#contact", sectionId: "contact" },
+  const publicNav = [
+    { label: "Home", href: "/", id: "top" },
+    { label: "Features", href: "/#features", id: "features" },
+    { label: "Roles", href: "/#roles", id: "roles" },
+    { label: "How it works", href: "/#how-it-works", id: "how-it-works" },
+    { label: "FAQ", href: "/#faq", id: "faq" },
+    { label: "Contact", href: "/#contact", id: "contact" },
   ];
 
-  const studentLinks = [
+  const studentNav = [
     { label: "Dashboard", href: "/student/dashboard" },
-    { label: "Proposal", href: "/student/proposal" },
-    { label: "Project", href: "/student/project" },
+    { label: "My Proposal", href: "/student/proposal" },
+    { label: "My Project", href: "/student/project" },
     { label: "Milestones", href: "/student/milestones" },
     { label: "Documents", href: "/student/documents" },
-    { label: "Feedback", href: "/student/feedback" },
   ];
 
-  const links = isStudentPortal ? studentLinks : publicLinks;
+  const userInitials = loggedUser?.full_name
+    ? loggedUser.full_name
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "ST";
 
   return (
-    <header className="sticky top-0 z-50 w-full shadow-lg" style={{ backgroundColor: "black" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Brand Logo - shifted right with clear white background badge */}
-          <Link
-            to={isStudentPortal ? "/student/dashboard" : "/"}
-            className="flex items-center gap-3 group focus:outline-none ml-4 sm:ml-8 lg:ml-16 transition-transform hover:scale-105"
+    <header
+      className="sticky top-0 z-50 w-full"
+      style={{
+        backgroundColor: "#17302A",
+        boxShadow: "0 6px 20px rgba(23,48,42,.35)",
+        height: "68px",
+      }}
+    >
+      <div className="max-w-[1200px] mx-auto px-6 h-full flex items-center justify-between">
+        {/* Logo left: 12px amber dot + "FYPTrack" (Bricolage 20px, 800, white) */}
+        <Link
+          to={isStudentPortal ? "/student/dashboard" : "/"}
+          className="flex items-center gap-2.5 focus:outline-none"
+        >
+          <span
+            className="w-3 h-3 rounded-full shrink-0"
+            style={{ backgroundColor: "#EBB44B" }}
+          />
+          <span
+            className="font-['Bricolage_Grotesque'] text-[20px] font-extrabold text-white tracking-tight"
           >
-            <div className="w-[48px] h-[48px] sm:w-[50px] sm:h-[50px] rounded-2xl bg-white overflow-hidden shadow-md border-2 border-white/60 flex items-center justify-center shrink-0">
-              <img
-                src={logoImg}
-                alt="FYPTrack Logo"
-                className="w-full h-full object-contain"
-              />
-            </div>
-          </Link>
+            FYPTrack
+          </span>
+        </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-            {links.map((link) => {
+        {/* Desktop Navigation (>= 820px) */}
+        <nav className="hidden min-[820px]:flex items-center gap-1">
+          {!isStudentPortal ? (
+            // Public mode links
+            publicNav.map((item) => {
               const isActive =
-                location.pathname === link.href ||
-                (link.href !== "/" && location.pathname.startsWith(link.href));
-
+                item.href === "/"
+                  ? location.pathname === "/" && !location.hash
+                  : location.hash === `#${item.id}`;
               return (
                 <Link
-                  key={link.label}
-                  to={link.href}
-                  onClick={(e) => {
-                    if (!isStudentPortal && link.sectionId) {
-                      scrollToSection(e, link.sectionId);
-                    }
-                  }}
-                  className={`nav-link text-sm font-medium tracking-wide transition-colors ${
-                    isActive
-                      ? "text-white active"
-                      : "text-[#CFE0D9] hover:text-[#F59E0B]"
+                  key={item.label}
+                  to={item.href}
+                  onClick={(e) => scrollTo(e, item.id)}
+                  className={`nav-link text-[14px] font-medium px-[14px] py-[10px] transition-colors ${
+                    isActive ? "text-white font-bold active" : "text-[#CFE0D9] hover:text-white"
                   }`}
                 >
-                  {link.label}
+                  {item.label}
                 </Link>
               );
-            })}
-          </nav>
-
-          {/* Desktop Right Actions */}
-          <div className="hidden md:flex items-center gap-4">
-            {isStudentPortal ? (
-              <>
-                {/* Notification Bell */}
-                <Link
-                  to="/student/notifications"
-                  className="relative p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors"
-                  aria-label="View notifications"
-                >
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#EBB44B] rounded-full border-2 border-[#2f2626]" />
-                </Link>
-
-                {/* User Dropdown */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                    className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 transition-colors focus:outline-none border border-white/10"
+            })
+          ) : (
+            // Student mode links
+            <>
+              {studentNav.map((item) => {
+                const isActive = location.pathname === item.href;
+                return (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    className={`nav-link text-[14px] font-medium px-[14px] py-[10px] transition-colors ${
+                      isActive ? "text-white font-bold active" : "text-[#CFE0D9] hover:text-white"
+                    }`}
                   >
-                    <span
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-[#2f2626]"
-                      style={{ backgroundColor: user?.avatar_color || "#EBB44B" }}
-                    >
-                      {user?.initials || "ST"}
-                    </span>
-                    <span className="text-xs font-medium text-white max-w-[110px] truncate">
-                      {user?.full_name || "Student"}
-                    </span>
-                    <span
-                      className={`css-caret text-[#CFE0D9] ${
-                        userDropdownOpen ? "open" : ""
-                      }`}
-                    />
-                  </button>
+                    {item.label}
+                  </Link>
+                );
+              })}
 
-                  {userDropdownOpen && (
-                    <div
-                      className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-2xl py-2 z-50 border border-[#E6E6E1]"
-                      onMouseLeave={() => setUserDropdownOpen(false)}
+              {/* "More" dropdown button with CSS chevron */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
+                  className="nav-link text-[14px] font-medium px-[14px] py-[10px] text-[#CFE0D9] hover:text-white flex items-center cursor-pointer focus:outline-none"
+                >
+                  More
+                  <span className={`css-caret ${moreDropdownOpen ? "open" : ""}`} />
+                </button>
+
+                {/* Dropdown menu */}
+                {moreDropdownOpen && (
+                  <div
+                    className="absolute right-0 top-full mt-2 bg-white rounded-[12px] p-[6px] min-w-[190px] z-50 border border-[#E6E6E1]"
+                    style={{ boxShadow: "0 24px 48px rgba(23,48,42,.28)" }}
+                  >
+                    <Link
+                      to="/student/feedback"
+                      onClick={() => setMoreDropdownOpen(false)}
+                      className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
                     >
-                      <div className="px-4 py-2 border-b border-[#E6E6E1]">
-                        <p className="text-xs font-bold text-[#17302A] truncate">
-                          {user?.full_name}
-                        </p>
-                        <p className="text-[11px] text-[#5F6B66] truncate">
-                          {user?.email}
-                        </p>
-                      </div>
-                      <Link
-                        to="/student/profile"
-                        onClick={() => setUserDropdownOpen(false)}
-                        className="block px-4 py-2 text-xs font-medium text-[#17302A] hover:bg-[#F4F4F2] transition-colors"
-                      >
-                        Student Profile
-                      </Link>
-                      <Link
-                        to="/"
-                        onClick={() => setUserDropdownOpen(false)}
-                        className="block px-4 py-2 text-xs font-medium text-[#17302A] hover:bg-[#F4F4F2] transition-colors"
-                      >
-                        Public Home
-                      </Link>
-                      <div className="my-1 border-t border-[#E6E6E1]" />
-                      <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 text-xs font-medium text-[#5F6B66] hover:bg-[#F4F4F2] transition-colors"
-                      >
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </>
+                      Feedback
+                    </Link>
+                    <Link
+                      to="/student/notifications"
+                      onClick={() => setMoreDropdownOpen(false)}
+                      className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                    >
+                      Notifications
+                    </Link>
+                    <Link
+                      to="/student/profile"
+                      onClick={() => setMoreDropdownOpen(false)}
+                      className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                    >
+                      Profile
+                    </Link>
+                    <div className="my-1 border-t border-[#EEEEEA]" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMoreDropdownOpen(false);
+                        handleLogout();
+                      }}
+                      className="w-full text-left px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors cursor-pointer"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </nav>
+
+        {/* Desktop Right Actions (>= 820px) */}
+        <div className="hidden min-[820px]:flex items-center gap-3">
+          {!isStudentPortal ? (
+            loggedUser ? (
+              <Link
+                to="/student/dashboard"
+                className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors"
+              >
+                Go to dashboard
+              </Link>
             ) : (
               <>
                 <Link
                   to="/login"
-                  className="px-6 py-2 text-xs font-semibold text-white hover:text-[#F59E0B] transition-colors"
+                  className="text-[14px] font-medium text-[#CFE0D9] hover:text-white px-3 py-2 transition-colors"
                 >
-                  Log In
+                  Log in
                 </Link>
                 <Link
                   to="/signup"
-                  className="px-4 py-2 text-xs font-bold rounded-lg bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] transition-colors shadow-sm"
+                  className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors"
                 >
-                  Sign Up
+                  Get started
                 </Link>
               </>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center gap-3">
-            {isStudentPortal && (
+            )
+          ) : (
+            // Student mode: Bell icon + 38px amber circle with initials
+            <div className="flex items-center gap-3">
               <Link
                 to="/student/notifications"
-                className="relative p-2 rounded-lg bg-white/10 text-white"
-                aria-label="View notifications"
+                className="relative p-2 text-[#CFE0D9] hover:text-white transition-colors"
+                aria-label="Notifications"
               >
                 <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-[#EBB44B] rounded-full" />
               </Link>
-            )}
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg bg-white/10 hover:bg-white/15 text-white focus:outline-none"
-              aria-label="Toggle navigation menu"
+              <Link
+                to="/student/profile"
+                className="w-[38px] h-[38px] rounded-full bg-[#EBB44B] text-[#17302A] font-['Bricolage_Grotesque'] font-bold text-[14px] flex items-center justify-center transition-transform hover:scale-105"
+                title={loggedUser?.full_name || "Profile"}
+              >
+                {userInitials}
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile / Tablet Menu Button (< 820px) */}
+        <div className="min-[820px]:hidden flex items-center gap-2">
+          {isStudentPortal && (
+            <Link
+              to="/student/notifications"
+              className="p-2 text-[#CFE0D9] hover:text-white"
+              aria-label="Notifications"
             >
-              <div className="w-5 h-4 flex flex-col justify-between">
-                <span
-                  className={`h-0.5 w-full bg-white rounded transition-transform ${
-                    mobileMenuOpen ? "rotate-45 translate-y-1.5" : ""
-                  }`}
-                />
-                <span
-                  className={`h-0.5 w-full bg-white rounded transition-opacity ${
-                    mobileMenuOpen ? "opacity-0" : ""
-                  }`}
-                />
-                <span
-                  className={`h-0.5 w-full bg-white rounded transition-transform ${
-                    mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""
-                  }`}
-                />
-              </div>
-            </button>
-          </div>
+              <Bell className="w-5 h-5" />
+            </Link>
+          )}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="px-3 py-1.5 rounded-[8px] bg-white/10 hover:bg-white/15 text-white text-[13px] font-bold tracking-wide cursor-pointer focus:outline-none"
+          >
+            Menu
+          </button>
         </div>
       </div>
 
-      {/* NO animated glow line - removed as requested */}
-
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-white/10 px-4 pt-3 pb-6 space-y-2" style={{ backgroundColor: "#2f2626" }}>
-          {links.map((link) => (
-            <Link
-              key={link.label}
-              to={link.href}
-              onClick={(e) => {
-                if (!isStudentPortal && link.sectionId) {
-                  scrollToSection(e, link.sectionId);
-                }
-                setMobileMenuOpen(false);
-              }}
-              className="block px-3 py-2 text-sm font-medium rounded-lg text-[#CFE0D9] hover:bg-white/10 hover:text-white"
-            >
-              {link.label}
-            </Link>
-          ))}
-          <div className="pt-4 border-t border-white/10 flex flex-col gap-2">
-            {isStudentPortal ? (
-              <>
+        <div
+          className="min-[820px]:hidden border-t border-white/10 px-6 py-4 space-y-2"
+          style={{ backgroundColor: "#17302A" }}
+        >
+          {!isStudentPortal ? (
+            <>
+              {publicNav.map((item) => (
                 <Link
-                  to="/student/profile"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-lg"
+                  key={item.label}
+                  to={item.href}
+                  onClick={(e) => scrollTo(e, item.id)}
+                  className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
                 >
-                  Profile ({user?.full_name})
+                  {item.label}
                 </Link>
+              ))}
+              <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
+                {loggedUser ? (
+                  <Link
+                    to="/student/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block text-center rounded-[10px] bg-[#EBB44B] text-[#17302A] font-bold text-[14px] py-[11px]"
+                  >
+                    Go to dashboard
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block text-center py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                    >
+                      Log in
+                    </Link>
+                    <Link
+                      to="/signup"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block text-center rounded-[10px] bg-[#EBB44B] text-[#17302A] font-bold text-[14px] py-[11px]"
+                    >
+                      Get started
+                    </Link>
+                  </>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              {studentNav.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <Link
+                to="/student/feedback"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+              >
+                Feedback
+              </Link>
+              <Link
+                to="/student/notifications"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+              >
+                Notifications
+              </Link>
+              <Link
+                to="/student/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+              >
+                Profile
+              </Link>
+              <div className="pt-2 border-t border-white/10">
                 <button
                   type="button"
-                  onClick={handleLogout}
-                  className="w-full text-left px-3 py-2 text-sm font-medium text-[#CFE0D9] hover:bg-white/10 rounded-lg"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="w-full text-left px-3 py-2 text-[14px] font-medium text-amber-300"
                 >
-                  Sign Out
+                  Logout
                 </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block text-center py-2.5 text-sm font-semibold text-white bg-white/10 rounded-lg"
-                >
-                  Log In
-                </Link>
-                <Link
-                  to="/signup"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block text-center py-2.5 text-sm font-bold text-[#17302A] bg-[#EBB44B] rounded-lg"
-                >
-                  Sign Up
-                </Link>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       )}
     </header>

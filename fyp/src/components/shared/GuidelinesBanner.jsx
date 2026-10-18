@@ -1,53 +1,37 @@
-import { useState } from "react";
-
-export default function GuidelinesBanner({
-  title = "FYP Official Guidelines & Submission Deadlines",
-  message = "Please review the updated IEEE format requirements and milestone submission deadlines for Spring 2026. Submissions past the deadline require department approval.",
-  actionText = "Download Guidelines",
-  actionHref = "#",
-  dismissible = true,
-  className = "",
-}) {
-  const [visible, setVisible] = useState(true);
-
-  if (!visible) return null;
-
+export default function GuidelinesBanner({ className = "" }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-xl bg-gradient-to-r from-[#B91C1C] to-[#7F1D1D] text-white p-4 sm:p-5 shadow-md ${className}`}
+      className={`relative overflow-hidden text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6 ${className}`}
+      style={{
+        background: "linear-gradient(120deg, #B91C1C, #7F1D1D)",
+        borderRadius: "18px",
+        padding: "38px 40px",
+        boxShadow: "0 16px 36px rgba(127,29,29,.38)",
+      }}
     >
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex-1 pr-6">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="inline-block w-2 h-2 rounded-full bg-white opacity-90 animate-pulse" />
-            <h4 className="font-['Bricolage_Grotesque'] text-sm sm:text-base font-bold tracking-tight">
-              {title}
-            </h4>
-          </div>
-          <p className="text-xs sm:text-sm text-red-100 font-normal leading-relaxed">
-            {message}
-          </p>
-        </div>
-        <div className="flex items-center gap-3 shrink-0">
-          {actionText && (
-            <a
-              href={actionHref}
-              className="inline-block px-3.5 py-1.5 text-xs font-semibold bg-white text-[#7F1D1D] hover:bg-red-50 rounded-lg transition-colors duration-150 shadow-sm"
-            >
-              {actionText}
-            </a>
-          )}
-          {dismissible && (
-            <button
-              type="button"
-              onClick={() => setVisible(false)}
-              className="px-2.5 py-1.5 text-xs font-medium text-red-200 hover:text-white transition-colors"
-              aria-label="Dismiss banner"
-            >
-              Dismiss
-            </button>
-          )}
-        </div>
+      {/* Faint translucent white circle (240px, 8% opacity) at top-right */}
+      <div
+        className="absolute -top-12 -right-12 w-[240px] h-[240px] rounded-full bg-white opacity-[0.08] pointer-events-none"
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 max-w-[620px]">
+        <h3 className="font-['Bricolage_Grotesque'] text-[22px] font-bold tracking-tight mb-1.5">
+          Read the FYP Guidelines
+        </h3>
+        <p className="text-[14px] leading-relaxed text-[#FDE2E2]">
+          Check the submission rules, plagiarism policy and evaluation criteria before every deadline.
+        </p>
+      </div>
+
+      <div className="relative z-10 shrink-0">
+        <button
+          type="button"
+          onClick={() => alert("FYP Guidelines document will be downloaded.")}
+          className="rounded-[10px] bg-white text-[#7F1D1D] font-bold text-[14px] px-[22px] py-[12px] hover:bg-red-50 transition-colors shadow-sm cursor-pointer"
+        >
+          Read Guidelines
+        </button>
       </div>
     </div>
   );

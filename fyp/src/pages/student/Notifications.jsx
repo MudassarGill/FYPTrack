@@ -1,114 +1,138 @@
 import { useState } from "react";
-import Card from "../../components/shared/Card";
-import Badge from "../../components/shared/Badge";
-import PageHeader from "../../components/shared/PageHeader";
-import { notifications as initialNotifications } from "../../data/mock";
+
+const initialNotifications = [
+  {
+    id: 1,
+    title: "Supervisor reviewed your SRS",
+    desc: "Dr. Imran Shah submitted review comments for Software Requirements Specification v1.",
+    time: "2 hours ago",
+    read: false,
+    badge: "New",
+    variant: "blue",
+  },
+  {
+    id: 2,
+    title: "Deadline reminder: Design Document",
+    desc: "The System Design Document milestone is due on 12 Nov 2026. Submit through the documents portal.",
+    time: "2 days ago",
+    read: false,
+    badge: "Reminder",
+    variant: "amber",
+  },
+  {
+    id: 3,
+    title: "Proposal approved",
+    desc: "Your Final Year Project proposal was formally ratified by the department FYP committee.",
+    time: "1 week ago",
+    read: true,
+    badge: "Approved",
+    variant: "green",
+  },
+  {
+    id: 4,
+    title: "AI Similarity check complete",
+    desc: "Your proposal document passed plagiarism verification with 94% uniqueness index.",
+    time: "2 weeks ago",
+    read: true,
+    badge: "System",
+    variant: "gray",
+  },
+];
 
 export default function Notifications() {
-  const [items, setItems] = useState(initialNotifications);
-  const [filter, setFilter] = useState("all"); // "all" | "unread" | "deadline"
+  const [list, setList] = useState(initialNotifications);
 
-  const filteredItems = items.filter((item) => {
-    if (filter === "unread") return !item.read;
-    if (filter === "deadline") return item.type === "deadline";
-    return true;
-  });
+  const markAsRead = (id) => {
+    setList(list.map((n) => (n.id === id ? { ...n, read: true } : n)));
+  };
 
-  function markAllAsRead() {
-    setItems(items.map((i) => ({ ...i, read: true })));
-  }
+  const markAllAsRead = () => {
+    setList(list.map((n) => ({ ...n, read: true })));
+  };
 
-  function toggleItemRead(id) {
-    setItems(
-      items.map((i) => (i.id === id ? { ...i, read: !i.read } : i))
-    );
-  }
+  const unreadCount = list.filter((n) => !n.read).length;
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        title="Notifications & System Alerts"
-        description="Important alerts regarding proposal approvals, deadline proximity, and supervisor evaluations."
-        action={
-          <button
-            type="button"
-            onClick={markAllAsRead}
-            className="px-4 py-2 rounded-xl border border-[#D3D8D4] bg-white hover:bg-[#F4F4F2] text-xs font-semibold text-[#17302A] transition-colors"
-          >
-            Mark All as Read
-          </button>
-        }
-      />
+    <div className="space-y-8 pb-12">
+      {/* Header = H1 30px Bricolage + muted subtitle + mark all as read */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="font-['Bricolage_Grotesque'] text-[30px] font-bold text-[#17302A] leading-tight">
+              Notifications
+            </h1>
+            {unreadCount > 0 && (
+              <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#FEF3D6] text-[#6B4700]">
+                {unreadCount} unread
+              </span>
+            )}
+          </div>
+          <p className="text-[14px] text-[#5F6B66] mt-1">
+            Important submission updates, milestone deadlines, and coordinator alerts.
+          </p>
+        </div>
 
-      {/* Filter Tabs */}
-      <div className="flex gap-2">
-        {[
-          { key: "all", label: "All Alerts" },
-          { key: "unread", label: "Unread" },
-          { key: "deadline", label: "Deadlines" },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setFilter(tab.key)}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
-              filter === tab.key
-                ? "bg-[#17302A] text-white"
-                : "bg-white border border-[#E6E6E1] text-[#5F6B66] hover:text-[#17302A]"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {unreadCount > 0 && (
+          <div>
+            <button
+              type="button"
+              onClick={markAllAsRead}
+              className="rounded-[10px] border-[1.5px] border-[#17302A] text-[#17302A] hover:bg-[#17302A] hover:text-white font-bold text-[14px] px-[18px] py-[10px] transition-colors cursor-pointer"
+            >
+              Mark all as read
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Notifications List */}
-      <div className="space-y-3">
-        {filteredItems.map((n) => (
-          <Card
-            key={n.id}
-            className={`p-5 transition-colors ${
-              !n.read ? "bg-[#FFFDF8] border-l-4 border-l-[#EBB44B]" : "bg-white"
-            }`}
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
-              <div className="flex items-center gap-2.5">
-                {!n.read && (
-                  <span className="w-2 h-2 rounded-full bg-[#EBB44B] shrink-0" />
-                )}
-                <span className="font-['Bricolage_Grotesque'] text-base font-bold text-[#17302A]">
-                  {n.title}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant={n.type === "deadline" ? "amber" : "gray"}>
-                  {n.type}
-                </Badge>
-                <span className="text-[11px] text-[#5F6B66]">{n.date}</span>
-              </div>
-            </div>
+      {/* Notifications Card List */}
+      <div className="card-base">
+        <div className="space-y-4">
+          {list.map((item) => {
+            let badgeClass = "bg-[#ECECE8] text-[#4A5651]";
+            if (item.variant === "green") badgeClass = "bg-[#E1F4EA] text-[#0B5A3E]";
+            if (item.variant === "amber") badgeClass = "bg-[#FEF3D6] text-[#6B4700]";
+            if (item.variant === "blue") badgeClass = "bg-[#E3EEF9] text-[#1E3A8A]";
 
-            <p className="text-xs sm:text-sm text-[#5F6B66] leading-relaxed mt-1">
-              {n.message}
-            </p>
-
-            <div className="mt-3 pt-2 flex justify-end">
-              <button
-                type="button"
-                onClick={() => toggleItemRead(n.id)}
-                className="text-xs text-[#5F6B66] hover:text-[#17302A] transition-colors"
+            return (
+              <div
+                key={item.id}
+                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-[12px] transition-colors border ${
+                  item.read
+                    ? "bg-white border-[#EEEEEA]"
+                    : "bg-[#F8F9F8] border-[#D6E3D9]"
+                }`}
               >
-                {n.read ? "Mark as unread" : "Mark as read"}
-              </button>
-            </div>
-          </Card>
-        ))}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2.5">
+                    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badgeClass}`}>
+                      {item.badge}
+                    </span>
+                    <h4 className="font-['Bricolage_Grotesque'] text-[16px] font-bold text-[#17302A]">
+                      {item.title}
+                    </h4>
+                  </div>
+                  <p className="text-[13px] text-[#5F6B66] leading-relaxed">
+                    {item.desc}
+                  </p>
+                  <div className="text-[11px] text-[#5F6B66] pt-0.5">{item.time}</div>
+                </div>
 
-        {filteredItems.length === 0 && (
-          <Card className="p-12 text-center text-sm text-[#5F6B66]">
-            No notifications matching current filter.
-          </Card>
-        )}
+                {!item.read && (
+                  <div className="shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => markAsRead(item.id)}
+                      className="rounded-[8px] bg-white border border-[#D3D8D4] hover:bg-[#17302A] hover:text-white hover:border-[#17302A] text-[#17302A] text-[12px] font-semibold px-3 py-1.5 transition-colors cursor-pointer"
+                    >
+                      Mark as read
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

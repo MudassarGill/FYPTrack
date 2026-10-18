@@ -1,268 +1,699 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import Card from "../../components/shared/Card";
-import Badge from "../../components/shared/Badge";
-import ProgressBar from "../../components/shared/ProgressBar";
-import StatCard from "../../components/shared/StatCard";
-import PageHeader from "../../components/shared/PageHeader";
 import {
-  currentStudent,
-  studentProject,
-  supervisor,
-  proposal,
-  milestones,
-  supervisorFeedback,
-  upcomingDeadlines,
-  groupMembers,
-  quickActions,
-} from "../../data/mock";
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import { getStoredUser } from "../../services/auth";
+
+import proposalImg from "../../assets/proposal.jpg";
+import milestonesImg from "../../assets/milestones.jpg";
+import similarityImg from "../../assets/similarity.jpg";
+import feedbackImg from "../../assets/feedback.jpg";
+
+// Sample data as constants at top of page file
+const weeklyData = [
+  { week: "W1", progress: 5 },
+  { week: "W2", progress: 12 },
+  { week: "W3", progress: 18 },
+  { week: "W4", progress: 25 },
+  { week: "W5", progress: 31 },
+  { week: "W6", progress: 37 },
+  { week: "W7", progress: 43 },
+];
+
+const milestonePieData = [
+  { name: "Completed", value: 3, color: "#17302A" },
+  { name: "In progress", value: 1, color: "#EBB44B" },
+  { name: "Upcoming", value: 3, color: "#E6E9E6" },
+];
+
+const projectMilestones = [
+  { name: "Proposal Defense", status: "Completed", variant: "green" },
+  { name: "SRS Submission", status: "Completed", variant: "green" },
+  { name: "Design Document", status: "In progress", variant: "blue" },
+  { name: "Prototype Demo", status: "Upcoming", variant: "gray" },
+];
+
+const deadlines = [
+  { title: "Design Document Submission", date: "12 Nov 2026", remaining: "In 4 days" },
+  { title: "Prototype Demonstration", date: "05 Dec 2026", remaining: "In 3 weeks" },
+  { title: "Mid-Term Evaluation", date: "20 Dec 2026", remaining: "In 5 weeks" },
+];
+
+const notifications = [
+  { title: "Supervisor reviewed your SRS", badge: "New", badgeType: "blue" },
+  { title: "Deadline reminder: Design Document", badge: "2d", badgeType: "gray" },
+  { title: "Proposal approved", badge: "1w", badgeType: "gray" },
+];
+
+const groupMembersList = [
+  { name: "Ayesha Noor", roll: "FA20-BSE-042", isYou: true },
+  { name: "Hamza Tariq", roll: "FA20-BSE-058", isYou: false },
+  { name: "Zainab Ali", roll: "FA20-BSE-019", isYou: false },
+];
+
+function AreaTooltip({ active, payload, label }) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white border border-[#E6E6E1] rounded-[10px] p-2.5 shadow-md text-[13px] text-[#17302A]">
+        <div className="font-semibold">{label}</div>
+        <div className="text-[#5F6B66]">{payload[0].value}% complete</div>
+      </div>
+    );
+  }
+  return null;
+}
+
+function DonutTooltip({ active, payload }) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white border border-[#E6E6E1] rounded-[10px] p-2.5 shadow-md text-[13px] text-[#17302A]">
+        <div className="font-semibold">{payload[0].name}</div>
+        <div className="text-[#5F6B66]">{payload[0].value} milestone{payload[0].value > 1 ? "s" : ""}</div>
+      </div>
+    );
+  }
+  return null;
+}
+
+// Customized Dot for AreaChart
+function CustomizedDot(props) {
+  const { cx, cy, index } = props;
+  const isLast = index === weeklyData.length - 1;
+  if (isLast) {
+    return (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={7}
+        fill="#EBB44B"
+        stroke="#17302A"
+        strokeWidth={2}
+      />
+    );
+  }
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={3.5}
+      fill="#17302A"
+    />
+  );
+}
 
 export default function Dashboard() {
-  const completedMilestones = milestones.filter((m) => m.status === "completed").length;
-  const activeMilestone = milestones.find((m) => m.status === "in_progress") || milestones[0];
-  const recentFeedback = supervisorFeedback.slice(0, 2);
+  const user = getStoredUser();
+  const student = user?.student || {};
+
+  const rollNo = student.roll_number || user?.roll_number || "FA20-BSE-042";
+  const groupName = student.group_name || "Group 14";
+  const program = student.program || "BS Software Engineering";
+  const fullName = user?.full_name || "Ayesha Noor";
+  const email = user?.email || "ayesha.noor@university.edu";
+
+  const [coordForm, setCoordForm] = useState({
+    subject: "milestone",
+    message: "",
+  });
+
+  const handleCoordSubmit = (e) => {
+    e.preventDefault();
+    alert("Message sent to coordinator!");
+    setCoordForm({ subject: "milestone", message: "" });
+  };
 
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <PageHeader
-        title={`Welcome back, ${currentStudent.full_name}`}
-        description={`Roll No: ${currentStudent.roll_number} | Group 14 | BS Software Engineering`}
-        action={
-          <Link
-            to="/student/documents"
-            className="inline-flex items-center px-4 py-2.5 rounded-xl bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-xs uppercase tracking-wider transition-colors shadow-sm"
-          >
-            Submit Deliverable
-          </Link>
-        }
-      />
+    <div className="space-y-8 pb-12">
+      {/* ===================== 1. PROJECT HERO BOX ===================== */}
+      <div
+        className="rounded-[20px] text-white shadow-[0_18px_40px_rgba(23,48,42,.35)] relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, #17302A, #24493F)",
+          padding: "44px 40px 92px",
+        }}
+      >
+        <span
+          className="inline-block px-3 py-1 text-[12px] font-semibold rounded-full mb-4"
+          style={{ backgroundColor: "rgba(235,180,75,0.20)", color: "#F6D88E" }}
+        >
+          Your Final Year Project
+        </span>
+        <h1 className="font-['Bricolage_Grotesque'] font-bold text-[36px] sm:text-[44px] lg:text-[48px] leading-[1.08] tracking-tight text-white mb-3">
+          Crop Price Prediction and Market Advisory System
+        </h1>
+        <p className="text-[16px] text-[#D5E3DD] max-w-2xl leading-relaxed mb-6">
+          Machine learning system forecasting mandi prices and guiding crop harvest timing across Punjab agricultural districts.
+        </p>
 
-      {/* High-level Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          label="Project Progress"
-          value={`${studentProject.progress}%`}
-          subtext="Overall completion across all milestones"
-        />
-        <StatCard
-          label="Milestones"
-          value={`${completedMilestones} / ${milestones.length}`}
-          subtext="3 completed, 1 in progress"
-        />
-        <StatCard
-          label="Proposal Status"
-          value={proposal.status.toUpperCase()}
-          subtext={`Similarity score: ${proposal.similarity_score}%`}
-          highlight={true}
-        />
-        <StatCard
-          label="Supervisor"
-          value={supervisor.full_name}
-          subtext={`${supervisor.department} (${supervisor.topic_match}% match)`}
-        />
+        {/* Three pills (white at 14%) */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <span className="px-3 py-1 rounded-full text-[12px] font-semibold bg-white/14 text-white">
+            Roll No: {rollNo}
+          </span>
+          <span className="px-3 py-1 rounded-full text-[12px] font-semibold bg-white/14 text-white">
+            {groupName}
+          </span>
+          <span className="px-3 py-1 rounded-full text-[12px] font-semibold bg-white/14 text-white">
+            {program}
+          </span>
+        </div>
       </div>
 
-      {/* Main Grid Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left 2 Columns */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Current Project Card */}
-          <Card className="p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#E6E6E1]">
-              <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#5F6B66]">
-                  Active FYP Project
-                </span>
-                <h2 className="font-['Bricolage_Grotesque'] text-xl font-bold text-[#17302A] mt-0.5">
-                  {studentProject.title}
-                </h2>
-              </div>
-              <Badge variant={studentProject.status}>
-                In Progress
-              </Badge>
-            </div>
-
-            <p className="mt-4 text-sm text-[#5F6B66] leading-relaxed">
-              {studentProject.description}
-            </p>
-
-            <div className="mt-6 pt-4 border-t border-[#E6E6E1] space-y-3">
-              <ProgressBar
-                value={studentProject.progress}
-                label="Completion Progress"
-                color="ink"
-              />
-              <div className="flex flex-wrap items-center gap-2 pt-2">
-                <span className="text-xs font-semibold text-[#5F6B66]">Tech Stack:</span>
-                {studentProject.technologies.map((tech) => (
-                  <span
-                    key={tech}
-                    className="px-2.5 py-1 text-xs font-medium bg-[#ECECE8] text-[#17302A] rounded-md"
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </Card>
-
-          {/* Active Milestone Card */}
-          {activeMilestone && (
-            <Card className="p-6 border-l-4 border-l-[#EBB44B]">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#C2410C]">
-                    Current Target Deliverable
-                  </span>
-                  <h3 className="font-['Bricolage_Grotesque'] text-lg font-bold text-[#17302A] mt-1">
-                    {activeMilestone.name}
-                  </h3>
-                  <p className="text-xs text-[#5F6B66] mt-1">
-                    Due Date: <span className="font-semibold text-[#17302A]">{activeMilestone.due_date}</span> | Weightage: {activeMilestone.total_marks} Marks
-                  </p>
-                </div>
-                <Link
-                  to="/student/documents"
-                  className="inline-block px-4 py-2 text-xs font-bold rounded-lg bg-[#17302A] hover:bg-[#24493F] text-white transition-colors text-center shrink-0"
-                >
-                  Upload Files
-                </Link>
-              </div>
-              <div className="mt-4">
-                <ProgressBar
-                  value={activeMilestone.progress}
-                  label="Milestone Progress"
-                  color="amber"
-                  height="h-2"
-                />
-              </div>
-            </Card>
-          )}
-
-          {/* Recent Feedback Feed */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-['Bricolage_Grotesque'] text-lg font-bold text-[#17302A]">
-                Recent Supervisor Feedback
-              </h3>
-              <Link
-                to="/student/feedback"
-                className="text-xs font-semibold text-[#17302A] hover:text-[#F59E0B] transition-colors"
-              >
-                View All
-              </Link>
-            </div>
-
-            <div className="space-y-4">
-              {recentFeedback.map((fb) => (
-                <div
-                  key={fb.id}
-                  className="p-4 rounded-xl bg-[#F4F4F2] border border-[#E6E6E1]/60"
-                >
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs text-[#17302A]">{fb.from}</span>
-                      <span className="text-[11px] text-[#5F6B66]">({fb.milestone})</span>
-                    </div>
-                    <span className="text-[11px] text-[#5F6B66] font-medium">{fb.date}</span>
-                  </div>
-                  <p className="text-xs text-[#5F6B66] leading-relaxed">
-                    {fb.message}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </Card>
+      {/* ===================== 2. FOUR STAT CARDS (OVERLAPPING HERO) ===================== */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-2 sm:px-4" style={{ marginTop: "-56px" }}>
+        {/* Card 1: Proposal */}
+        <div className="card-base card-hover flex flex-col justify-between">
+          <div className="text-[13px] text-[#5F6B66] font-semibold">Proposal</div>
+          <div className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] my-1">
+            Approved
+          </div>
+          <div>
+            <span className="inline-block px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E1F4EA] text-[#0B5A3E]">
+              By Coordinator
+            </span>
+          </div>
         </div>
 
-        {/* Right Column: Deadlines, Team, Supervisor */}
-        <div className="space-y-6">
-          {/* Quick Actions */}
-          <Card className="p-6">
-            <h3 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#17302A] mb-4">
-              Quick Shortcuts
-            </h3>
-            <div className="space-y-2">
-              {quickActions.map((qa) => (
-                <Link
-                  key={qa.label}
-                  to={qa.href}
-                  className="block px-4 py-2.5 rounded-xl bg-[#F4F4F2] hover:bg-[#ECECE8] text-xs font-semibold text-[#17302A] transition-colors"
-                >
-                  {qa.label}
-                </Link>
-              ))}
-            </div>
-          </Card>
+        {/* Card 2: Supervisor */}
+        <div className="card-base card-hover flex flex-col justify-between">
+          <div className="text-[13px] text-[#5F6B66] font-semibold">Supervisor</div>
+          <div className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] my-1 truncate">
+            Dr. Imran Shah
+          </div>
+          <div>
+            <span className="inline-block px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E3EEF9] text-[#1E3A8A]">
+              Assigned
+            </span>
+          </div>
+        </div>
 
-          {/* Upcoming Deadlines */}
-          <Card className="p-6">
-            <h3 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#17302A] mb-4">
+        {/* Card 3: Milestones */}
+        <div className="card-base card-hover flex flex-col justify-between">
+          <div className="text-[13px] text-[#5F6B66] font-semibold">Milestones</div>
+          <div className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] my-1">
+            3 of 7 done
+          </div>
+          <div>
+            <span className="inline-block px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#FEF3D6] text-[#6B4700]">
+              On track
+            </span>
+          </div>
+        </div>
+
+        {/* Card 4: Next Deadline */}
+        <div className="card-base card-hover flex flex-col justify-between">
+          <div className="text-[13px] text-[#5F6B66] font-semibold">Next Deadline</div>
+          <div className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] my-1">
+            12 Nov 2026
+          </div>
+          <div>
+            <span className="inline-block px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#ECECE8] text-[#4A5651]">
+              SRS Document
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ===================== 3. CHARTS ROW (2fr / 1fr) ===================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Card: Weekly Progress (2fr) */}
+        <div className="lg:col-span-2 card-base flex flex-col justify-between" role="img" aria-label="Weekly Project Progress Chart">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
+                Weekly Progress
+              </h3>
+              <span className="text-[13px] text-[#5F6B66]">Spring 2026</span>
+            </div>
+            <div className="h-[220px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={weeklyData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                  <CartesianGrid stroke="#EEEEEA" vertical={false} />
+                  <XAxis
+                    dataKey="week"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "#5F6B66", fontSize: 11 }}
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    ticks={[0, 25, 50, 75, 100]}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "#5F6B66", fontSize: 11 }}
+                  />
+                  <Tooltip content={<AreaTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="progress"
+                    stroke="#17302A"
+                    strokeWidth={2.5}
+                    fill="rgba(235,180,75,0.35)"
+                    dot={<CustomizedDot />}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <p className="text-[13px] text-[#5F6B66] mt-4 pt-3 border-t border-[#EEEEEA]">
+            Overall completion has grown from 5% to 43% over seven weeks.
+          </p>
+        </div>
+
+        {/* Card: Milestone Status Donut (1fr) */}
+        <div className="card-base flex flex-col justify-between" role="img" aria-label="Milestone Status Donut Chart">
+          <div>
+            <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-1">
+              Milestone Status
+            </h3>
+            <div className="relative h-[180px] w-full flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Tooltip content={<DonutTooltip />} />
+                  <Pie
+                    data={milestonePieData}
+                    innerRadius={54}
+                    outerRadius={72}
+                    startAngle={90}
+                    endAngle={-270}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {milestonePieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+
+              {/* Centered text: "3 of 7" and "completed" */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] leading-tight">
+                  3 of 7
+                </span>
+                <span className="text-[11px] text-[#5F6B66] uppercase tracking-wider">
+                  completed
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* CSS-dot legend below */}
+          <div className="flex items-center justify-center gap-4 pt-3 border-t border-[#EEEEEA] text-[12px] text-[#5F6B66]">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#17302A]" />
+              <span>Done (3)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#EBB44B]" />
+              <span>In progress (1)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#E6E9E6]" />
+              <span>Upcoming (3)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ===================== 4. TWO COLUMNS (2fr / 1fr) ===================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* LEFT COLUMN (2fr): Project Progress & Upcoming Deadlines */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Card: Project Progress */}
+          <div className="card-base">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
+                Project Progress
+              </h3>
+              <span className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
+                43%
+              </span>
+            </div>
+
+            {/* 8px progress bar, track #E6E9E6, fill #17302A */}
+            <div className="w-full h-2 bg-[#E6E9E6] rounded-full overflow-hidden mb-6">
+              <div className="h-full bg-[#17302A] rounded-full" style={{ width: "43%" }} />
+            </div>
+
+            {/* Rows with badges */}
+            <div className="space-y-3">
+              {projectMilestones.map((m) => {
+                let badgeClass = "bg-[#ECECE8] text-[#4A5651]";
+                if (m.variant === "green") badgeClass = "bg-[#E1F4EA] text-[#0B5A3E]";
+                if (m.variant === "blue") badgeClass = "bg-[#E3EEF9] text-[#1E3A8A]";
+                return (
+                  <div
+                    key={m.name}
+                    className="flex items-center justify-between py-2 border-b border-[#EEEEEA] last:border-0"
+                  >
+                    <span className="text-[14px] font-medium text-[#17302A]">{m.name}</span>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${badgeClass}`}>
+                      {m.status}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Card: Upcoming Deadlines */}
+          <div className="card-base">
+            <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-4">
               Upcoming Deadlines
             </h3>
             <div className="space-y-3">
-              {upcomingDeadlines.map((dl, idx) => (
+              {deadlines.map((d) => (
                 <div
-                  key={idx}
-                  className="flex items-center justify-between p-3 rounded-lg bg-[#F4F4F2] text-xs"
+                  key={d.title}
+                  className="flex items-center justify-between py-2.5 border-b border-[#EEEEEA] last:border-0"
                 >
                   <div>
-                    <p className="font-bold text-[#17302A]">{dl.milestone}</p>
-                    <p className="text-[11px] text-[#5F6B66] mt-0.5">{dl.date}</p>
+                    <div className="text-[14px] font-semibold text-[#17302A]">{d.title}</div>
+                    <div className="text-[12px] text-[#5F6B66]">{d.date}</div>
                   </div>
-                  <span className="px-2.5 py-1 rounded-md font-bold text-[11px] bg-[#FEF3D6] text-[#6B4700]">
-                    {dl.daysLeft} days left
+                  <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#FEF3D6] text-[#6B4700]">
+                    {d.remaining}
                   </span>
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
+        </div>
 
-          {/* Group Members */}
-          <Card className="p-6">
-            <h3 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#17302A] mb-4">
-              Project Group (Group 14)
-            </h3>
-            <div className="space-y-3">
-              {groupMembers.map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between text-xs py-1 border-b border-[#E6E6E1] last:border-0"
-                >
-                  <div>
-                    <p className="font-bold text-[#17302A]">{member.name}</p>
-                    <p className="text-[11px] text-[#5F6B66]">{member.roll}</p>
+        {/* RIGHT COLUMN (1fr): Recent Notifications & Latest Feedback */}
+        <div className="space-y-6">
+          {/* Card: Recent Notifications */}
+          <div className="card-base flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
+                  Recent Notifications
+                </h3>
+              </div>
+              <div className="space-y-3">
+                {notifications.map((n) => (
+                  <div
+                    key={n.title}
+                    className="flex items-center justify-between gap-2 py-2 border-b border-[#EEEEEA] last:border-0"
+                  >
+                    <span className="text-[13px] text-[#17302A] leading-snug">{n.title}</span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 ${
+                        n.badgeType === "blue"
+                          ? "bg-[#E3EEF9] text-[#1E3A8A]"
+                          : "bg-[#ECECE8] text-[#4A5651]"
+                      }`}
+                    >
+                      {n.badge}
+                    </span>
                   </div>
-                  <span className="text-[11px] font-medium text-[#5F6B66]">
-                    {member.role}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          {/* Assigned Supervisor */}
-          <Card className="p-6">
-            <h3 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#17302A] mb-4">
-              Project Supervisor
-            </h3>
-            <div className="space-y-2">
-              <p className="font-bold text-sm text-[#17302A]">{supervisor.full_name}</p>
-              <p className="text-xs text-[#5F6B66]">{supervisor.department}</p>
-              <p className="text-xs text-[#5F6B66]">
-                Specialization: {supervisor.specialization}
-              </p>
-              <div className="pt-2">
-                <a
-                  href={`mailto:${supervisor.email}`}
-                  className="inline-block text-xs font-semibold text-[#17302A] hover:text-[#F59E0B] underline"
-                >
-                  {supervisor.email}
-                </a>
+                ))}
               </div>
             </div>
-          </Card>
+            <div className="mt-4 pt-3 border-t border-[#EEEEEA]">
+              <Link
+                to="/student/notifications"
+                className="inline-block w-full text-center rounded-[10px] border-[1.5px] border-[#17302A] text-[#17302A] font-bold text-[14px] px-[18px] py-[9px] hover:bg-[#17302A] hover:text-white transition-colors"
+              >
+                View all
+              </Link>
+            </div>
+          </div>
+
+          {/* Card: Latest Feedback */}
+          <div className="card-base flex flex-col justify-between">
+            <div>
+              <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-3">
+                Latest Feedback
+              </h3>
+              <div className="bg-[#F8F9F8] border border-[#E6E6E1] rounded-[12px] p-3.5 mb-3">
+                <div className="text-[12px] font-bold text-[#17302A]">Dr. Imran Shah</div>
+                <div className="text-[11px] text-[#5F6B66] mb-2">SRS Document Review</div>
+                <p className="text-[13px] text-[#5F6B66] leading-relaxed line-clamp-3">
+                  "Good functional requirements coverage for price forecasting. Ensure the dataset provenance and data validation pipelines are clearly documented in section 3.2."
+                </p>
+              </div>
+            </div>
+            <div>
+              <Link
+                to="/student/feedback"
+                className="inline-block w-full text-center rounded-[10px] border-[1.5px] border-[#17302A] text-[#17302A] font-bold text-[14px] px-[18px] py-[9px] hover:bg-[#17302A] hover:text-white transition-colors"
+              >
+                Open feedback
+              </Link>
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* ===================== 5. QUICK ACCESS ===================== */}
+      <div>
+        <h2 className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] mb-4">
+          Quick Access
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Box 1: My Proposal */}
+          <Link to="/student/proposal" className="img-box group block">
+            <div className="h-[170px] overflow-hidden">
+              <img src={proposalImg} alt="My Proposal" className="w-full h-full object-cover" />
+            </div>
+            <div className="px-[22px] pt-[20px] pb-[24px]">
+              <h3 className="img-box-title font-['Bricolage_Grotesque'] text-[18px] font-bold text-[#17302A] mb-1 transition-colors duration-300">
+                My Proposal
+              </h3>
+              <p className="text-[14px] text-[#5F6B66]">View status, domain fit and similarity report.</p>
+            </div>
+          </Link>
+
+          {/* Box 2: Milestones */}
+          <Link to="/student/milestones" className="img-box group block">
+            <div className="h-[170px] overflow-hidden">
+              <img src={milestonesImg} alt="Milestones" className="w-full h-full object-cover" />
+            </div>
+            <div className="px-[22px] pt-[20px] pb-[24px]">
+              <h3 className="img-box-title font-['Bricolage_Grotesque'] text-[18px] font-bold text-[#17302A] mb-1 transition-colors duration-300">
+                Milestones
+              </h3>
+              <p className="text-[14px] text-[#5F6B66]">Track progress bars, marks and due dates.</p>
+            </div>
+          </Link>
+
+          {/* Box 3: Documents */}
+          <Link to="/student/documents" className="img-box group block">
+            <div className="h-[170px] overflow-hidden">
+              <img src={similarityImg} alt="Documents" className="w-full h-full object-cover" />
+            </div>
+            <div className="px-[22px] pt-[20px] pb-[24px]">
+              <h3 className="img-box-title font-['Bricolage_Grotesque'] text-[18px] font-bold text-[#17302A] mb-1 transition-colors duration-300">
+                Documents
+              </h3>
+              <p className="text-[14px] text-[#5F6B66]">Upload deliverables and check similarity.</p>
+            </div>
+          </Link>
+
+          {/* Box 4: Feedback */}
+          <Link to="/student/feedback" className="img-box group block">
+            <div className="h-[170px] overflow-hidden">
+              <img src={feedbackImg} alt="Feedback" className="w-full h-full object-cover" />
+            </div>
+            <div className="px-[22px] pt-[20px] pb-[24px]">
+              <h3 className="img-box-title font-['Bricolage_Grotesque'] text-[18px] font-bold text-[#17302A] mb-1 transition-colors duration-300">
+                Feedback
+              </h3>
+              <p className="text-[14px] text-[#5F6B66]">Read supervisor reviews and guidance.</p>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* ===================== 6. THREE CARDS IN A ROW ===================== */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Card 1: Your Supervisor */}
+        <div className="card-base flex flex-col justify-between">
+          <div>
+            <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-4">
+              Your Supervisor
+            </h3>
+            <div className="flex items-center gap-3.5 mb-3">
+              <div className="w-[48px] h-[48px] rounded-full bg-[#EBB44B] text-[#17302A] font-['Bricolage_Grotesque'] font-bold text-[18px] flex items-center justify-center shrink-0">
+                IS
+              </div>
+              <div>
+                <div className="font-['Bricolage_Grotesque'] font-bold text-[16px] text-[#17302A]">
+                  Dr. Imran Shah
+                </div>
+                <div className="text-[12px] text-[#5F6B66]">imran.shah@university.edu</div>
+              </div>
+            </div>
+            <p className="text-[13px] text-[#5F6B66] leading-relaxed">
+              Machine Learning, Data Mining, Agricultural Analytics
+            </p>
+          </div>
+          <div className="pt-3 border-t border-[#EEEEEA] mt-4">
+            <span className="text-[12px] font-semibold text-[#0B5A3E] bg-[#E1F4EA] px-2.5 py-1 rounded-full">
+              Available for consultation
+            </span>
+          </div>
+        </div>
+
+        {/* Card 2: Group Members */}
+        <div className="card-base flex flex-col justify-between">
+          <div>
+            <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-4">
+              Group Members
+            </h3>
+            <div className="space-y-3">
+              {groupMembersList.map((m) => (
+                <div key={m.roll} className="flex items-center justify-between py-1.5 border-b border-[#EEEEEA] last:border-0">
+                  <div>
+                    <div className="text-[14px] font-semibold text-[#17302A]">{m.name}</div>
+                    <div className="text-[12px] text-[#5F6B66]">{m.roll}</div>
+                  </div>
+                  {m.isYou && (
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#ECECE8] text-[#4A5651]">
+                      You
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="pt-3 border-t border-[#EEEEEA] text-[12px] text-[#5F6B66]">
+            Group 14 &bull; 3 members
+          </div>
+        </div>
+
+        {/* Card 3: Quick Actions */}
+        <div className="card-base flex flex-col justify-between">
+          <div>
+            <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-4">
+              Quick Actions
+            </h3>
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => alert("Progress report modal opened.")}
+                className="w-full rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors cursor-pointer text-center"
+              >
+                Submit Progress Report
+              </button>
+              <Link
+                to="/student/milestones"
+                className="block w-full rounded-[10px] border-[1.5px] border-[#17302A] hover:bg-[#17302A] hover:text-white text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors text-center"
+              >
+                View Milestones
+              </Link>
+              <Link
+                to="/student/documents"
+                className="block w-full rounded-[10px] border-[1.5px] border-[#17302A] hover:bg-[#17302A] hover:text-white text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors text-center"
+              >
+                Upload Document
+              </Link>
+            </div>
+          </div>
+          <div className="pt-3 border-t border-[#EEEEEA] text-[12px] text-[#5F6B66]">
+            Evaluation timeline updated
+          </div>
+        </div>
+      </div>
+
+      {/* ===================== 7. CONTACT YOUR COORDINATOR FORM CARD ===================== */}
+      <div className="card-static">
+        <h3 className="font-['Bricolage_Grotesque'] text-[22px] font-bold text-[#17302A] mb-1">
+          Contact Your Coordinator
+        </h3>
+        <p className="text-[14px] text-[#5F6B66] mb-6">
+          Have questions regarding project policies, supervisor assignments, or deadline extensions? Send a direct message.
+        </p>
+
+        <form onSubmit={handleCoordSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
+                Full name
+              </label>
+              <input
+                type="text"
+                readOnly
+                value={fullName}
+                className="w-full rounded-[10px] border border-[#D3D8D4] bg-[#F8F9F8] px-3 py-[11px] text-[14px] text-[#5F6B66] outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
+                Email
+              </label>
+              <input
+                type="email"
+                readOnly
+                value={email}
+                className="w-full rounded-[10px] border border-[#D3D8D4] bg-[#F8F9F8] px-3 py-[11px] text-[14px] text-[#5F6B66] outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
+                Subject
+              </label>
+              <select
+                value={coordForm.subject}
+                onChange={(e) => setCoordForm({ ...coordForm, subject: e.target.value })}
+                className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[11px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6]"
+              >
+                <option value="milestone">Milestone submission inquiry</option>
+                <option value="extension">Deadline extension request</option>
+                <option value="supervisor">Supervisor allocation</option>
+                <option value="policy">FYP policy clarification</option>
+                <option value="other">Other question</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
+                Roll number
+              </label>
+              <input
+                type="text"
+                readOnly
+                value={rollNo}
+                className="w-full rounded-[10px] border border-[#D3D8D4] bg-[#F8F9F8] px-3 py-[11px] text-[14px] text-[#5F6B66] outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
+              Message
+            </label>
+            <textarea
+              rows={5}
+              required
+              placeholder="Describe your inquiry with relevant project details..."
+              value={coordForm.message}
+              onChange={(e) => setCoordForm({ ...coordForm, message: e.target.value })}
+              className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[11px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6] resize-none"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-[22px] py-[12px] transition-colors cursor-pointer shadow-sm"
+          >
+            Send Message
+          </button>
+        </form>
       </div>
     </div>
   );

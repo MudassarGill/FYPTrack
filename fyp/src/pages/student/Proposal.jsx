@@ -1,244 +1,230 @@
 import { useState } from "react";
-import Card from "../../components/shared/Card";
-import Badge from "../../components/shared/Badge";
-import PageHeader from "../../components/shared/PageHeader";
-import { proposal, supervisor } from "../../data/mock";
 
 export default function Proposal() {
-  const [activeTab, setActiveTab] = useState("overview"); // "overview" | "history" | "new_draft"
-  const [draftTitle, setDraftTitle] = useState("");
-  const [draftDomain, setDraftDomain] = useState("Machine Learning");
-  const [draftAbstract, setDraftAbstract] = useState("");
-  const [submittedNotice, setSubmittedNotice] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "Crop Price Prediction and Market Advisory System",
+    domain: "Machine Learning",
+    abstract:
+      "A deep learning and time-series model analyzing historical mandi arrival volumes and weather metrics to predict future wholesale market price fluctuations for major seasonal cash crops.",
+    technologies: "Python, FastAPI, TensorFlow, React, PostgreSQL",
+    fileName: "Proposal_Crop_Prediction_v2.pdf",
+  });
 
-  function handleDraftSubmit(e) {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmittedNotice(true);
-    setTimeout(() => setSubmittedNotice(false), 5000);
-  }
+    alert("Proposal submitted for coordinator review!");
+  };
+
+  const handleSaveDraft = () => {
+    alert("Draft proposal saved successfully.");
+  };
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        title="Project Proposal"
-        description="Review proposal evaluation, coordinator decisions, and AI similarity analysis."
-        action={
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setActiveTab(activeTab === "new_draft" ? "overview" : "new_draft")}
-              className="px-4 py-2.5 rounded-xl bg-[#17302A] hover:bg-[#24493F] text-white font-bold text-xs uppercase tracking-wider transition-colors"
-            >
-              {activeTab === "new_draft" ? "View Active Proposal" : "Submit Addendum / Draft"}
-            </button>
+    <div className="space-y-8 pb-12">
+      {/* Header = H1 30px Bricolage + muted subtitle + amber badge "Under review" */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="font-['Bricolage_Grotesque'] text-[30px] font-bold text-[#17302A] leading-tight">
+              My Proposal
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#FEF3D6] text-[#6B4700]">
+              Under review
+            </span>
           </div>
-        }
-      />
-
-      {/* Review Progress Stepper */}
-      <Card className="p-6">
-        <h3 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#5F6B66] mb-6">
-          Proposal Approval Lifecycle
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {proposal.review_steps.map((step, idx) => (
-            <div
-              key={idx}
-              className="relative p-4 rounded-xl bg-[#F4F4F2] border border-[#E6E6E1]"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="w-6 h-6 rounded-full bg-[#E1F4EA] text-[#0B5A3E] text-xs font-bold flex items-center justify-center">
-                  {idx + 1}
-                </span>
-                <Badge variant={step.status}>
-                  {step.status}
-                </Badge>
-              </div>
-              <p className="font-bold text-sm text-[#17302A]">{step.label}</p>
-              <p className="text-xs text-[#5F6B66] mt-1">{step.date}</p>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Addendum / Draft Form (If toggled) */}
-      {activeTab === "new_draft" && (
-        <Card className="p-6 sm:p-8 border-2 border-[#EBB44B]">
-          <h2 className="font-['Bricolage_Grotesque'] text-2xl font-bold text-[#17302A] mb-2">
-            Submit Proposal Revision or Addendum
-          </h2>
-          <p className="text-sm text-[#5F6B66] mb-6">
-            Proposals submitted here will undergo an automated similarity audit before reaching the coordinator.
+          <p className="text-[14px] text-[#5F6B66] mt-1">
+            Submit your idea. AI checks similarity, the coordinator approves.
           </p>
+        </div>
+      </div>
 
-          {submittedNotice && (
-            <div className="p-4 rounded-xl bg-[#E1F4EA] text-[#0B5A3E] text-sm font-medium mb-6">
-              Addendum submitted successfully! The coordinator and supervisor have been notified.
-            </div>
-          )}
-
-          <form onSubmit={handleDraftSubmit} className="space-y-5">
+      {/* 2fr / 1fr Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* LEFT: Form card (2fr) */}
+        <div className="lg:col-span-2 card-base">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#17302A] mb-2">
+              <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
                 Project Title
               </label>
               <input
                 type="text"
                 required
-                value={draftTitle}
-                onChange={(e) => setDraftTitle(e.target.value)}
-                placeholder="e.g. Distributed IoT Sensor Grid with Edge AI"
-                className="w-full px-4 py-2.5 rounded-xl border border-[#D3D8D4] focus:outline-none focus:border-[#17302A] text-sm"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[11px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6]"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#17302A] mb-2">
-                  Domain / Specialization
+                <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
+                  Domain
                 </label>
                 <select
-                  value={draftDomain}
-                  onChange={(e) => setDraftDomain(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#D3D8D4] focus:outline-none focus:border-[#17302A] text-sm bg-white"
+                  value={formData.domain}
+                  onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
+                  className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[11px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6]"
                 >
-                  <option value="Machine Learning">Machine Learning</option>
-                  <option value="Cybersecurity">Cybersecurity</option>
-                  <option value="Cloud Computing">Cloud Computing</option>
-                  <option value="Computer Vision">Computer Vision</option>
-                  <option value="IoT & Embedded Systems">IoT & Embedded Systems</option>
+                  <option value="Machine Learning">Machine Learning &amp; AI</option>
+                  <option value="Cloud Computing">Cloud Computing &amp; DevOps</option>
+                  <option value="Cybersecurity">Cybersecurity &amp; Forensics</option>
+                  <option value="IoT">IoT &amp; Embedded Systems</option>
+                  <option value="Full Stack">Full Stack Web &amp; Mobile</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#17302A] mb-2">
-                  Key Technologies (Comma-separated)
+                <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
+                  Core Technologies
                 </label>
                 <input
                   type="text"
-                  placeholder="Python, PyTorch, FastAPI, React"
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#D3D8D4] focus:outline-none focus:border-[#17302A] text-sm"
+                  required
+                  value={formData.technologies}
+                  onChange={(e) => setFormData({ ...formData, technologies: e.target.value })}
+                  className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[11px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#17302A] mb-2">
-                Abstract & Objectives
+              <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
+                Abstract / Description
               </label>
               <textarea
                 rows={5}
                 required
-                value={draftAbstract}
-                onChange={(e) => setDraftAbstract(e.target.value)}
-                placeholder="Provide a comprehensive summary of project problem statement, methodology, and expected outcomes..."
-                className="w-full px-4 py-2.5 rounded-xl border border-[#D3D8D4] focus:outline-none focus:border-[#17302A] text-sm"
+                value={formData.abstract}
+                onChange={(e) => setFormData({ ...formData, abstract: e.target.value })}
+                className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[11px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6] resize-none"
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setActiveTab("overview")}
-                className="px-5 py-2.5 rounded-xl border border-[#E6E6E1] text-xs font-semibold text-[#5F6B66] hover:bg-[#F4F4F2]"
-              >
-                Cancel
-              </button>
+            {/* PDF Upload */}
+            <div>
+              <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
+                Proposal Document (PDF)
+              </label>
+              <div className="border-2 border-dashed border-[#D3D8D4] rounded-[14px] p-6 text-center bg-[#F8F9F8] hover:bg-white transition-colors">
+                <div className="text-[14px] font-medium text-[#17302A]">
+                  Attached: <span className="font-bold">{formData.fileName}</span> (2.4 MB)
+                </div>
+                <p className="text-[12px] text-[#5F6B66] mt-1 mb-3">
+                  Upload replacement PDF document up to 20 MB
+                </p>
+                <label className="inline-block rounded-[10px] border-[1.5px] border-[#17302A] text-[#17302A] font-bold text-[13px] px-[16px] py-[8px] cursor-pointer hover:bg-[#17302A] hover:text-white transition-colors">
+                  Browse files
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        setFormData({ ...formData, fileName: e.target.files[0].name });
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* Buttons: amber "Submit Proposal" + outline "Save Draft" */}
+            <div className="flex flex-wrap items-center gap-3 pt-3">
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] text-xs font-bold uppercase tracking-wider"
+                className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors cursor-pointer shadow-sm"
               >
-                Submit for Audit
+                Submit Proposal
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                className="rounded-[10px] border-[1.5px] border-[#17302A] text-[#17302A] hover:bg-[#17302A] hover:text-white font-bold text-[14px] px-[18px] py-[11px] transition-colors cursor-pointer"
+              >
+                Save Draft
               </button>
             </div>
           </form>
-        </Card>
-      )}
-
-      {/* Approved Proposal Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-[#E6E6E1]">
-              <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#5F6B66]">
-                  Approved Title
-                </span>
-                <h2 className="font-['Bricolage_Grotesque'] text-2xl font-bold text-[#17302A] mt-1">
-                  {proposal.title}
-                </h2>
-              </div>
-              <Badge variant="approved" size="lg">
-                Approved
-              </Badge>
-            </div>
-
-            <div className="py-6 space-y-6">
-              <div>
-                <h4 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#17302A] mb-2">
-                  Project Abstract
-                </h4>
-                <p className="text-sm text-[#5F6B66] leading-relaxed">
-                  {proposal.abstract}
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#17302A] mb-2">
-                  Primary Domain
-                </h4>
-                <p className="text-sm font-semibold text-[#17302A]">{proposal.domain}</p>
-              </div>
-
-              <div>
-                <h4 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#17302A] mb-2">
-                  Target Technologies
-                </h4>
-                <p className="text-sm text-[#5F6B66]">{proposal.technologies}</p>
-              </div>
-            </div>
-
-            <div className="pt-6 border-t border-[#E6E6E1] flex flex-wrap justify-between items-center text-xs text-[#5F6B66] gap-2">
-              <span>Submitted: {proposal.submitted_at}</span>
-              <span>Coordinator Approval: {proposal.reviewed_at}</span>
-            </div>
-          </Card>
         </div>
 
-        {/* Right Column: AI Similarity & Assigned Supervisor */}
+        {/* RIGHT: Review Status rows & Supervisor card (1fr) */}
         <div className="space-y-6">
-          {/* Similarity Check Card */}
-          <Card className="p-6 bg-white border border-[#E6E6E1]">
-            <h3 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#17302A] mb-4">
-              AI Similarity Audit
+          {/* Card: Review Status */}
+          <div className="card-base">
+            <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-4">
+              Review Status
             </h3>
-            <div className="p-4 rounded-xl bg-[#F4F4F2] mb-4 text-center">
-              <div className="font-['Bricolage_Grotesque'] text-4xl font-black text-[#0B5A3E]">
-                {proposal.similarity_score}%
+            <div className="space-y-3.5">
+              <div className="flex items-center justify-between py-2 border-b border-[#EEEEEA]">
+                <div>
+                  <div className="text-[14px] font-semibold text-[#17302A]">Submitted</div>
+                  <div className="text-[12px] text-[#5F6B66]">15 Sep 2026</div>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E1F4EA] text-[#0B5A3E]">
+                  Approved
+                </span>
               </div>
-              <p className="text-xs font-bold text-[#0B5A3E] mt-1">Original Proposal</p>
-              <p className="text-[11px] text-[#5F6B66] mt-0.5">Threshold maximum: 20%</p>
-            </div>
-            <p className="text-xs text-[#5F6B66] leading-relaxed">
-              Comparison against institutional repository completed on Sep 21, 2026.
-              No duplicate project overlap found.
-            </p>
-          </Card>
 
-          {/* Supervisor Card */}
-          <Card className="p-6">
-            <h3 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#17302A] mb-4">
-              Assigned Supervisor
-            </h3>
-            <div className="space-y-2 text-xs">
-              <p className="font-bold text-sm text-[#17302A]">{supervisor.full_name}</p>
-              <p className="text-[#5F6B66]">{supervisor.department}</p>
-              <p className="text-[#5F6B66]">Domain: {supervisor.specialization}</p>
-              <div className="p-3 rounded-lg bg-[#FEF3D6] text-[#6B4700] font-semibold mt-3">
-                Topic Fit Match: {supervisor.topic_match}%
+              <div className="flex items-center justify-between py-2 border-b border-[#EEEEEA]">
+                <div>
+                  <div className="text-[14px] font-semibold text-[#17302A]">AI Similarity Check</div>
+                  <div className="text-[12px] text-[#5F6B66]">6% similarity flagged</div>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E1F4EA] text-[#0B5A3E]">
+                  94% Unique
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between py-2 border-b border-[#EEEEEA]">
+                <div>
+                  <div className="text-[14px] font-semibold text-[#17302A]">Coordinator Review</div>
+                  <div className="text-[12px] text-[#5F6B66]">Domain alignment confirmed</div>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#FEF3D6] text-[#6B4700]">
+                  In review
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <div className="text-[14px] font-semibold text-[#17302A]">Supervisor Assigned</div>
+                  <div className="text-[12px] text-[#5F6B66]">Slot reservation active</div>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E3EEF9] text-[#1E3A8A]">
+                  Assigned
+                </span>
               </div>
             </div>
-          </Card>
+          </div>
+
+          {/* Card: Supervisor */}
+          <div className="card-base flex flex-col justify-between">
+            <div>
+              <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-4">
+                Supervisor
+              </h3>
+              <div className="flex items-center gap-3.5 mb-3">
+                <div className="w-[48px] h-[48px] rounded-full bg-[#EBB44B] text-[#17302A] font-['Bricolage_Grotesque'] font-bold text-[18px] flex items-center justify-center shrink-0">
+                  IS
+                </div>
+                <div>
+                  <div className="font-['Bricolage_Grotesque'] font-bold text-[16px] text-[#17302A]">
+                    Dr. Imran Shah
+                  </div>
+                  <div className="text-[12px] text-[#5F6B66]">Associate Professor</div>
+                </div>
+              </div>
+              <p className="text-[13px] text-[#5F6B66] leading-relaxed">
+                Topic match: <span className="font-bold text-[#17302A]">92%</span> &bull; 2 free slots
+              </p>
+            </div>
+            <div className="pt-3 border-t border-[#EEEEEA] mt-4">
+              <span className="text-[12px] font-semibold text-[#0B5A3E] bg-[#E1F4EA] px-2.5 py-1 rounded-full">
+                AI Recommendation Accepted
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

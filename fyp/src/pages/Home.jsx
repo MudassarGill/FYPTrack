@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { GraduationCap, UserCheck, ShieldCheck, Check } from "lucide-react";
 import Navbar from "../components/shared/Navbar";
 import Footer from "../components/shared/Footer";
 
@@ -32,20 +31,17 @@ const roles = [
     title: "Students",
     text: "Submit your idea, follow milestones and hear back from your supervisor.",
     items: ["Proposal and project details", "Milestones and deadlines", "Document uploads", "Supervisor feedback"],
-    icon: GraduationCap,
   },
   {
     title: "Supervisors",
     text: "Review work and guide the students assigned to you.",
     items: ["Assigned students", "Proposal and document review", "Progress monitoring", "Evaluation and marks"],
-    icon: UserCheck,
   },
   {
     title: "FYP Coordinators",
     text: "Run the whole programme with a clear view of every project.",
     items: ["Proposal decisions", "AI supervisor recommendations", "Similarity analysis", "Reports and analytics"],
     dark: true,
-    icon: ShieldCheck,
   },
 ];
 
@@ -70,35 +66,61 @@ const withUs = [
 ];
 
 const homeFAQ = [
-  { q: "Who can create an account?", a: "Students sign up themselves. Supervisor and coordinator accounts are created by the department." },
-  { q: "Can students see each other's projects?", a: "No. Every user only sees data that belongs to their role and their own project." },
-  { q: "Does AI decide the supervisor?", a: "No. AI suggests matches and the coordinator makes the final decision." },
-  { q: "Which files can I upload?", a: "PDF, Word, PowerPoint and ZIP files up to 20 MB." },
+  {
+    q: "Who can create an account?",
+    a: "Students sign up themselves. Supervisor and coordinator accounts are created by the department.",
+  },
+  {
+    q: "Can students see each other's projects?",
+    a: "No. Every user only sees data that belongs to their role and their own project.",
+  },
+  {
+    q: "Does AI decide the supervisor?",
+    a: "No. AI suggests matches and the coordinator makes the final decision.",
+  },
+  {
+    q: "Which files can I upload?",
+    a: "PDF, Word, PowerPoint and ZIP files up to 20 MB.",
+  },
 ];
 
-// shared box styles (same shadow and hover as the design)
-const BASE =
-  "border rounded-2xl shadow-[0_12px_28px_rgba(23,48,42,0.14),0_3px_8px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-2";
-const HEAVY = "hover:shadow-[0_36px_64px_rgba(23,48,42,0.32)]";
-const WRAP = "max-w-[1100px] mx-auto px-6";
-const H2 = "font-['Bricolage_Grotesque'] text-[42px] font-bold leading-tight mb-1.5";
-const INPUT =
-  "w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[11px] text-sm outline-none focus:border-[#C88F1A] focus:ring-2 focus:ring-[#EBB44B]";
-const LABEL = "block text-[13px] font-semibold mt-3.5 mb-1.5";
-
-function Ico({ d }) {
+// SVG Icons for Contact rows (stroke-based, no emoji/symbols)
+function MailIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d={d} />
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
     </svg>
   );
 }
 
-const contactInfo = [
-  { label: "Email", value: "fyp@university.edu", d: "M4 6h16v12H4zM4 7l8 6 8-6" },
-  { label: "Office hours", value: "Mon to Fri, 9:00 to 17:00", d: "M12 7v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
-  { label: "Department", value: "Computer Science, Main Campus", d: "M16 11a3 3 0 100-6M8 11a3 3 0 100-6M2 20c0-3 3-5 6-5s6 2 6 5M16 15c3 0 6 2 6 5" },
+function ClockIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+function BuildingIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="4" y="2" width="16" height="20" rx="2" />
+      <path d="M9 22v-4h6v4" />
+      <path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01" />
+    </svg>
+  );
+}
+
+const contactRows = [
+  { label: "Email", value: "fyp@university.edu", icon: <MailIcon /> },
+  { label: "Office hours", value: "Mon to Fri, 9:00 to 17:00", icon: <ClockIcon /> },
+  { label: "Department", value: "Computer Science, Main Campus", icon: <BuildingIcon /> },
 ];
+
+const WRAP = "max-w-[1100px] mx-auto px-6";
+const H2 = "font-['Bricolage_Grotesque'] text-[42px] font-bold leading-tight mb-1.5 text-[#17302A]";
 
 export default function Home() {
   const [openFaq, setOpenFaq] = useState(0);
@@ -119,80 +141,91 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#F4F4F2] text-[#17302A] flex flex-col font-['Figtree'] [overflow-x:clip]">
+      {/* Navbar mode="public" */}
       <Navbar mode="public" />
 
-      {/* ============ HERO ============ */}
+      {/* ===================== 1. HERO ===================== */}
       <section className={`${WRAP} pt-10 pb-12`}>
         <div
-          className="rounded-[28px] px-5 py-8 lg:pl-12 lg:pr-6 lg:py-14"
+          className="rounded-[28px] shadow-[0_30px_60px_rgba(23,48,42,.35)] relative"
           style={{
+            padding: "56px 24px 56px 48px",
             background:
-              "radial-gradient(circle at 94% 112%, rgba(235,180,75,.18) 0, rgba(235,180,75,.18) 190px, transparent 191px), linear-gradient(135deg,#17302A,#24493F)",
-            boxShadow: "0 40px 60px rgba(23,48,42,.35)",
+              "radial-gradient(circle at 94% 112%, rgba(235,180,75,.18) 0, rgba(235,180,75,.18) 190px, transparent 191px), linear-gradient(135deg, #17302A, #24493F)",
           }}
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            {/* left: text directly on the green */}
+            {/* LEFT: text sits directly on the green with no inner glass box */}
             <div>
-              <span className="inline-block bg-white border border-[#E6E6E1] rounded-full px-3 py-1.5 text-xs text-[#17302A]">
+              <span className="inline-block bg-white text-[#17302A] border border-[#E6E6E1] rounded-full px-3 py-1.5 text-[12px] font-semibold mb-4">
                 For FYP students, supervisors and coordinators
               </span>
-              <h1 className="font-['Bricolage_Grotesque'] font-extrabold text-white text-[40px] lg:text-[66px] leading-[1.02] tracking-[-1.5px] my-[22px]">
+              <h1 className="font-['Bricolage_Grotesque'] font-extrabold text-white text-[40px] sm:text-[50px] lg:text-[66px] leading-[1.02] tracking-[-1.5px] my-5">
                 Every final year project, tracked in one place.
               </h1>
               <p className="text-[17px] leading-[1.7] max-w-[460px] text-[#D5E3DD]">
                 Proposals, supervisors, milestones, documents and feedback, without spreadsheets and WhatsApp groups. FYPTrack keeps the whole department on the same page.
               </p>
-              <div className="flex flex-wrap gap-3 mt-7">
+              <div className="flex flex-wrap items-center gap-3 mt-7">
                 <Link
                   to="/signup"
-                  className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-sm px-[18px] py-[11px] transition-colors"
+                  className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors shadow-sm"
                 >
                   Create your account
                 </Link>
                 <a
                   href="#how-it-works"
                   onClick={scrollToHow}
-                  className="rounded-[10px] border-[1.5px] border-white/55 hover:bg-white/10 text-white font-bold text-sm px-[18px] py-[11px] transition-colors"
+                  className="rounded-[10px] border-[1.5px] border-white/55 hover:bg-white/10 text-white font-bold text-[14px] px-[18px] py-[11px] transition-colors"
                 >
                   See how it works
                 </a>
               </div>
             </div>
 
-            {/* right: white card, shifted right so it sticks out of the green box */}
-            <div className="bg-white text-[#17302A] border border-[#E6E6E1] rounded-[20px] p-[26px] shadow-[0_30px_60px_rgba(0,0,0,0.35)] transition-transform duration-300 lg:translate-x-16 lg:hover:-translate-y-1.5">
+            {/* RIGHT: white card shifted right with translateX(64px) so it sticks out past right edge */}
+            <div className="bg-white text-[#17302A] border border-[#E6E6E1] rounded-[20px] p-[26px] shadow-[0_30px_60px_rgba(0,0,0,0.35)] transition-transform duration-300 lg:translate-x-16">
               <div className="flex justify-between items-start gap-2.5">
                 <div>
                   <div className="text-[17px] font-bold">Crop price predictor</div>
                   <div className="text-[13px] text-[#5F6B66]">Ayesha Noor, Group 14</div>
                 </div>
-                <span className="rounded-full bg-[#E1F4EA] text-[#0B5A3E] text-xs font-semibold px-2.5 py-[3px] whitespace-nowrap">
+                <span className="rounded-full bg-[#E1F4EA] text-[#0B5A3E] text-[12px] font-semibold px-2.5 py-[3px] whitespace-nowrap">
                   Proposal approved
                 </span>
               </div>
 
+              {/* Progress rows Literature review 100%, System design 70%, Prototype demo 20% (all fills #17302A) */}
               <div className="mt-5 space-y-3.5">
-                {[["Literature review", 100], ["System design", 70], ["Prototype demo", 20]].map(([name, pct]) => (
+                {[
+                  ["Literature review", 100],
+                  ["System design", 70],
+                  ["Prototype demo", 20],
+                ].map(([name, pct]) => (
                   <div key={name}>
-                    <div className="flex justify-between text-[13px] py-1.5">
+                    <div className="flex justify-between text-[13px] py-1">
                       <span>{name}</span>
                       <span>{pct}%</span>
                     </div>
                     <div className="h-2 bg-[#E6E9E6] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#17302A]" style={{ width: `${pct}%` }} />
+                      <div className="h-full bg-[#17302A] rounded-full" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 ))}
               </div>
 
+              {/* Soft amber box with dark Approve button */}
               <div className="mt-6 bg-[#FEF3D6] border border-[#F3DFAE] rounded-xl p-4 flex justify-between items-center gap-3">
                 <div>
                   <div className="text-[13px] text-[#6B4700]">Suggested supervisor</div>
-                  <div className="font-bold">Dr. Imran Shah</div>
+                  <div className="font-bold text-[15px] text-[#17302A]">Dr. Imran Shah</div>
                   <div className="text-[13px] text-[#5F6B66]">92% topic match, 2 free slots</div>
                 </div>
-                <button type="button" className="rounded-[10px] bg-[#17302A] text-white font-bold text-sm px-[18px] py-[11px]">
+                <button
+                  type="button"
+                  onClick={() => alert("Supervisor assignment approved.")}
+                  className="rounded-[10px] bg-[#17302A] hover:bg-[#24493F] text-white font-bold text-[14px] px-[18px] py-[11px] transition-colors cursor-pointer"
+                >
                   Approve
                 </button>
               </div>
@@ -201,250 +234,303 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ============ STATS (4 separate boxes in one row) ============ */}
+      {/* ===================== 2. STATS ===================== */}
       <section className={`${WRAP} pt-2 pb-12`}>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((s) => (
             <div
               key={s.big}
-              className="bg-white border border-[#E6E6E1] rounded-2xl px-6 py-[22px] shadow-[0_12px_28px_rgba(23,48,42,0.14),0_3px_8px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_56px_rgba(23,48,42,0.28)]"
+              className="card-base text-left transition-transform duration-300"
             >
-              <div className="font-['Bricolage_Grotesque'] text-[30px] font-bold">{s.big}</div>
-              <div className="text-[13px] text-[#5F6B66]">{s.text}</div>
+              <div className="font-['Bricolage_Grotesque'] text-[30px] font-bold text-[#17302A] leading-tight">
+                {s.big}
+              </div>
+              <div className="text-[13px] text-[#5F6B66] mt-1">{s.text}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ============ FEATURES (full-width large box) ============ */}
-      <section id="features" className="w-full py-[72px] bg-[#E8EFEA] border-y border-[#D6E3D9]">
-        <div className="max-w-[1100px] mx-auto px-6">
-          <h2 className={H2}><span className="text-[#EA580C]">Features</span></h2>
-          <p className="text-[#5F6B66] mb-7">Everything a department needs to run final year projects.</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {features.map((f) => (
-              <div key={f.title} className={`group overflow-hidden bg-white border border-[#E6E6E1] ${BASE} ${HEAVY}`}>
-                <div className="h-[170px] overflow-hidden bg-white">
-                  <img
-                    src={f.img}
-                    alt={f.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover block transition-transform duration-500 group-hover:scale-110"
-                  />
-                </div>
-                <div className="px-[22px] pt-5 pb-6 bg-white">
-                  <h3 className="font-['Bricolage_Grotesque'] text-lg font-bold mb-2 transition-colors duration-300 group-hover:text-[#C2410C]">
-                    {f.title}
-                  </h3>
-                  <p className="text-sm text-[#5F6B66] leading-relaxed">{f.text}</p>
-                </div>
+      {/* ===================== 3. FEATURES ===================== */}
+      <section id="features" className={`${WRAP} py-[72px]`}>
+        <h2 className={H2}>Features</h2>
+        <p className="text-[#5F6B66] mb-7">Everything a department needs to run final year projects.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((f) => (
+            <div key={f.title} className="img-box group">
+              <div className="h-[170px] overflow-hidden">
+                <img
+                  src={f.img}
+                  alt={f.title}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
               </div>
-            ))}
-          </div>
+              <div className="px-[22px] pt-[20px] pb-[24px]">
+                <h3 className="img-box-title font-['Bricolage_Grotesque'] text-[18px] font-bold mb-2 text-[#17302A] transition-colors duration-300">
+                  {f.title}
+                </h3>
+                <p className="text-[14px] text-[#5F6B66] leading-relaxed">{f.text}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ============ ROLES ============ */}
+      {/* ===================== 4. ROLES ===================== */}
       <section id="roles" className={`${WRAP} pb-[72px]`}>
-        <h2 className={H2}><span className="text-[#EA580C]">Roles</span></h2>
+        <h2 className={H2}>Roles</h2>
         <p className="text-[#5F6B66] mb-7">Each user sees only what their role allows.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {roles.map((r) => {
-            const Icon = r.icon;
-            return (
-              <div
-                key={r.title}
-                className={`border rounded-2xl p-6 sm:p-7 shadow-[0_22px_44px_rgba(23,48,42,0.22),0_8px_16px_rgba(0,0,0,0.1)] hover:shadow-[0_42px_72px_rgba(23,48,42,0.36)] transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between ${
-                  r.dark ? "bg-[#17302A] border-[#17302A] text-white" : "bg-white border-[#E6E6E1]"
-                }`}
-              >
-                <div>
-                  <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${
-                      r.dark ? "bg-white/10 text-[#EBB44B] border border-white/15" : "bg-[#E1EFE8] text-[#17302A]"
-                    }`}
-                  >
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-['Bricolage_Grotesque'] text-[22px] font-bold mb-2">{r.title}</h3>
-                  <p className={`text-sm leading-relaxed mb-5 ${r.dark ? "text-[#C5D4CD]" : "text-[#5F6B66]"}`}>
-                    {r.text}
-                  </p>
-                </div>
-                <ul className="space-y-3 pt-3 border-t border-black/5 dark:border-white/10">
-                  {r.items.map((item) => (
-                    <li key={item} className="flex items-center gap-2.5 text-sm">
-                      <Check className={`w-4 h-4 shrink-0 ${r.dark ? "text-[#EBB44B]" : "text-[#17302A]"}`} />
-                      <span className={r.dark ? "text-[#D5E3DD]" : "text-[#4A5550]"}>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+          {roles.map((r) => (
+            <div
+              key={r.title}
+              className={`rounded-[14px] p-6 card-base card-heavy flex flex-col justify-between ${
+                r.dark
+                  ? "bg-[#17302A] text-white border-[#17302A]"
+                  : "bg-white text-[#17302A] border-[#E6E6E1]"
+              }`}
+            >
+              <div>
+                <h3 className="font-['Bricolage_Grotesque'] text-[22px] font-bold mb-2">
+                  {r.title}
+                </h3>
+                <p className={`text-[14px] leading-relaxed mb-4 ${r.dark ? "text-[#C5D4CD]" : "text-[#5F6B66]"}`}>
+                  {r.text}
+                </p>
               </div>
-            );
-          })}
+              <ul className="mt-2">
+                {r.items.map((item) => (
+                  <li
+                    key={item}
+                    className={`text-[14px] py-[11px] pr-0 pl-[24px] ${
+                      r.dark ? "fy-check fy-check-dark text-[#D5E3DD]" : "fy-check text-[#5F6B66]"
+                    }`}
+                    style={{
+                      borderTop: r.dark ? "1px solid rgba(255,255,255,0.12)" : "1px solid #EEEEEA",
+                    }}
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ============ HOW IT WORKS (full-width band + 4 boxes) ============ */}
-      <section id="how-it-works" className="bg-[#17302A] py-[72px]">
-        <div id="workflow" />
+      {/* ===================== 5. HOW IT WORKS (FULL-WIDTH BAND) ===================== */}
+      <section id="how-it-works" className="w-full py-[72px]" style={{ backgroundColor: "#17302A" }}>
         <div className={WRAP}>
-          <h2 className={`${H2} text-white !mb-5`}>How it works</h2>
+          <h2 className="font-['Bricolage_Grotesque'] text-[42px] font-bold leading-tight mb-6 text-white">
+            How it works
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {steps.map((s, i) => (
               <div
                 key={s.title}
-                className={`${BASE} bg-white border-[#E6E6E1] text-[#17302A] p-6 hover:shadow-[0_36px_64px_rgba(0,0,0,0.45)]`}
+                className="bg-white text-[#17302A] border border-[#E6E6E1] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-2"
+                style={{
+                  boxShadow: "0 12px 28px rgba(0,0,0,.15)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 36px 64px rgba(0,0,0,.45)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,0,0,.15)";
+                }}
               >
-                <div className="w-11 h-11 rounded-full bg-[#EBB44B] text-[#17302A] font-['Bricolage_Grotesque'] text-xl font-extrabold flex items-center justify-center mb-4">
+                <div className="w-[44px] h-[44px] rounded-full bg-[#EBB44B] text-[#17302A] font-['Bricolage_Grotesque'] text-xl font-extrabold flex items-center justify-center mb-4">
                   {i + 1}
                 </div>
-                <div className="text-lg font-bold">{s.title}</div>
-                <p className="mt-1.5 text-sm text-[#5F6B66] leading-relaxed">{s.text}</p>
+                <div className="font-['Bricolage_Grotesque'] text-[18px] font-bold mb-1.5">
+                  {s.title}
+                </div>
+                <p className="text-[14px] text-[#5F6B66] leading-relaxed">{s.text}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ============ WHY FYPTRACK ============ */}
+      {/* ===================== 6. WHY FYPTRACK ===================== */}
       <section className={`${WRAP} py-[72px]`}>
         <h2 className={`${H2} !mb-6`}>Why FYPTrack</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-          <div className={`${BASE} ${HEAVY} bg-white border-[#E6E6E1] p-8 sm:p-10 lg:p-12 rounded-[24px] min-h-[300px] flex flex-col justify-between`}>
-            <div>
-              <h3 className="font-['Bricolage_Grotesque'] text-2xl font-bold mb-5">Without FYPTrack</h3>
-              <ul className="space-y-4">
-                {without.map((i) => (
-                  <li key={i} className="fy-dash text-[15px]">{i}</li>
-                ))}
-              </ul>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Without FYPTrack: plain white box */}
+          <div className="card-base card-heavy bg-white border-[#E6E6E1] p-6">
+            <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-4">
+              Without FYPTrack
+            </h3>
+            <ul className="space-y-3">
+              {without.map((i) => (
+                <li key={i} className="fy-dash text-[14px] text-[#5F6B66]">
+                  {i}
+                </li>
+              ))}
+            </ul>
           </div>
-          <div className={`${BASE} ${HEAVY} bg-[#17302A] border-[#17302A] text-white p-8 sm:p-10 lg:p-12 rounded-[24px] min-h-[300px] flex flex-col justify-between`}>
-            <div>
-              <h3 className="font-['Bricolage_Grotesque'] text-2xl font-bold mb-5">With FYPTrack</h3>
-              <ul className="space-y-4">
-                {withUs.map((i) => (
-                  <li key={i} className="fy-check fy-check-dark text-[15px]">{i}</li>
-                ))}
-              </ul>
-            </div>
+
+          {/* With FYPTrack: dark #17302A box with amber check bullets */}
+          <div className="card-base card-heavy bg-[#17302A] border-[#17302A] text-white p-6">
+            <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-white mb-4">
+              With FYPTrack
+            </h3>
+            <ul className="space-y-3">
+              {withUs.map((i) => (
+                <li key={i} className="fy-check fy-check-dark text-[14px] text-[#D5E3DD]">
+                  {i}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
 
-      {/* ============ FAQ (80% width) ============ */}
-      <section id="faq" className="w-[92%] lg:w-[80%] mx-auto pb-[72px]">
+      {/* ===================== 7. FAQ ===================== */}
+      <section id="faq" className={`${WRAP} pb-[72px]`}>
         <h2 className={H2}>FAQ</h2>
         <p className="text-[#5F6B66] mb-6">Quick answers before you start.</p>
-        <div className="w-full space-y-3">
+        <div className="space-y-3 max-w-[650px]">
           {homeFAQ.map((item, idx) => {
             const isOpen = openFaq === idx;
             return (
-              <div key={item.q} className="w-full bg-white border border-[#E6E6E1] rounded-xl px-[22px] py-[18px] shadow-sm hover:shadow transition-shadow">
+              <div
+                key={item.q}
+                className="bg-white border border-[#E6E6E1] rounded-[12px] px-[22px] py-[18px] transition-shadow"
+                style={{
+                  boxShadow: "0 12px 28px rgba(23,48,42,.08)",
+                }}
+              >
                 <button
                   type="button"
                   onClick={() => toggleFaq(idx)}
                   aria-expanded={isOpen}
-                  className="w-full flex justify-between gap-4 text-left font-bold cursor-pointer"
+                  className="w-full flex justify-between items-center gap-4 text-left font-['Bricolage_Grotesque'] font-bold text-[16px] text-[#17302A] cursor-pointer focus:outline-none"
                 >
                   <span>{item.q}</span>
-                  <span aria-hidden="true">{isOpen ? "\u2212" : "+"}</span>
+                  <span className="text-[20px] font-bold text-[#5F6B66] shrink-0" aria-hidden="true">
+                    {isOpen ? "\u2212" : "+"}
+                  </span>
                 </button>
-                {isOpen && <p className="mt-2 text-sm text-[#5F6B66] leading-relaxed">{item.a}</p>}
+                {isOpen && (
+                  <p className="mt-2.5 text-[14px] text-[#5F6B66] leading-relaxed">
+                    {item.a}
+                  </p>
+                )}
               </div>
             );
           })}
         </div>
       </section>
 
-      {/* ============ CONTACT ============ */}
+      {/* ===================== 8. CONTACT ===================== */}
       <section id="contact" className={`${WRAP} pb-[72px]`}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-          <div className="bg-white border border-[#E6E6E1] rounded-2xl p-[26px] shadow-[0_12px_28px_rgba(23,48,42,0.12)] flex flex-col justify-between">
-            <div>
-              <h2 className={H2}>Contact</h2>
-              <p className="text-[#5F6B66] mb-6">
-                Questions about setting up FYPTrack for your department? Send us a message.
-              </p>
-              <div className="space-y-4">
-                {contactInfo.map((c) => (
-                  <div key={c.label} className="flex items-center gap-3.5 p-3 rounded-xl bg-[#F8F9F8] border border-[#E6E6E1]">
-                    <div className="w-[38px] h-[38px] rounded-[10px] bg-[#E1EFE8] text-[#17302A] flex items-center justify-center shrink-0">
-                      <Ico d={c.d} />
-                    </div>
-                    <div>
-                      <div className="font-bold text-[#17302A]">{c.label}</div>
-                      <div className="text-[13px] text-[#5F6B66]">{c.value}</div>
-                    </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          {/* LEFT: Info */}
+          <div>
+            <h2 className={H2}>Contact</h2>
+            <p className="text-[#5F6B66] mb-6">
+              Questions about setting up FYPTrack for your department? Send us a message.
+            </p>
+            <div className="space-y-4">
+              {contactRows.map((c) => (
+                <div key={c.label} className="flex items-center gap-3.5">
+                  <div
+                    className="w-[38px] h-[38px] rounded-[10px] flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: "#E1EFE8", color: "#17302A" }}
+                  >
+                    {c.icon}
                   </div>
-                ))}
-              </div>
+                  <div>
+                    <div className="font-bold text-[14px] text-[#17302A]">{c.label}</div>
+                    <div className="text-[13px] text-[#5F6B66]">{c.value}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
+          {/* RIGHT: Form box (white, radius 16px, padding 26px, soft shadow, no lift on hover) */}
           <form
             onSubmit={handleContactSubmit}
-            className="bg-white border border-[#E6E6E1] rounded-2xl p-[26px] shadow-[0_12px_28px_rgba(23,48,42,0.12)]"
+            className="card-static"
           >
-          <label htmlFor="c-name" className={`${LABEL} !mt-0`}>Full name</label>
-          <input
-            id="c-name"
-            type="text"
-            required
-            placeholder="Your name"
-            value={contactForm.name}
-            onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-            className={INPUT}
-          />
-          <label htmlFor="c-email" className={LABEL}>Email</label>
-          <input
-            id="c-email"
-            type="email"
-            required
-            placeholder="name@university.edu"
-            value={contactForm.email}
-            onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-            className={INPUT}
-          />
-          <label htmlFor="c-msg" className={LABEL}>Message</label>
-          <textarea
-            id="c-msg"
-            rows={4}
-            required
-            placeholder="How can we help?"
-            value={contactForm.message}
-            onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-            className={INPUT}
-          />
-          <button
-            type="submit"
-            className="block w-full mt-[18px] rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-sm px-[18px] py-[11px] transition-colors"
-          >
-            Send message
-          </button>
-        </form>
+            <div>
+              <label htmlFor="c-name" className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
+                Full name
+              </label>
+              <input
+                id="c-name"
+                type="text"
+                required
+                placeholder="Your name"
+                value={contactForm.name}
+                onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[11px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6]"
+              />
+            </div>
+
+            <div className="mt-3.5">
+              <label htmlFor="c-email" className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
+                Email
+              </label>
+              <input
+                id="c-email"
+                type="email"
+                required
+                placeholder="name@university.edu"
+                value={contactForm.email}
+                onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[11px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6]"
+              />
+            </div>
+
+            <div className="mt-3.5">
+              <label htmlFor="c-msg" className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
+                Message
+              </label>
+              <textarea
+                id="c-msg"
+                rows={4}
+                required
+                placeholder="How can we help?"
+                value={contactForm.message}
+                onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[11px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6] resize-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="block w-full mt-5 rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors cursor-pointer"
+            >
+              Send message
+            </button>
+          </form>
         </div>
       </section>
 
-      {/* ============ CTA ============ */}
+      {/* ===================== 9. CTA ===================== */}
       <section className={WRAP}>
-        <div className="bg-[#17302A] text-white text-center rounded-[22px] px-6 py-16 mb-[72px]">
+        <div
+          className="w-full text-white text-center rounded-[22px] px-6 py-16 mb-[72px]"
+          style={{ backgroundColor: "#17302A" }}
+        >
           <h2 className="font-['Bricolage_Grotesque'] text-[28px] sm:text-[42px] font-bold leading-tight mb-2.5">
             Ready to leave the spreadsheets behind?
           </h2>
-          <p className="text-[#C5D4CD] mb-6">Set up your department in minutes.</p>
+          <p className="text-[#C5D4CD] mb-6 text-[15px]">Set up your department in minutes.</p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link
               to="/signup"
-              className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-sm px-[18px] py-[11px] transition-colors"
+              className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors shadow-sm"
             >
               Get started
             </Link>
             <Link
               to="/login"
-              className="rounded-[10px] border border-white/35 hover:bg-white/10 text-white font-bold text-sm px-[18px] py-[11px] transition-colors"
+              className="rounded-[10px] border border-white/35 hover:bg-white/10 text-white font-bold text-[14px] px-[18px] py-[11px] transition-colors"
             >
               Log in
             </Link>
@@ -452,6 +538,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===================== 10. FOOTER ===================== */}
       <Footer />
     </div>
   );

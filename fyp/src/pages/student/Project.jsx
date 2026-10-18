@@ -1,180 +1,235 @@
-import Card from "../../components/shared/Card";
-import Badge from "../../components/shared/Badge";
-import ProgressBar from "../../components/shared/ProgressBar";
-import PageHeader from "../../components/shared/PageHeader";
-import { studentProject, groupMembers, supervisor, coordinator } from "../../data/mock";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function Project() {
   return (
-    <div className="space-y-8">
-      <PageHeader
-        title="Project Overview & Architecture"
-        description="Detailed project specification, repository links, team roster, and architecture blueprint."
-      />
+    <div className="space-y-8 pb-12">
+      {/* Header = H1 30px Bricolage + muted subtitle */}
+      <div>
+        <h1 className="font-['Bricolage_Grotesque'] text-[30px] font-bold text-[#17302A] leading-tight">
+          My Project
+        </h1>
+        <p className="text-[14px] text-[#5F6B66] mt-1">
+          Comprehensive project profile, supervisor reviews, and team member management.
+        </p>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Details (2 Cols) */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-[#E6E6E1]">
-              <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#5F6B66]">
-                  {studentProject.group} • {studentProject.domain}
-                </span>
-                <h2 className="font-['Bricolage_Grotesque'] text-2xl font-bold text-[#17302A] mt-1">
-                  {studentProject.title}
-                </h2>
-              </div>
-              <Badge variant="in_progress" size="lg">
-                In Progress
-              </Badge>
-            </div>
-
-            <div className="py-6 space-y-6">
-              <div>
-                <h3 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#17302A] mb-2">
-                  System Description
-                </h3>
-                <p className="text-sm text-[#5F6B66] leading-relaxed">
-                  {studentProject.description}
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#17302A] mb-2">
-                  Key Deliverables
-                </h3>
-                <ul className="space-y-2 text-sm text-[#5F6B66]">
-                  <li className="css-check css-check-dark">
-                    Predictive ensemble ML model pipeline for major grain and vegetable commodities
-                  </li>
-                  <li className="css-check css-check-dark">
-                    High-throughput automated ingestion pipeline for regional weather & market APIS
-                  </li>
-                  <li className="css-check css-check-dark">
-                    Responsive React dashboard with historical trends and forecast confidence intervals
-                  </li>
-                  <li className="css-check css-check-dark">
-                    Comprehensive SRS and system architecture IEEE documentation
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#17302A] mb-3">
-                  Applied Technology Stack
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {studentProject.technologies.map((tech) => (
-                    <span
-                      key={tech}
-                      className="px-3 py-1.5 text-xs font-bold bg-[#ECECE8] text-[#17302A] rounded-lg"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <ProgressBar
-                  value={studentProject.progress}
-                  label="Overall Project Completion"
-                  color="ink"
-                />
-              </div>
-            </div>
-          </Card>
-
-          {/* Architecture Blueprint Card */}
-          <Card className="p-6 sm:p-8">
-            <h3 className="font-['Bricolage_Grotesque'] text-lg font-bold text-[#17302A] mb-2">
-              System Architecture & Module Flow
-            </h3>
-            <p className="text-xs text-[#5F6B66] mb-6">
-              Three-tier cloud architecture with segregated data ingestion, model inference service, and frontend presentation layers.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-              <div className="p-5 rounded-xl bg-[#F4F4F2] border border-[#E6E6E1]">
-                <span className="text-[11px] font-bold uppercase text-[#5F6B66]">Tier 1</span>
-                <h4 className="font-['Bricolage_Grotesque'] text-base font-bold text-[#17302A] mt-1">
-                  Presentation
-                </h4>
-                <p className="text-xs text-[#5F6B66] mt-2">
-                  React 19 + Tailwind CSS + Chart.js dashboard
-                </p>
-              </div>
-
-              <div className="p-5 rounded-xl bg-[#F4F4F2] border border-[#E6E6E1]">
-                <span className="text-[11px] font-bold uppercase text-[#5F6B66]">Tier 2</span>
-                <h4 className="font-['Bricolage_Grotesque'] text-base font-bold text-[#17302A] mt-1">
-                  Inference API
-                </h4>
-                <p className="text-xs text-[#5F6B66] mt-2">
-                  FastAPI service hosting trained TensorFlow models
-                </p>
-              </div>
-
-              <div className="p-5 rounded-xl bg-[#F4F4F2] border border-[#E6E6E1]">
-                <span className="text-[11px] font-bold uppercase text-[#5F6B66]">Tier 3</span>
-                <h4 className="font-['Bricolage_Grotesque'] text-base font-bold text-[#17302A] mt-1">
-                  Data Persistence
-                </h4>
-                <p className="text-xs text-[#5F6B66] mt-2">
-                  PostgreSQL database & historical price telemetry
-                </p>
-              </div>
-            </div>
-          </Card>
+      {/* Wide card (badge, title, domain and start date, overall progress 43%) */}
+      <div className="card-base">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+          <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E3EEF9] text-[#1E3A8A] w-fit">
+            In Progress
+          </span>
+          <div className="text-[13px] text-[#5F6B66]">
+            Started: <span className="font-semibold text-[#17302A]">15 Sep 2026</span>
+          </div>
         </div>
 
-        {/* Sidebar Info (1 Col) */}
-        <div className="space-y-6">
-          {/* Team Roster */}
-          <Card className="p-6">
-            <h3 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#17302A] mb-4">
-              Team Roster
-            </h3>
-            <div className="space-y-4">
-              {groupMembers.map((member) => (
-                <div
-                  key={member.id}
-                  className="p-3.5 rounded-xl bg-[#F4F4F2] border border-[#E6E6E1]"
+        <h2 className="font-['Bricolage_Grotesque'] text-[24px] sm:text-[28px] font-bold text-[#17302A] mb-2 leading-snug">
+          Crop Price Prediction and Market Advisory System
+        </h2>
+
+        <div className="flex flex-wrap items-center gap-3 text-[13px] text-[#5F6B66] mb-5">
+          <span>Domain: <span className="font-semibold text-[#17302A]">Machine Learning &amp; AI</span></span>
+          <span>&bull;</span>
+          <span>Department: <span className="font-semibold text-[#17302A]">Computer Science</span></span>
+          <span>&bull;</span>
+          <span>Academic Year: <span className="font-semibold text-[#17302A]">2026-2027</span></span>
+        </div>
+
+        <p className="text-[14px] text-[#5F6B66] leading-relaxed mb-6">
+          Machine learning system forecasting wholesale mandi commodity rates and advising smallholder farmers on optimal crop selling windows across seasonal cycles.
+        </p>
+
+        {/* Overall progress 43% with 8px bar */}
+        <div>
+          <div className="flex justify-between items-center text-[13px] mb-2">
+            <span className="font-semibold text-[#17302A]">Overall Milestone Progress</span>
+            <span className="font-bold text-[#17302A]">43%</span>
+          </div>
+          <div className="w-full h-2 bg-[#E6E9E6] rounded-full overflow-hidden">
+            <div className="h-full bg-[#17302A] rounded-full" style={{ width: "43%" }} />
+          </div>
+        </div>
+      </div>
+
+      {/* 2fr / 1fr Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* LEFT COLUMN (2fr): Supervisor Feedback and Recent Documents */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Card: Supervisor Feedback */}
+          <div className="card-base flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
+                  Supervisor Feedback
+                </h3>
+                <Link
+                  to="/student/feedback"
+                  className="text-[13px] font-semibold text-[#17302A] hover:text-[#C2410C] transition-colors"
                 >
-                  <p className="font-bold text-sm text-[#17302A]">{member.name}</p>
-                  <p className="text-xs text-[#5F6B66]">{member.roll}</p>
-                  <span className="inline-block mt-2 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-[#ECECE8] text-[#17302A] rounded">
-                    {member.role}
+                  View all
+                </Link>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-[#F8F9F8] border border-[#E6E6E1] rounded-[12px] p-4">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="font-bold text-[14px] text-[#17302A]">
+                      SRS Document Review
+                    </span>
+                    <span className="text-[12px] text-[#5F6B66]">28 Oct 2026</span>
+                  </div>
+                  <p className="text-[13px] text-[#5F6B66] leading-relaxed mt-2">
+                    "The requirements specification is clear. Ensure the latency constraints for batch model inference are formally specified in Section 4.5."
+                  </p>
+                </div>
+
+                <div className="bg-[#F8F9F8] border border-[#E6E6E1] rounded-[12px] p-4">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="font-bold text-[14px] text-[#17302A]">
+                      Proposal Defense Notes
+                    </span>
+                    <span className="text-[12px] text-[#5F6B66]">15 Oct 2026</span>
+                  </div>
+                  <p className="text-[13px] text-[#5F6B66] leading-relaxed mt-2">
+                    "Solid defense presentation. The committee approved the topic with recommendations to validate against agricultural baseline prices from 2020-2025."
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-[#EEEEEA] mt-5">
+              <Link
+                to="/student/feedback"
+                className="inline-block rounded-[10px] border-[1.5px] border-[#17302A] text-[#17302A] hover:bg-[#17302A] hover:text-white font-bold text-[13px] px-[16px] py-[8px] transition-colors"
+              >
+                Submit Response or Inquiry
+              </Link>
+            </div>
+          </div>
+
+          {/* Card: Recent Documents */}
+          <div className="card-base flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
+                  Recent Documents
+                </h3>
+                <Link
+                  to="/student/documents"
+                  className="text-[13px] font-semibold text-[#17302A] hover:text-[#C2410C] transition-colors"
+                >
+                  Manage files
+                </Link>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2.5 border-b border-[#EEEEEA]">
+                  <div>
+                    <div className="font-semibold text-[14px] text-[#17302A]">
+                      SRS_Crop_Prediction_v1.pdf
+                    </div>
+                    <div className="text-[12px] text-[#5F6B66]">Uploaded 28 Oct 2026 &bull; 4.1 MB</div>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E1F4EA] text-[#0B5A3E]">
+                    Approved
                   </span>
                 </div>
-              ))}
-            </div>
-          </Card>
 
-          {/* Supervision & Coordination */}
-          <Card className="p-6">
-            <h3 className="font-['Bricolage_Grotesque'] text-sm font-bold uppercase tracking-wider text-[#17302A] mb-4">
-              Supervision Committee
-            </h3>
-            <div className="space-y-4 text-xs">
-              <div>
-                <span className="font-bold uppercase tracking-wider text-[#5F6B66] text-[10px]">
-                  Assigned Supervisor
-                </span>
-                <p className="font-bold text-sm text-[#17302A] mt-0.5">{supervisor.full_name}</p>
-                <p className="text-[#5F6B66]">{supervisor.email}</p>
-              </div>
-
-              <div className="pt-3 border-t border-[#E6E6E1]">
-                <span className="font-bold uppercase tracking-wider text-[#5F6B66] text-[10px]">
-                  FYP Coordinator
-                </span>
-                <p className="font-bold text-sm text-[#17302A] mt-0.5">{coordinator.full_name}</p>
-                <p className="text-[#5F6B66]">{coordinator.email}</p>
+                <div className="flex items-center justify-between py-2.5 border-b border-[#EEEEEA]">
+                  <div>
+                    <div className="font-semibold text-[14px] text-[#17302A]">
+                      Proposal_Document_Final.pdf
+                    </div>
+                    <div className="text-[12px] text-[#5F6B66]">Uploaded 15 Oct 2026 &bull; 2.4 MB</div>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E1F4EA] text-[#0B5A3E]">
+                    Approved
+                  </span>
+                </div>
               </div>
             </div>
-          </Card>
+
+            <div className="pt-4 border-t border-[#EEEEEA] mt-5">
+              <Link
+                to="/student/documents"
+                className="inline-block rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[13px] px-[16px] py-[8px] transition-colors shadow-sm"
+              >
+                Upload New Deliverable
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN (1fr): Supervisor and Group Members cards */}
+        <div className="space-y-6">
+          {/* Card: Supervisor */}
+          <div className="card-base flex flex-col justify-between">
+            <div>
+              <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-4">
+                Supervisor
+              </h3>
+              <div className="flex items-center gap-3.5 mb-3">
+                <div className="w-[48px] h-[48px] rounded-full bg-[#EBB44B] text-[#17302A] font-['Bricolage_Grotesque'] font-bold text-[18px] flex items-center justify-center shrink-0">
+                  IS
+                </div>
+                <div>
+                  <div className="font-['Bricolage_Grotesque'] font-bold text-[16px] text-[#17302A]">
+                    Dr. Imran Shah
+                  </div>
+                  <div className="text-[12px] text-[#5F6B66]">Associate Professor</div>
+                </div>
+              </div>
+              <p className="text-[13px] text-[#5F6B66] leading-relaxed mb-4">
+                Email: <span className="font-medium text-[#17302A]">imran.shah@university.edu</span><br />
+                Office: CS Building, Room 304<br />
+                Office hours: Mon &amp; Wed 14:00 - 16:00
+              </p>
+            </div>
+            <div className="pt-3 border-t border-[#EEEEEA]">
+              <span className="text-[12px] font-semibold text-[#0B5A3E] bg-[#E1F4EA] px-2.5 py-1 rounded-full">
+                Active Assignment
+              </span>
+            </div>
+          </div>
+
+          {/* Card: Group Members */}
+          <div className="card-base flex flex-col justify-between">
+            <div>
+              <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-4">
+                Group Members
+              </h3>
+              <div className="space-y-3.5">
+                <div className="flex items-center justify-between py-1.5 border-b border-[#EEEEEA]">
+                  <div>
+                    <div className="text-[14px] font-semibold text-[#17302A]">Ayesha Noor</div>
+                    <div className="text-[12px] text-[#5F6B66]">FA20-BSE-042 (Lead)</div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#ECECE8] text-[#4A5651]">
+                    You
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between py-1.5 border-b border-[#EEEEEA]">
+                  <div>
+                    <div className="text-[14px] font-semibold text-[#17302A]">Hamza Tariq</div>
+                    <div className="text-[12px] text-[#5F6B66]">FA20-BSE-058</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between py-1.5">
+                  <div>
+                    <div className="text-[14px] font-semibold text-[#17302A]">Zainab Ali</div>
+                    <div className="text-[12px] text-[#5F6B66]">FA20-BSE-019</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="pt-3 border-t border-[#EEEEEA] text-[12px] text-[#5F6B66]">
+              Group 14 &bull; 3 members
+            </div>
+          </div>
         </div>
       </div>
     </div>

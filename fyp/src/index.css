@@ -8,8 +8,8 @@
   --font-body: "Figtree", system-ui, sans-serif;
 
   --color-ink: #17302A;
-  --color-hero-from: #2f2626;
-  --color-hero-to: #2f2626;
+  --color-hero-from: #17302A;
+  --color-hero-to: #24493F;
   --color-footer: #12201C;
   --color-page-bg: #F4F4F2;
   --color-border: #E6E6E1;
@@ -80,7 +80,9 @@ html {
 }
 
 /* ============================================================
-   Nav Link Underline Animation (hover-only orange line)
+   Nav Link Underline Animation
+   A 3px #F59E0B rounded underline (inset 12px left/right, 2px from the bottom)
+   scales from scaleX(0) to scaleX(1), origin left, 250ms; active keeps it.
    ============================================================ */
 .nav-link {
   position: relative;
@@ -90,12 +92,12 @@ html {
 .nav-link::after {
   content: "";
   position: absolute;
-  bottom: -4px;
-  left: 0;
-  width: 100%;
+  bottom: 2px;
+  left: 12px;
+  right: 12px;
   height: 3px;
   background: #F59E0B;
-  border-radius: 2px;
+  border-radius: 9999px;
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 250ms ease;
@@ -105,141 +107,141 @@ html {
   transform: scaleX(1);
 }
 
-.nav-link.active {
-  color: #fff;
-  font-weight: 700;
+.nav-link.active::after {
+  transform: scaleX(1);
 }
 
 /* ============================================================
-   Card Hover
+   Card Hover Specs
+   bg white, 1px #E6E6E1, radius 16px, padding 22px,
+   shadow: 0 12px 28px rgba(23,48,42,.14), 0 3px 8px rgba(0,0,0,.06)
+   hover: translateY(-6px) and 0 30px 56px rgba(23,48,42,.28), 0 6px 14px rgba(0,0,0,.08), 250 to 300ms
    ============================================================ */
 .card-base {
-  background: #fff;
+  background: #ffffff;
   border-radius: 16px;
-  border: 1px solid var(--color-border);
+  border: 1px solid #E6E6E1;
+  padding: 22px;
+  box-shadow: 0 12px 28px rgba(23,48,42,0.14), 0 3px 8px rgba(0,0,0,0.06);
+  transition: transform 280ms ease, box-shadow 280ms ease;
+}
+
+.card-base.card-hover:hover,
+.card-base:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 30px 56px rgba(23,48,42,0.28), 0 6px 14px rgba(0,0,0,0.08);
+}
+
+/* Non-lifting card for forms (e.g. Contact form box) */
+.card-static {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #E6E6E1;
+  padding: 26px;
+  box-shadow: 0 12px 28px rgba(23,48,42,0.12);
+}
+
+/* Heavy hover lift for image boxes & roles */
+.card-heavy:hover {
+  transform: translateY(-8px) !important;
+  box-shadow: 0 36px 64px rgba(23,48,42,0.32) !important;
+}
+
+/* ============================================================
+   Image Boxes (Home features, Dashboard Quick Access)
+   Photo 170px high object-cover on top, text below (20px 22px 24px,
+   title 18px Bricolage bold, text 14px muted).
+   Hover on whole box: lift -8px, shadow 0 36px 64px rgba(23,48,42,.32),
+   photo scale 1.1 (500ms), title turns #C2410C.
+   ============================================================ */
+.img-box {
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #E6E6E1;
+  border-radius: 16px;
   box-shadow: 0 12px 28px rgba(23,48,42,0.14), 0 3px 8px rgba(0,0,0,0.06);
   transition: transform 300ms ease, box-shadow 300ms ease;
 }
 
-.card-base.card-hover:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 30px 56px rgba(23,48,42,0.28);
-}
-
-.card-base.card-heavy:hover {
-  transform: translateY(-6px);
+.img-box:hover {
+  transform: translateY(-8px);
   box-shadow: 0 36px 64px rgba(23,48,42,0.32);
 }
 
-/* ============================================================
-   CSS Check Mark (for role lists / "With FYPTrack")
-   ============================================================ */
-.css-check {
-  position: relative;
-  padding-left: 28px;
+.img-box img {
+  height: 170px;
+  width: 100%;
+  object-fit: cover;
+  transition: transform 500ms ease;
 }
-.css-check::before {
+
+.img-box:hover img {
+  transform: scale(1.1);
+}
+
+.img-box:hover .img-box-title {
+  color: #C2410C;
+}
+
+/* ============================================================
+   CSS Check Mark (no emojis or symbols)
+   Check drawn with CSS (5x10px, right and bottom 2px border #C88F1A, rotated 45deg)
+   ============================================================ */
+.fy-check {
+  position: relative;
+  padding-left: 24px;
+}
+.fy-check::before {
   content: "";
   position: absolute;
   left: 0;
   top: 5px;
-  width: 10px;
-  height: 6px;
-  border-left: 2.5px solid var(--color-amber);
-  border-bottom: 2.5px solid var(--color-amber);
-  transform: rotate(-45deg);
+  width: 5px;
+  height: 10px;
+  border-right: 2px solid #C88F1A;
+  border-bottom: 2px solid #C88F1A;
+  transform: rotate(45deg);
 }
 
-.css-check-dark::before {
-  border-left-color: var(--color-ink);
-  border-bottom-color: var(--color-ink);
+.fy-check-dark::before {
+  border-right-color: #EBB44B;
+  border-bottom-color: #EBB44B;
 }
 
 /* ============================================================
    CSS Dash (for "Without FYPTrack")
+   Gray dash bullets (10x2px #8A948F)
    ============================================================ */
-.css-dash {
+.fy-dash {
   position: relative;
-  padding-left: 28px;
+  padding-left: 24px;
 }
-.css-dash::before {
+.fy-dash::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 11px;
-  width: 14px;
-  height: 2.5px;
-  background: #999;
-  border-radius: 2px;
+  top: 10px;
+  width: 10px;
+  height: 2px;
+  background: #8A948F;
 }
 
 /* ============================================================
-   CSS Caret (for dropdowns)
+   CSS Caret / Chevron (for dropdowns)
+   Dropdown carets are CSS borders
    ============================================================ */
 .css-caret {
   display: inline-block;
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
   transform: rotate(45deg);
   margin-left: 6px;
+  margin-bottom: 2px;
   transition: transform 200ms ease;
 }
 .css-caret.open {
   transform: rotate(-135deg);
-}
-
-/* ============================================================
-   Feature Image Zoom
-   ============================================================ */
-.feature-img-wrap {
-  overflow: hidden;
-  border-radius: 16px 16px 0 0;
-}
-.feature-img-wrap img {
-  transition: transform 500ms ease;
-}
-.card-base:hover .feature-img-wrap img {
-  transform: scale(1.1);
-}
-
-/* ============================================================
-   Welcome Text Stroke & Fill Animation (existing auth pages)
-   ============================================================ */
-.welcome-text {
-  display: inline-block;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 1.5px #f97316;
-  background: linear-gradient(90deg, #f97316 0%, #fbbf24 50%, #f97316 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  background-size: 0% 100%;
-  background-repeat: no-repeat;
-  animation: fillText 2.2s ease-in-out infinite alternate;
-}
-
-@keyframes fillText {
-  0%   { background-size: 0% 100%; }
-  100% { background-size: 100% 100%; }
-}
-
-/* ============================================================
-   FAQ Accordion
-   ============================================================ */
-.faq-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-ink);
-  transition: transform 300ms ease;
-  flex-shrink: 0;
-}
-.faq-toggle.open {
-  transform: rotate(45deg);
+  margin-bottom: -1px;
 }
