@@ -8,8 +8,8 @@
   --font-body: "Figtree", system-ui, sans-serif;
 
   --color-ink: #17302A;
-  --color-hero-from: #17302A;
-  --color-hero-to: #24493F;
+  --color-hero-from: #2f2626;
+  --color-hero-to: #2f2626;
   --color-footer: #12201C;
   --color-page-bg: #F4F4F2;
   --color-border: #E6E6E1;
@@ -80,33 +80,7 @@ html {
 }
 
 /* ============================================================
-   Navbar Animated Line
-   ============================================================ */
-@keyframes navGlow {
-  0%   { transform: translateX(-100%); }
-  100% { transform: translateX(333%); }
-}
-
-.nav-glow-line {
-  position: relative;
-  height: 3px;
-  background: rgba(255,255,255,0.16);
-  overflow: hidden;
-}
-
-.nav-glow-line::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 30%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, #F59E0B, transparent);
-  animation: navGlow 2.4s linear infinite;
-}
-
-/* ============================================================
-   Nav Link Underline Animation
+   Nav Link Underline Animation (hover-only orange line)
    ============================================================ */
 .nav-link {
   position: relative;
@@ -127,8 +101,7 @@ html {
   transition: transform 250ms ease;
 }
 
-.nav-link:hover::after,
-.nav-link.active::after {
+.nav-link:hover::after {
   transform: scaleX(1);
 }
 

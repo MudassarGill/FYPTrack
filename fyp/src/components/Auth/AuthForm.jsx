@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { logIn } from "../../services/auth";
+import { Link } from "react-router-dom";
 
 function AuthForm({ onSignUp, notice, onLoginSuccess, onForgotPassword }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +34,7 @@ function AuthForm({ onSignUp, notice, onLoginSuccess, onForgotPassword }) {
         </h2>
 
         <p className="mt-2 text-sm text-slate-500">
-          Login to your CareerPilot AI account
+          Login to your FYPTrack account
         </p>
       </div>
 
@@ -129,6 +130,21 @@ function AuthForm({ onSignUp, notice, onLoginSuccess, onForgotPassword }) {
           Sign Up
         </button>
       </p>
+
+      {/* Divider */}
+      <div className="mt-5 flex items-center gap-3">
+        <div className="flex-1 h-px bg-slate-300"></div>
+        <span className="text-xs text-slate-400 font-medium">or</span>
+        <div className="flex-1 h-px bg-slate-300"></div>
+      </div>
+
+      {/* Continue Without Login */}
+      <Link
+        to="/"
+        className="mt-4 w-full block text-center rounded-xl border-2 border-slate-300 py-3 font-semibold text-slate-600 transition hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 active:scale-[0.98]"
+      >
+        Continue without Login or Sign Up
+      </Link>
 
     </div>
   );

@@ -54,7 +54,7 @@ function ForgotPasswordForm({ onBackToLogin }) {
           </p>
 
           <div className="mt-5 w-full rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700 leading-relaxed">
-            <strong>🔧 Dev Mode:</strong> Since emails are mocked, check your <span className="font-semibold">backend terminal</span> for the reset link.
+            <strong>Dev Mode:</strong> Since emails are mocked, check your <span className="font-semibold">backend terminal</span> for the reset link.
           </div>
 
           <button

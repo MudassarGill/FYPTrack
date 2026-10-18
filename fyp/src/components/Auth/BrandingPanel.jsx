@@ -11,41 +11,41 @@ function BrandingPanel() {
       }}
     >
       {/* Decorative circles */}
-      <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-white/20"></div>
-      <div className="absolute -bottom-24 -left-20 h-64 w-64 rounded-full bg-blue-400/20"></div>
+      <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-white/10"></div>
+      <div className="absolute -bottom-24 -left-20 h-64 w-64 rounded-full bg-[#EBB44B]/15"></div>
 
       {/* Styled Rounded Logo at top */}
       <div className="relative z-10 mb-2 flex h-14 w-14 items-center justify-center rounded-2xl border border-white bg-white/10 p-1.5 shadow-2xl backdrop-blur-sm sm:h-16 sm:w-16 xl:h-20 xl:w-20 xl:rounded-3xl">
         <img
           src={logo}
-          alt="CareerPilot AI Logo"
+          alt="FYPTrack Logo"
           className="h-full w-full rounded-xl xl:rounded-2xl object-contain"
         />
       </div>
 
       {/* Brand Name */}
       <h1 className="relative z-10 mt-1 text-3xl font-bold tracking-tight text-white xl:mt-3 xl:text-5xl">
-        Career<span className="text-orange-500">Pilot AI</span>
+        FYP<span className="text-[#EBB44B]">Track</span>
       </h1>
 
       {/* Tagline */}
-      <p className="relative z-10 mt-2 max-w-sm text-sm font-medium leading-relaxed text-blue-100 xl:mt-4 xl:text-lg">
-        Intelligent Career Navigation
+      <p className="relative z-10 mt-2 max-w-sm text-sm font-medium leading-relaxed text-[#CFE0D9] xl:mt-4 xl:text-lg">
+        Intelligent FYP Management
         <br />
-        & <span className="text-orange-500">Acceleration System</span>
+        & <span className="text-[#EBB44B]">Tracking System</span>
       </p>
 
       {/* Description */}
-      <p className="relative z-10 mt-8 hidden max-w-sm text-sm leading-7 text-slate-300 xl:block">
-        Navigate your career path from resume optimization to <span className="text-orange-500">AI mock interviews</span> — all in one centralized platform.
+      <p className="relative z-10 mt-8 hidden max-w-sm text-sm leading-7 text-[#CFE0D9]/80 xl:block">
+        Manage your final year project from proposal to defense — <span className="text-[#EBB44B]">AI-powered supervisor matching</span>, milestone tracking, and department-wide analytics in one platform.
       </p>
 
       {/* Bottom Feature */}
-      <div className="relative z-10 mt-auto hidden items-center gap-3 rounded-2xl border border-orange-500 bg-white/20 px-5 py-3 backdrop-blur-sm xl:flex">
-        <div className="h-2.5 w-2.5 rounded-3xl bg-orange-500"></div>
+      <div className="relative z-10 mt-auto hidden items-center gap-3 rounded-2xl border border-[#EBB44B] bg-white/10 px-5 py-3 backdrop-blur-sm xl:flex">
+        <div className="h-2.5 w-2.5 rounded-3xl bg-[#EBB44B]"></div>
 
         <span className="text-sm font-medium text-white">
-          Simplifying Career Acceleration
+          Simplifying FYP Coordination
         </span>
       </div>
     </div>

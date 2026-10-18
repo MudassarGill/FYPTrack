@@ -21,7 +21,7 @@ export default function StudentLayout() {
       <Navbar mode="student" />
 
       {/* Secondary Horizontal Portal Sub-Nav for quick tabs on desktop/tablet */}
-      <div className="bg-white border-b border-[#E6E6E1] sticky top-18 z-40 shadow-xs">
+      <div className="bg-white border-b border-[#E6E6E1] sticky top-16 z-40 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center space-x-1 sm:space-x-2 overflow-x-auto py-2.5 no-scrollbar">
             {tabs.map((tab) => (

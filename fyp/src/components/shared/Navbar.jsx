@@ -21,13 +21,27 @@ export default function Navbar({ mode = "auto" }) {
     navigate("/login");
   }
 
+  // Scroll to section handler for public links
+  function scrollToSection(e, sectionId) {
+    // If we're already on the home page, scroll directly
+    if (location.pathname === "/") {
+      e.preventDefault();
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      setMobileMenuOpen(false);
+    }
+    // If on another page, the Link will navigate to /#section and smooth scroll will handle it
+  }
+
   const publicLinks = [
-    { label: "Home", href: "/" },
-    { label: "Features", href: "/#features" },
-    { label: "Roles", href: "/#roles" },
-    { label: "Workflow", href: "/#workflow" },
-    { label: "FAQ", href: "/#faq" },
-    { label: "Contact", href: "/#contact" },
+    { label: "Home", href: "/", sectionId: null },
+    { label: "Features", href: "/#features", sectionId: "features" },
+    { label: "Roles", href: "/#roles", sectionId: "roles" },
+    { label: "Workflow", href: "/#workflow", sectionId: "workflow" },
+    { label: "FAQ", href: "/#faq", sectionId: "faq" },
+    { label: "Contact", href: "/#contact", sectionId: "contact" },
   ];
 
   const studentLinks = [
@@ -42,10 +56,10 @@ export default function Navbar({ mode = "auto" }) {
   const links = isStudentPortal ? studentLinks : publicLinks;
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#17302A] text-white shadow-lg">
+    <header className="sticky top-0 z-50 w-full shadow-lg" style={{ backgroundColor: "black" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-18">
-          {/* Brand Logo */}
+        <div className="flex items-center justify-between h-16">
+          {/* Brand Logo - only the image, no text */}
           <Link
             to={isStudentPortal ? "/student/dashboard" : "/"}
             className="flex items-center gap-3 group focus:outline-none"
@@ -56,14 +70,6 @@ export default function Navbar({ mode = "auto" }) {
                 alt="FYPTrack Logo"
                 className="w-full h-full object-cover rounded-lg"
               />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-['Bricolage_Grotesque'] text-xl font-bold tracking-tight text-white group-hover:text-[#F59E0B] transition-colors">
-                FYPTrack
-              </span>
-              <span className="text-[10px] tracking-wider uppercase text-[#CFE0D9] font-medium -mt-0.5">
-                {isStudentPortal ? "Student Portal" : "Intelligent FYP System"}
-              </span>
             </div>
           </Link>
 
@@ -78,6 +84,11 @@ export default function Navbar({ mode = "auto" }) {
                 <Link
                   key={link.label}
                   to={link.href}
+                  onClick={(e) => {
+                    if (!isStudentPortal && link.sectionId) {
+                      scrollToSection(e, link.sectionId);
+                    }
+                  }}
                   className={`nav-link text-sm font-medium tracking-wide transition-colors ${
                     isActive
                       ? "text-white active"
@@ -101,7 +112,7 @@ export default function Navbar({ mode = "auto" }) {
                   aria-label="View notifications"
                 >
                   <Bell className="w-5 h-5" />
-                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#EBB44B] rounded-full border-2 border-[#17302A]" />
+                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#EBB44B] rounded-full border-2 border-[#2f2626]" />
                 </Link>
 
                 {/* User Dropdown */}
@@ -112,7 +123,7 @@ export default function Navbar({ mode = "auto" }) {
                     className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 transition-colors focus:outline-none border border-white/10"
                   >
                     <span
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-[#17302A]"
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-[#2f2626]"
                       style={{ backgroundColor: user?.avatar_color || "#EBB44B" }}
                     >
                       {user?.initials || "ST"}
@@ -169,12 +180,6 @@ export default function Navbar({ mode = "auto" }) {
             ) : (
               <>
                 <Link
-                  to="/student/dashboard"
-                  className="px-3.5 py-2 text-xs font-medium text-[#CFE0D9] hover:text-white transition-colors"
-                >
-                  Student Portal
-                </Link>
-                <Link
                   to="/login"
                   className="px-4 py-2 text-xs font-semibold text-white hover:text-[#F59E0B] transition-colors"
                 >
@@ -230,17 +235,21 @@ export default function Navbar({ mode = "auto" }) {
         </div>
       </div>
 
-      {/* Animated glow line underneath navbar */}
-      <div className="nav-glow-line" />
+      {/* NO animated glow line - removed as requested */}
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#17302A] border-t border-white/10 px-4 pt-3 pb-6 space-y-2">
+        <div className="md:hidden border-t border-white/10 px-4 pt-3 pb-6 space-y-2" style={{ backgroundColor: "#2f2626" }}>
           {links.map((link) => (
             <Link
               key={link.label}
               to={link.href}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={(e) => {
+                if (!isStudentPortal && link.sectionId) {
+                  scrollToSection(e, link.sectionId);
+                }
+                setMobileMenuOpen(false);
+              }}
               className="block px-3 py-2 text-sm font-medium rounded-lg text-[#CFE0D9] hover:bg-white/10 hover:text-white"
             >
               {link.label}

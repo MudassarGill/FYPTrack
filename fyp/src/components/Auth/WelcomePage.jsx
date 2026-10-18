@@ -3,11 +3,11 @@ import backgroundImage from "../../assets/main2.jpg";
 import logo from "../../assets/logo.jpg";
 
 const RANDOM_GREETINGS = [
-  "🚀 Welcome aboard! Your journey to career acceleration starts now.",
-  "🌟 Authentication Successful! Ready to explore AI-driven career navigation.",
-  "✨ Welcome to CareerPilot AI! Your personalized workspace is ready.",
-  "🎯 Great to have you! Phase 1 Authentication is completely verified.",
-  "💡 Hello future innovator! Your account is active and primed for takeoff.",
+  " Welcome aboard! Your journey to career acceleration starts now.",
+  " Authentication Successful! Ready to explore AI-driven career navigation.",
+  " Welcome to CareerPilot AI! Your personalized workspace is ready.",
+  " Great to have you! Phase 1 Authentication is completely verified.",
+  " Hello future innovator! Your account is active and primed for takeoff.",
 ];
 
 function WelcomePage({ user, role, onLogout, source = "login" }) {
@@ -62,7 +62,7 @@ function WelcomePage({ user, role, onLogout, source = "login" }) {
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <span className="text-slate-400 font-medium">Phase Status:</span>
             <span className="rounded-lg bg-orange-500/20 px-2.5 py-1 text-xs font-bold text-orange-400 border border-orange-500/30">
-              Phase 1: Auth Completed ✅
+              Phase 1: Auth Completed 
             </span>
           </div>
 
@@ -88,8 +88,8 @@ function WelcomePage({ user, role, onLogout, source = "login" }) {
 
         {/* Informative Note for User */}
         <div className="mt-6 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 text-xs text-blue-200 leading-relaxed">
-          <p className="font-semibold text-blue-100 flex items-center gap-1.5 mb-1">
-            <span>🎉</span> Login &amp; Sign-Up verification complete!
+          <p className="font-semibold text-blue-100 mb-1">
+            Login &amp; Sign-Up verification complete!
           </p>
           You are now logged in and your backend session token is securely stored.
           Next phases (Student Dashboard, Supervisor modules, etc.) can now be connected.
