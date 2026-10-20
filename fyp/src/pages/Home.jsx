@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/shared/Navbar";
 import Footer from "../components/shared/Footer";
+import { useToast } from "../components/shared/Toast";
 
 import proposalImg from "../assets/proposal.jpg";
 import milestonesImg from "../assets/milestones.jpg";
@@ -127,13 +128,14 @@ const H2 = "font-['Bricolage_Grotesque'] text-[42px] font-bold leading-tight mb-
 
 export default function Home() {
   const [openFaq, setOpenFaq] = useState(0);
+  const { addToast } = useToast();
   const [contactForm, setContactForm] = useState({ name: "", email: "", message: "" });
 
   const toggleFaq = (index) => setOpenFaq(openFaq === index ? null : index);
 
   const handleContactSubmit = (e) => {
     e.preventDefault();
-    alert("Message sent! We'll get back to you soon.");
+    addToast("Message received! The FYP Committee will get back to you soon.");
     setContactForm({ name: "", email: "", message: "" });
   };
 
@@ -226,7 +228,7 @@ export default function Home() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => alert("Supervisor assignment approved.")}
+                  onClick={() => addToast("Supervisor assignment sample approved.")}
                   className="rounded-[10px] bg-[#17302A] hover:bg-[#24493F] text-white font-bold text-[14px] px-[18px] py-[11px] transition-colors cursor-pointer"
                 >
                   Approve

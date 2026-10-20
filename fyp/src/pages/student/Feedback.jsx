@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useToast } from "../../components/shared/Toast";
 
 const initialFeedbackList = [
   {
@@ -34,13 +35,14 @@ const initialFeedbackList = [
 ];
 
 export default function Feedback() {
+  const { addToast } = useToast();
   const [items, setItems] = useState(initialFeedbackList);
   const [replyText, setReplyText] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
 
   const handleSendReply = (id) => {
     if (!replyText.trim()) return;
-    alert("Reply sent to supervisor!");
+    addToast("Reply dispatched to supervisor successfully.");
     setReplyText("");
     setReplyingTo(null);
   };

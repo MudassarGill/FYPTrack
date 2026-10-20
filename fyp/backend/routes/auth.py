@@ -31,7 +31,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 def signup(payload: SignUpRequest, db: Annotated[Session, Depends(get_db)]) -> SignUpResponse:
     user, access_token = auth_service.register_user(db, payload)
     return SignUpResponse(
-        message="Registration successful! Welcome to CareerPilot AI.",
+        message="Registration successful! Welcome to FYPTrack.",
         user=UserResponse.model_validate(user),
         access_token=access_token,
     )

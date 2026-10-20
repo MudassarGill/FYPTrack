@@ -2,6 +2,7 @@ import { useState } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
+import { useToast } from "../../components/shared/Toast";
 
 const initialDeadlines = [
   {
@@ -67,6 +68,7 @@ const initialDeadlines = [
 ];
 
 export default function DeadlinesMilestones() {
+  const { addToast } = useToast();
   const [deadlines, setDeadlines] = useState(initialDeadlines);
   const [editingMilestone, setEditingMilestone] = useState(null);
   const [newDate, setNewDate] = useState("");
@@ -78,7 +80,7 @@ export default function DeadlinesMilestones() {
     );
     setEditingMilestone(null);
     setNewDate("");
-    alert("Department academic milestone deadline updated and broadcast dispatched!");
+    addToast("Department milestone deadline updated and broadcast dispatched successfully.");
   };
 
   return (
@@ -89,10 +91,10 @@ export default function DeadlinesMilestones() {
         action={
           <button
             type="button"
-            onClick={() => alert("Broadcasting reminder to all 142 students and 18 supervisors...")}
+            onClick={() => addToast("Milestone reminder broadcast sent to all students and faculty supervisors.", "info")}
             className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[13px] px-4 py-2 transition-colors shadow-sm cursor-pointer"
           >
-            📢 Broadcast Milestone Reminder
+            Broadcast Milestone Reminder
           </button>
         }
       />

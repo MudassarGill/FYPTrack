@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useToast } from "../../components/shared/Toast";
 
 const initialFiles = [
   {
@@ -40,14 +41,15 @@ const initialFiles = [
 ];
 
 export default function Documents() {
+  const { addToast } = useToast();
   const [files, setFiles] = useState(initialFiles);
 
   const handleUploadClick = () => {
-    alert("Please select a file to upload.");
+    addToast("Please select a file to upload from the file dialog.", "info");
   };
 
   const handleDownload = (fileName) => {
-    alert(`Downloading ${fileName}...`);
+    addToast(`Downloading ${fileName}...`, "info");
   };
 
   return (
@@ -99,7 +101,7 @@ export default function Documents() {
                   uploaded: true,
                 };
                 setFiles([newFile, ...files.filter((f) => f.name !== newFile.name)]);
-                alert(`File ${newFile.name} attached successfully!`);
+                addToast(`File ${newFile.name} attached and submitted successfully!`);
               }
             }}
           />

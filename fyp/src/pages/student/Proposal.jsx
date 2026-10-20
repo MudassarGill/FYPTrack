@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useToast } from "../../components/shared/Toast";
 
 export default function Proposal() {
+  const { addToast } = useToast();
   const [formData, setFormData] = useState({
     title: "Crop Price Prediction and Market Advisory System",
     domain: "Machine Learning",
@@ -12,11 +14,11 @@ export default function Proposal() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert("Proposal submitted for coordinator review!");
+    addToast("Proposal submitted for coordinator review successfully!");
   };
 
   const handleSaveDraft = () => {
-    alert("Draft proposal saved successfully.");
+    addToast("Draft proposal saved successfully.", "info");
   };
 
   return (

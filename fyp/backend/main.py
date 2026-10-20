@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="Backend API for CareerPilot AI / FYPTrack Authentication System.",
+    description="Backend API for FYPTrack Final Year Project Management System.",
     lifespan=lifespan,
 )
 

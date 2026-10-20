@@ -2,6 +2,7 @@ import { useState } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
+import { useToast } from "../../components/shared/Toast";
 
 const initialAudits = [
   {
@@ -55,22 +56,23 @@ const initialAudits = [
 ];
 
 export default function SimilarityChecker() {
+  const { addToast } = useToast();
   const [audits, setAudits] = useState(initialAudits);
   const [selectedAudit, setSelectedAudit] = useState(audits[0]);
 
   const handleClearAudit = (id) => {
     setAudits(audits.map((a) => (a.id === id ? { ...a, cleared: true } : a)));
-    alert("Similarity flag resolved and cleared by Coordinator.");
+    addToast("Originality check cleared and approved by Coordinator.");
   };
 
   return (
     <div className="space-y-8 pb-12">
       <PageHeader
-        title="AI Vector Similarity & Plagiarism Sentinel"
-        description="Inspect semantic topic overlap and lexical duplication between 2026 project proposals and 450+ archived departmental projects."
+        title="Project Originality & Novelty Checker"
+        description="Review project novelty and ensure student groups have distinct problem statements compared with previous academic years."
         action={
           <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#17302A] text-white">
-            Model: all-MiniLM-L6-v2 Embeddings
+            Status: Active Repository Check
           </span>
         }
       />
@@ -201,10 +203,10 @@ export default function SimilarityChecker() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => alert(`Sent revision order to ${selectedAudit.currentGroup} for scope divergence.`)}
+                  onClick={() => addToast(`Revision request dispatched to ${selectedAudit.currentGroup}.`, "info")}
                   className="px-4 py-2 rounded-[8px] bg-red-100 hover:bg-red-200 text-red-800 text-[12px] font-bold cursor-pointer"
                 >
-                  Require Topic Divergence
+                  Require Topic Revision
                 </button>
                 <button
                   type="button"

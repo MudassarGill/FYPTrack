@@ -103,7 +103,14 @@ function SignUpPage() {
           if (response?.user && response?.access_token) {
             setStoredSession(response.access_token, response.user);
           }
-          navigate("/student/dashboard");
+          const role = response?.user?.role;
+          if (role === "coordinator") {
+            navigate("/coordinator/overview");
+          } else if (role === "supervisor") {
+            navigate("/supervisor/overview");
+          } else {
+            navigate("/student/dashboard");
+          }
         }}
       />
     </div>
@@ -167,6 +174,7 @@ export default function App() {
         {/* Existing Authentication Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/register" element={<SignUpPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/welcome" element={<WelcomePageRoute />} />

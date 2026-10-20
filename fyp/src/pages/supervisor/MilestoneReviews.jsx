@@ -2,6 +2,7 @@ import { useState } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
+import { useToast } from "../../components/shared/Toast";
 
 const initialMilestones = [
   {
@@ -79,6 +80,7 @@ const initialMilestones = [
 ];
 
 export default function MilestoneReviews() {
+  const { addToast } = useToast();
   const [milestones, setMilestones] = useState(initialMilestones);
   const [selectedGroup, setSelectedGroup] = useState("All");
 
@@ -205,7 +207,7 @@ export default function MilestoneReviews() {
                 )}
                 <button
                   type="button"
-                  onClick={() => alert(`Opening milestone review notes for ${m.title}`)}
+                  onClick={() => addToast(`Opening milestone review notes for ${m.title}...`, "info")}
                   className="rounded-[8px] bg-[#EEEEEA] hover:bg-[#E0E0DC] text-[#17302A] text-[12px] font-bold px-3 py-1.5 transition-colors cursor-pointer"
                 >
                   Inspection Log

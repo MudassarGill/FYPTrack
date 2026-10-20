@@ -2,6 +2,7 @@ import { useState } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
+import { useToast } from "../../components/shared/Toast";
 
 const initialMemos = [
   {
@@ -37,6 +38,7 @@ const initialMemos = [
 ];
 
 export default function CoordinatorNotifications() {
+  const { addToast } = useToast();
   const [memos, setMemos] = useState(initialMemos);
   const [showComposer, setShowComposer] = useState(false);
   const [newMemo, setNewMemo] = useState({ title: "", target: "All Students & Supervisors", content: "" });
@@ -56,7 +58,7 @@ export default function CoordinatorNotifications() {
     setMemos([created, ...memos]);
     setShowComposer(false);
     setNewMemo({ title: "", target: "All Students & Supervisors", content: "" });
-    alert("Department circular broadcast dispatched to all portals!");
+    addToast("Department circular broadcast dispatched to all portals successfully.");
   };
 
   return (

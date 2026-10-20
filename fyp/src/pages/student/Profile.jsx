@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { getStoredUser } from "../../services/auth";
+import { useToast } from "../../components/shared/Toast";
 
 export default function Profile() {
+  const { addToast } = useToast();
   const user = getStoredUser();
   const student = user?.student || {};
 
@@ -20,10 +22,10 @@ export default function Profile() {
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      alert("New password and confirm password do not match.");
+      addToast("New password and confirm password do not match.", "error");
       return;
     }
-    alert("Password updated successfully!");
+    addToast("Password updated successfully!");
     setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
   };
 

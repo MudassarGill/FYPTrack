@@ -2,6 +2,7 @@ import { useState } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
+import { useToast } from "../../components/shared/Toast";
 
 const masterProjects = [
   {
@@ -85,6 +86,7 @@ const masterProjects = [
 ];
 
 export default function CoordinatorProjects() {
+  const { addToast } = useToast();
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState("All");
 
@@ -201,7 +203,7 @@ export default function CoordinatorProjects() {
                   <td className="py-4 px-6 text-right">
                     <button
                       type="button"
-                      onClick={() => alert(`Opening comprehensive audit for ${p.group}`)}
+                      onClick={() => addToast(`Opening academic audit record for ${p.group}...`, "info")}
                       className="rounded-[8px] bg-[#EEEEEA] hover:bg-[#E0E0DC] text-[#17302A] text-[12px] font-bold px-3 py-1.5 transition-colors cursor-pointer"
                     >
                       Dossier

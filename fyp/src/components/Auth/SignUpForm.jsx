@@ -6,6 +6,7 @@ function SignUpForm({ onBackToLogin, onRegistered }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState("student");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -34,7 +35,7 @@ function SignUpForm({ onBackToLogin, onRegistered }) {
 
     setIsSubmitting(true);
     try {
-      const response = await signUp({ full_name: fullName, email, password });
+      const response = await signUp({ full_name: fullName, email, password, role });
       onRegistered(response);
     } catch (requestError) {
       setError(requestError.message || "Registration failed. Please try again.");
@@ -94,6 +95,24 @@ function SignUpForm({ onBackToLogin, onRegistered }) {
             onChange={(event) => setEmail(event.target.value)}
             className="mt-2 w-full rounded-xl border border-slate-300 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
+        </div>
+
+        {/* Account Role */}
+        <div className="mt-5">
+          <label className="text-sm font-medium text-slate-700">
+            Account Role
+          </label>
+
+          <select
+            name="role"
+            value={role}
+            onChange={(event) => setRole(event.target.value)}
+            className="mt-2 w-full rounded-xl border border-slate-300 bg-white/80 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 cursor-pointer"
+          >
+            <option value="student">Student (Submit FYP Proposal & Track Milestones)</option>
+            <option value="supervisor">Supervisor (Faculty Mentor & Evaluation)</option>
+            <option value="coordinator">FYP Coordinator (Programme Management & Allocations)</option>
+          </select>
         </div>
 
         {/* Password */}

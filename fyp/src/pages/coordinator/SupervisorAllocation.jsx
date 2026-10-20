@@ -2,6 +2,7 @@ import { useState } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
+import { useToast } from "../../components/shared/Toast";
 
 const initialFaculty = [
   {
@@ -79,30 +80,31 @@ const unassignedGroups = [
 ];
 
 export default function SupervisorAllocation() {
+  const { addToast } = useToast();
   const [faculty, setFaculty] = useState(initialFaculty);
   const [pendingGroups, setPendingGroups] = useState(unassignedGroups);
 
   const handleAutoAssign = (groupName, facultyName) => {
-    alert(`AI Recommendation Accepted! ${groupName} allocated to ${facultyName}.`);
+    addToast(`${groupName} allocated to ${facultyName} successfully.`);
     setPendingGroups(pendingGroups.filter((g) => g.group !== groupName));
   };
 
   const handleRunAiOptimizer = () => {
-    alert("Running open-source vector embedding optimization (all-MiniLM-L6-v2). Balances topic overlap against faculty capacity limits.");
+    addToast("Supervision quota and domain matching check completed.", "info");
   };
 
   return (
     <div className="space-y-8 pb-12">
       <PageHeader
-        title="AI Supervisor Allocation & Workload Balancer"
-        description="Pair student project proposals with departmental supervisors based on open-source vector similarity embeddings and current supervision quotas."
+        title="Supervisor Allocation & Workload Balancer"
+        description="Pair student project proposals with departmental supervisors based on domain alignment and faculty capacity limits."
         action={
           <button
             type="button"
             onClick={handleRunAiOptimizer}
             className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[13px] px-4 py-2 transition-colors shadow-sm cursor-pointer"
           >
-            ⚡ Run AI Workload Optimizer
+            Run Allocation Balance Check
           </button>
         }
       />
@@ -218,7 +220,7 @@ export default function SupervisorAllocation() {
                   <span className="font-semibold text-[#0B5A3E]">{f.freeSlots} Slot Available</span>
                   <button
                     type="button"
-                    onClick={() => alert(`Opening allocation manager for ${f.name}`)}
+                    onClick={() => addToast(`Allocation quota manager opened for ${f.name}.`, "info")}
                     className="text-[12px] font-bold text-[#17302A] hover:text-[#C2410C] cursor-pointer"
                   >
                     Adjust Quota &rarr;

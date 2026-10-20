@@ -2,6 +2,7 @@ import { useState } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
+import { useToast } from "../../components/shared/Toast";
 
 const initialProposals = [
   {
@@ -110,14 +111,14 @@ export default function CoordinatorProposals() {
     );
     setActiveProposal(null);
     setDecisionNotes("");
-    alert(`Proposal status updated to: ${newStatus}`);
+    addToast(`Proposal status updated to: ${newStatus}`);
   };
 
   return (
     <div className="space-y-8 pb-12">
       <PageHeader
         title="Proposal Decisions & Governance"
-        description="Official institutional review board. Ratify supervisor endorsements, inspect open-source AI vector similarity, and issue binding approval decisions."
+        description="Official institutional review board. Ratify supervisor endorsements, review originality audits, and issue binding approval decisions."
         action={
           <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#17302A] text-white">
             {proposals.filter((p) => p.coordinatorStatus === "Pending Decision").length} Awaiting Final Decision
@@ -212,7 +213,7 @@ export default function CoordinatorProposals() {
             <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-[#EEEEEA]">
               <button
                 type="button"
-                onClick={() => alert(`Downloading official proposal dossier for ${p.title}...`)}
+                onClick={() => addToast(`Downloading official proposal dossier for ${p.title}...`, "info")}
                 className="text-[13px] font-bold text-[#17302A] hover:text-[#C2410C] flex items-center gap-1 cursor-pointer"
               >
                 &darr; View Dossier PDF

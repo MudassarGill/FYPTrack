@@ -1,4 +1,7 @@
+import { useToast } from "./Toast";
+
 export default function GuidelinesBanner({ className = "" }) {
+  const { addToast } = useToast();
   return (
     <div
       className={`relative overflow-hidden text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6 ${className}`}
@@ -27,7 +30,7 @@ export default function GuidelinesBanner({ className = "" }) {
       <div className="relative z-10 shrink-0">
         <button
           type="button"
-          onClick={() => alert("FYP Guidelines document will be downloaded.")}
+          onClick={() => addToast("FYP Guidelines document (PDF) download initiated.", "info")}
           className="rounded-[10px] bg-white text-[#7F1D1D] font-bold text-[14px] px-[22px] py-[12px] hover:bg-red-50 transition-colors shadow-sm cursor-pointer"
         >
           Read Guidelines

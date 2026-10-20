@@ -2,8 +2,10 @@ import { useState } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Card from "../../components/shared/Card";
 import { getStoredUser } from "../../services/auth";
+import { useToast } from "../../components/shared/Toast";
 
 export default function CoordinatorProfile() {
+  const { addToast } = useToast();
   const user = getStoredUser();
 
   const [settings, setSettings] = useState({
@@ -22,7 +24,7 @@ export default function CoordinatorProfile() {
 
   const handleSaveSettings = (e) => {
     e.preventDefault();
-    alert("Departmental FYP programme configurations saved successfully!");
+    addToast("Departmental FYP configurations saved successfully!");
   };
 
   return (

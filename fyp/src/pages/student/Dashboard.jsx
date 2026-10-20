@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useToast } from "../../components/shared/Toast";
 import {
   AreaChart,
   Area,
@@ -126,9 +127,11 @@ export default function Dashboard() {
     message: "",
   });
 
+  const { addToast } = useToast();
+
   const handleCoordSubmit = (e) => {
     e.preventDefault();
-    alert("Message sent to coordinator!");
+    addToast("Message dispatched to FYP Coordinator successfully.");
     setCoordForm({ subject: "milestone", message: "" });
   };
 
@@ -583,7 +586,7 @@ export default function Dashboard() {
             <div className="space-y-3">
               <button
                 type="button"
-                onClick={() => alert("Progress report modal opened.")}
+                onClick={() => addToast("Progress report draft prepared. You can upload files in the Milestones section.", "info")}
                 className="w-full rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors cursor-pointer text-center"
               >
                 Submit Progress Report

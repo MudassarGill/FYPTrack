@@ -55,11 +55,11 @@ async function handleResponse(response) {
   return data;
 }
 
-export async function signUp({ full_name, email, password }) {
+export async function signUp({ full_name, email, password, role = "student" }) {
   const response = await fetch(`${API_BASE_URL}/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ full_name, email, password }),
+    body: JSON.stringify({ full_name, email, password, role }),
   });
   const data = await handleResponse(response);
   if (data.access_token && data.user) {

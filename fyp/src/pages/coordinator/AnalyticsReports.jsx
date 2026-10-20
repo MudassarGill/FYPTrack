@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useToast } from "../../components/shared/Toast";
 import {
   PieChart,
   Pie,
@@ -32,18 +33,19 @@ const domainBreakdown = [
 ];
 
 export default function AnalyticsReports() {
+  const { addToast } = useToast();
   const [downloading, setDownloading] = useState(false);
 
   const handleExportCSV = () => {
     setDownloading(true);
     setTimeout(() => {
       setDownloading(false);
-      alert("FYPTrack_Department_Annual_Report_2026.csv generated and downloaded!");
-    }, 800);
+      addToast("FYPTrack_Department_Annual_Report_2026.csv generated successfully!");
+    }, 600);
   };
 
   const handleExportPDF = () => {
-    alert("Compiling Department Accreditation Dossier PDF (ABET / NCEAC format)...");
+    addToast("Department Accreditation Dossier (PDF) export prepared.", "info");
   };
 
   return (
