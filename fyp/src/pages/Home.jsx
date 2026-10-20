@@ -29,16 +29,19 @@ const features = [
 const roles = [
   {
     title: "Students",
+    badge: "Student Portal",
     text: "Submit your idea, follow milestones and hear back from your supervisor.",
     items: ["Proposal and project details", "Milestones and deadlines", "Document uploads", "Supervisor feedback"],
   },
   {
     title: "Supervisors",
+    badge: "Supervisor Portal",
     text: "Review work and guide the students assigned to you.",
     items: ["Assigned students", "Proposal and document review", "Progress monitoring", "Evaluation and marks"],
   },
   {
     title: "FYP Coordinators",
+    badge: "Department Admin",
     text: "Run the whole programme with a clear view of every project.",
     items: ["Proposal decisions", "AI supervisor recommendations", "Similarity analysis", "Reports and analytics"],
     dark: true,
@@ -285,13 +288,25 @@ export default function Home() {
           {roles.map((r) => (
             <div
               key={r.title}
-              className={`rounded-[14px] p-6 card-base card-heavy flex flex-col justify-between ${
+              className={`rounded-[16px] p-6 card-base card-heavy flex flex-col justify-between ${
                 r.dark
-                  ? "bg-[#17302A] text-white border-[#17302A]"
+                  ? "card-dark !bg-[#17302A] text-white border-[#17302A]"
                   : "bg-white text-[#17302A] border-[#E6E6E1]"
               }`}
+              style={r.dark ? { backgroundColor: "#17302A", color: "#FFFFFF", borderColor: "#17302A" } : {}}
             >
               <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span
+                    className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+                      r.dark
+                        ? "bg-[#EBB44B]/20 text-[#F6D88E] border border-[#EBB44B]/30"
+                        : "bg-[#E1F4EA] text-[#0B5A3E]"
+                    }`}
+                  >
+                    {r.badge}
+                  </span>
+                </div>
                 <h3 className="font-['Bricolage_Grotesque'] text-[22px] font-bold mb-2">
                   {r.title}
                 </h3>
@@ -357,32 +372,49 @@ export default function Home() {
       <section className={`${WRAP} py-[72px]`}>
         <h2 className={`${H2} !mb-6`}>Why FYPTrack</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Without FYPTrack: plain white box */}
-          <div className="card-base card-heavy bg-white border-[#E6E6E1] p-6">
-            <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-4">
-              Without FYPTrack
-            </h3>
-            <ul className="space-y-3">
-              {without.map((i) => (
-                <li key={i} className="fy-dash text-[14px] text-[#5F6B66]">
-                  {i}
-                </li>
-              ))}
-            </ul>
+          {/* Without FYPTrack */}
+          <div className="card-base card-heavy bg-white border-[#E6E6E1] p-6 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
+                  Without FYPTrack
+                </h3>
+                <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-red-100 text-red-700">
+                  Manual Hassle
+                </span>
+              </div>
+              <ul className="space-y-3.5">
+                {without.map((i) => (
+                  <li key={i} className="fy-dash text-[14px] text-[#5F6B66] leading-relaxed">
+                    {i}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
-          {/* With FYPTrack: dark #17302A box with amber check bullets */}
-          <div className="card-base card-heavy bg-[#17302A] border-[#17302A] text-white p-6">
-            <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-white mb-4">
-              With FYPTrack
-            </h3>
-            <ul className="space-y-3">
-              {withUs.map((i) => (
-                <li key={i} className="fy-check fy-check-dark text-[14px] text-[#D5E3DD]">
-                  {i}
-                </li>
-              ))}
-            </ul>
+          {/* With FYPTrack */}
+          <div
+            className="card-base card-dark card-heavy !bg-[#17302A] border-[#17302A] text-white p-6 flex flex-col justify-between"
+            style={{ backgroundColor: "#17302A", color: "#FFFFFF", borderColor: "#17302A" }}
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-white">
+                  With FYPTrack
+                </h3>
+                <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#EBB44B]/20 text-[#F6D88E] border border-[#EBB44B]/30">
+                  Modern FYP Platform
+                </span>
+              </div>
+              <ul className="space-y-3.5">
+                {withUs.map((i) => (
+                  <li key={i} className="fy-check fy-check-dark text-[14px] text-[#D5E3DD] leading-relaxed">
+                    {i}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>

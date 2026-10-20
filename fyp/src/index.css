@@ -126,6 +126,12 @@ html {
   transition: transform 280ms ease, box-shadow 280ms ease;
 }
 
+.card-base.card-dark {
+  background: #17302A !important;
+  color: #ffffff !important;
+  border-color: #17302A !important;
+}
+
 .card-base.card-hover:hover,
 .card-base:hover {
   transform: translateY(-6px);
