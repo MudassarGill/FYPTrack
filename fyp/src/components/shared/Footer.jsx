@@ -68,7 +68,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/login" className="hover:text-[#F59E0B] transition-colors">
+                <Link to="/coordinator/overview" className="hover:text-[#F59E0B] transition-colors">
                   Coordinators
                 </Link>
               </li>

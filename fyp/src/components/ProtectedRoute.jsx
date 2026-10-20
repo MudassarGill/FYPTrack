@@ -9,6 +9,9 @@ export default function ProtectedRoute({ children, allowDemo = true, requiredRol
   // If user is logged in, perform role checks
   if (token || user) {
     if (requiredRole && user?.role && user.role !== requiredRole) {
+      if (user.role === "coordinator") {
+        return <Navigate to="/coordinator/overview" replace />;
+      }
       if (user.role === "supervisor") {
         return <Navigate to="/supervisor/overview" replace />;
       }

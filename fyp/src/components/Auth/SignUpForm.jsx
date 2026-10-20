@@ -53,7 +53,7 @@ function SignUpForm({ onBackToLogin, onRegistered }) {
         </h2>
 
         <p className="mt-2 text-sm text-slate-500">
-          Create your CareerPilot AI account
+          Create your FYPTrack account
         </p>
       </div>
 

@@ -45,6 +45,19 @@ import SupervisorFeedback from "./pages/supervisor/Feedback";
 import SupervisorNotifications from "./pages/supervisor/Notifications";
 import SupervisorProfile from "./pages/supervisor/Profile";
 
+// Coordinator Portal Layout & Pages
+import CoordinatorLayout from "./layouts/CoordinatorLayout";
+import CoordinatorOverview from "./pages/coordinator/Overview";
+import CoordinatorProposals from "./pages/coordinator/Proposals";
+import SupervisorAllocation from "./pages/coordinator/SupervisorAllocation";
+import SimilarityChecker from "./pages/coordinator/SimilarityChecker";
+import CoordinatorProjects from "./pages/coordinator/Projects";
+import CoordinatorStudents from "./pages/coordinator/Students";
+import DeadlinesMilestones from "./pages/coordinator/DeadlinesMilestones";
+import AnalyticsReports from "./pages/coordinator/AnalyticsReports";
+import CoordinatorNotifications from "./pages/coordinator/Notifications";
+import CoordinatorProfile from "./pages/coordinator/Profile";
+
 import "./App.css";
 
 /* ============================================================
@@ -64,7 +77,9 @@ function LoginPage() {
             setStoredSession(response.access_token, response.user);
           }
           const role = response?.user?.role;
-          if (role === "supervisor") {
+          if (role === "coordinator") {
+            navigate("/coordinator/overview");
+          } else if (role === "supervisor") {
             navigate("/supervisor/overview");
           } else {
             navigate("/student/dashboard");
@@ -194,6 +209,28 @@ export default function App() {
           <Route path="feedback" element={<SupervisorFeedback />} />
           <Route path="notifications" element={<SupervisorNotifications />} />
           <Route path="profile" element={<SupervisorProfile />} />
+        </Route>
+
+        {/* Protected Coordinator Portal */}
+        <Route
+          path="/coordinator"
+          element={
+            <ProtectedRoute requiredRole="coordinator">
+              <CoordinatorLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="/coordinator/overview" replace />} />
+          <Route path="overview" element={<CoordinatorOverview />} />
+          <Route path="proposals" element={<CoordinatorProposals />} />
+          <Route path="supervisors" element={<SupervisorAllocation />} />
+          <Route path="similarity" element={<SimilarityChecker />} />
+          <Route path="projects" element={<CoordinatorProjects />} />
+          <Route path="students" element={<CoordinatorStudents />} />
+          <Route path="milestones" element={<DeadlinesMilestones />} />
+          <Route path="reports" element={<AnalyticsReports />} />
+          <Route path="notifications" element={<CoordinatorNotifications />} />
+          <Route path="profile" element={<CoordinatorProfile />} />
         </Route>
 
         {/* Fallback Catch-all Route */}

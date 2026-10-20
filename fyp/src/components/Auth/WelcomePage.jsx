@@ -3,11 +3,11 @@ import backgroundImage from "../../assets/main2.jpg";
 import logo from "../../assets/logo.jpg";
 
 const RANDOM_GREETINGS = [
-  " Welcome aboard! Your journey to career acceleration starts now.",
-  " Authentication Successful! Ready to explore AI-driven career navigation.",
-  " Welcome to CareerPilot AI! Your personalized workspace is ready.",
-  " Great to have you! Phase 1 Authentication is completely verified.",
-  " Hello future innovator! Your account is active and primed for takeoff.",
+  " Welcome aboard! Your FYPTrack workspace is ready.",
+  " Authentication Successful! Ready to track your final year project.",
+  " Welcome to FYPTrack! Your department portal is primed and ready.",
+  " Great to have you! Authentication is completely verified.",
+  " Hello future innovator! Your project portal is active and ready.",
 ];
 
 function WelcomePage({ user, role, onLogout, source = "login" }) {
@@ -16,7 +16,7 @@ function WelcomePage({ user, role, onLogout, source = "login" }) {
   );
 
   const displayName = user?.full_name || "Valued User";
-  const displayEmail = user?.email || "user@careerpilot.ai";
+  const displayEmail = user?.email || "user@university.edu";
   const displayRole = user?.role || role || "Student";
   const randomGreeting = RANDOM_GREETINGS[greetingIndex];
 
@@ -36,7 +36,7 @@ function WelcomePage({ user, role, onLogout, source = "login" }) {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/20 bg-white/10 p-2 shadow-inner">
             <img
               src={logo}
-              alt="CareerPilot AI Logo"
+              alt="FYPTrack Logo"
               className="h-full w-full object-contain rounded-xl"
             />
           </div>

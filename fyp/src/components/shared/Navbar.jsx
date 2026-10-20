@@ -12,6 +12,8 @@ export default function Navbar({ mode = "public" }) {
   const dropdownRef = useRef(null);
 
   const loggedUser = getStoredUser();
+  const isCoordinatorPortal =
+    mode === "coordinator" || (mode === "auto" && location.pathname.startsWith("/coordinator"));
   const isSupervisorPortal =
     mode === "supervisor" || (mode === "auto" && location.pathname.startsWith("/supervisor"));
   const isStudentPortal =
@@ -82,15 +84,30 @@ export default function Navbar({ mode = "public" }) {
     { label: "Documents", href: "/supervisor/documents" },
   ];
 
-  const isPortal = isStudentPortal || isSupervisorPortal;
-  const currentNav = isSupervisorPortal ? supervisorNav : studentNav;
-  const portalHome = isSupervisorPortal
+  const coordinatorNav = [
+    { label: "Overview", href: "/coordinator/overview" },
+    { label: "Proposals", href: "/coordinator/proposals" },
+    { label: "Allocations", href: "/coordinator/supervisors" },
+    { label: "Similarity", href: "/coordinator/similarity" },
+    { label: "Projects", href: "/coordinator/projects" },
+  ];
+
+  const isPortal = isStudentPortal || isSupervisorPortal || isCoordinatorPortal;
+  const currentNav = isCoordinatorPortal
+    ? coordinatorNav
+    : isSupervisorPortal
+    ? supervisorNav
+    : studentNav;
+
+  const portalHome = isCoordinatorPortal
+    ? "/coordinator/overview"
+    : isSupervisorPortal
     ? "/supervisor/overview"
     : isStudentPortal
     ? "/student/dashboard"
     : "/";
 
-  const defaultInitials = isSupervisorPortal ? "SP" : "ST";
+  const defaultInitials = isCoordinatorPortal ? "CD" : isSupervisorPortal ? "SP" : "ST";
   const userInitials = loggedUser?.full_name
     ? loggedUser.full_name
         .split(" ")
@@ -100,10 +117,17 @@ export default function Navbar({ mode = "public" }) {
         .toUpperCase()
     : defaultInitials;
 
-  const notificationsUrl = isSupervisorPortal
+  const notificationsUrl = isCoordinatorPortal
+    ? "/coordinator/notifications"
+    : isSupervisorPortal
     ? "/supervisor/notifications"
     : "/student/notifications";
-  const profileUrl = isSupervisorPortal ? "/supervisor/profile" : "/student/profile";
+
+  const profileUrl = isCoordinatorPortal
+    ? "/coordinator/profile"
+    : isSupervisorPortal
+    ? "/supervisor/profile"
+    : "/student/profile";
 
   return (
     <header
@@ -189,7 +213,45 @@ export default function Navbar({ mode = "public" }) {
                     className="absolute right-0 top-full mt-2 bg-white rounded-[12px] p-[6px] min-w-[200px] z-50 border border-[#E6E6E1]"
                     style={{ boxShadow: "0 24px 48px rgba(23,48,42,.28)" }}
                   >
-                    {isSupervisorPortal ? (
+                    {isCoordinatorPortal ? (
+                      <>
+                        <Link
+                          to="/coordinator/students"
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                        >
+                          Students Registry
+                        </Link>
+                        <Link
+                          to="/coordinator/milestones"
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                        >
+                          Deadlines & Calendar
+                        </Link>
+                        <Link
+                          to="/coordinator/reports"
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                        >
+                          Reports & Analytics
+                        </Link>
+                        <Link
+                          to="/coordinator/notifications"
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                        >
+                          Department Memos
+                        </Link>
+                        <Link
+                          to="/coordinator/profile"
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                        >
+                          Department Settings
+                        </Link>
+                      </>
+                    ) : isSupervisorPortal ? (
                       <>
                         <Link
                           to="/supervisor/milestones"
@@ -275,7 +337,13 @@ export default function Navbar({ mode = "public" }) {
           {!isPortal ? (
             loggedUser ? (
               <Link
-                to={loggedUser.role === "supervisor" ? "/supervisor/overview" : "/student/dashboard"}
+                to={
+                  loggedUser.role === "coordinator"
+                    ? "/coordinator/overview"
+                    : loggedUser.role === "supervisor"
+                    ? "/supervisor/overview"
+                    : "/student/dashboard"
+                }
                 className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors shadow-sm"
               >
                 Go to portal
@@ -309,7 +377,7 @@ export default function Navbar({ mode = "public" }) {
               <Link
                 to={profileUrl}
                 className="w-[38px] h-[38px] rounded-full bg-[#EBB44B] text-[#17302A] font-['Bricolage_Grotesque'] font-bold text-[14px] flex items-center justify-center transition-transform hover:scale-105 shadow-sm"
-                title={loggedUser?.full_name || (isSupervisorPortal ? "Supervisor Profile" : "Student Profile")}
+                title={loggedUser?.full_name || (isCoordinatorPortal ? "Coordinator Profile" : isSupervisorPortal ? "Supervisor Profile" : "Student Profile")}
               >
                 {userInitials}
               </Link>
@@ -359,7 +427,13 @@ export default function Navbar({ mode = "public" }) {
               <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
                 {loggedUser ? (
                   <Link
-                    to={loggedUser.role === "supervisor" ? "/supervisor/overview" : "/student/dashboard"}
+                    to={
+                      loggedUser.role === "coordinator"
+                        ? "/coordinator/overview"
+                        : loggedUser.role === "supervisor"
+                        ? "/supervisor/overview"
+                        : "/student/dashboard"
+                    }
                     onClick={() => setMobileMenuOpen(false)}
                     className="block text-center rounded-[10px] bg-[#EBB44B] text-[#17302A] font-bold text-[14px] py-[11px]"
                   >
@@ -397,7 +471,45 @@ export default function Navbar({ mode = "public" }) {
                   {item.label}
                 </Link>
               ))}
-              {isSupervisorPortal ? (
+              {isCoordinatorPortal ? (
+                <>
+                  <Link
+                    to="/coordinator/students"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                  >
+                    Students Registry
+                  </Link>
+                  <Link
+                    to="/coordinator/milestones"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                  >
+                    Deadlines & Calendar
+                  </Link>
+                  <Link
+                    to="/coordinator/reports"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                  >
+                    Reports & Analytics
+                  </Link>
+                  <Link
+                    to="/coordinator/notifications"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                  >
+                    Department Memos
+                  </Link>
+                  <Link
+                    to="/coordinator/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                  >
+                    Department Settings
+                  </Link>
+                </>
+              ) : isSupervisorPortal ? (
                 <>
                   <Link
                     to="/supervisor/milestones"
