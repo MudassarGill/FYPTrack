@@ -176,3 +176,24 @@ export async function markNotificationAsRead(id) {
 export async function getSupervisorsList() {
   return authFetch("/supervisors/list");
 }
+
+/* ============================================================
+   Milestones & Academic Calendar API
+   ============================================================ */
+export async function getMilestones() {
+  return authFetch("/milestones/");
+}
+
+export async function updateMilestoneDeadline(id, data) {
+  return authFetch(`/milestones/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function broadcastMilestonesReminder() {
+  return authFetch("/milestones/broadcast", {
+    method: "POST",
+  });
+}
+

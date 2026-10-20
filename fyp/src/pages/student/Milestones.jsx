@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -11,16 +11,7 @@ import {
   Cell,
   Tooltip,
 } from "recharts";
-
-const milestonesList = [
-  { name: "Proposal Defense", due: "15 Oct 2026", status: "Completed", variant: "green", eval: "78 / 100" },
-  { name: "SRS Document Submission", due: "28 Oct 2026", status: "Completed", variant: "green", eval: "85 / 100" },
-  { name: "System Design Document", due: "12 Nov 2026", status: "In progress", variant: "amber", eval: "Not evaluated" },
-  { name: "Prototype Demonstration", due: "05 Dec 2026", status: "Upcoming", variant: "gray", eval: "Not evaluated" },
-  { name: "Mid-Term Evaluation", due: "20 Dec 2026", status: "Upcoming", variant: "gray", eval: "Not evaluated" },
-  { name: "Final Defense & Report", due: "15 Feb 2027", status: "Upcoming", variant: "gray", eval: "Not evaluated" },
-  { name: "Comprehensive Viva", due: "28 Feb 2027", status: "Upcoming", variant: "gray", eval: "Not evaluated" },
-];
+import { getMilestones } from "../../services/api";
 
 const evalMarksData = [
   { name: "Proposal", marks: 78, evaluated: true, fill: "#17302A" },
@@ -31,16 +22,9 @@ const evalMarksData = [
   { name: "Final", marks: 0, evaluated: false },
 ];
 
-const milestonePieData = [
-  { name: "Completed", value: 3, color: "#17302A" },
-  { name: "In progress", value: 1, color: "#EBB44B" },
-  { name: "Upcoming", value: 3, color: "#E6E9E6" },
-];
-
 function CustomBar(props) {
   const { x, y, width, height, payload } = props;
   if (!payload.evaluated) {
-    // 1px dashed #BFC8C2, radius 8px, drawn as empty outline
     const baseHeight = 150;
     const startY = (y || 0) + (height || 0) - baseHeight;
     return (
@@ -97,6 +81,34 @@ function DonutTooltip({ active, payload }) {
 }
 
 export default function Milestones() {
+  const [milestones, setMilestones] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getMilestones()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setMilestones(data);
+        }
+      })
+      .catch((err) => console.error("Failed to load milestones:", err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const totalCount = milestones.length > 0 ? milestones.length : 6;
+  const completedCount = milestones.filter((m) => m.status === "Completed").length;
+  const inProgressCount = milestones.filter(
+    (m) => m.status === "Active" || m.status === "In progress"
+  ).length;
+  const upcomingCount = Math.max(0, totalCount - completedCount - inProgressCount);
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  const milestonePieData = [
+    { name: "Completed", value: completedCount, color: "#17302A" },
+    { name: "In progress", value: inProgressCount, color: "#EBB44B" },
+    { name: "Upcoming", value: upcomingCount, color: "#E6E9E6" },
+  ];
+
   return (
     <div className="space-y-8 pb-12">
       {/* Header = H1 30px Bricolage + muted subtitle */}
@@ -105,23 +117,26 @@ export default function Milestones() {
           Project Milestones
         </h1>
         <p className="text-[14px] text-[#5F6B66] mt-1">
-          Track official deliverables, supervisor evaluation marks, and milestone due dates.
+          Track official departmental deliverables, submission deadlines, and evaluation gates in real time.
         </p>
       </div>
 
-      {/* Progress card: "3 of 7 milestones completed", 43%, 8px bar */}
+      {/* Progress card: dynamic completed, dynamic percent, 8px bar */}
       <div className="card-base">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
           <div className="font-['Bricolage_Grotesque'] text-[18px] font-bold text-[#17302A]">
-            3 of 7 milestones completed
+            {completedCount} of {totalCount} milestones completed
           </div>
           <div className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
-            43%
+            {progressPercent}%
           </div>
         </div>
         {/* Progress bar: 8px, track #E6E9E6, fill #17302A */}
         <div className="w-full h-2 bg-[#E6E9E6] rounded-full overflow-hidden">
-          <div className="h-full bg-[#17302A] rounded-full" style={{ width: "43%" }} />
+          <div
+            className="h-full bg-[#17302A] rounded-full transition-all duration-500"
+            style={{ width: `${progressPercent}%` }}
+          />
         </div>
       </div>
 
@@ -161,13 +176,14 @@ export default function Milestones() {
               </ResponsiveContainer>
             </div>
           </div>
-          <p className="text-[13px] text-[#5F6B66] mt-4 pt-3 border-t border-[#EEEEEA]">
-            Marks out of 100. Dashed bars are milestones not evaluated yet.
-          </p>
+          <div className="flex items-center justify-between pt-3 border-t border-[#EEEEEA] text-[13px] text-[#5F6B66]">
+            <span>Verified Rubric Evaluations</span>
+            <span className="font-bold text-[#17302A]">Average: 81.5%</span>
+          </div>
         </div>
 
-        {/* Card: Milestone Status (1fr) Donut */}
-        <div className="card-base flex flex-col justify-between" role="img" aria-label="Milestone Status Donut">
+        {/* Card: Milestone Status Donut (1fr) */}
+        <div className="card-base flex flex-col justify-between" role="img" aria-label="Milestone Status Donut Chart">
           <div>
             <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-1">
               Milestone Status
@@ -193,7 +209,7 @@ export default function Milestones() {
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] leading-tight">
-                  3 of 7
+                  {completedCount} of {totalCount}
                 </span>
                 <span className="text-[11px] text-[#5F6B66] uppercase tracking-wider">
                   completed
@@ -204,51 +220,62 @@ export default function Milestones() {
           <div className="flex items-center justify-center gap-4 pt-3 border-t border-[#EEEEEA] text-[12px] text-[#5F6B66]">
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#17302A]" />
-              <span>Done (3)</span>
+              <span>Done ({completedCount})</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#EBB44B]" />
-              <span>In progress (1)</span>
+              <span>In progress ({inProgressCount})</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#E6E9E6]" />
-              <span>Upcoming (3)</span>
+              <span>Upcoming ({upcomingCount})</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Card: All Milestones (rows: bold name + "Due [Date]", status badge, "Evaluation: 78 / 85 / Not evaluated") */}
+      {/* Card: All Milestones (rows from DB) */}
       <div className="card-base">
         <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-4">
-          All Milestones
+          All Department Milestones
         </h3>
-        <div className="space-y-3">
-          {milestonesList.map((m) => {
-            let badgeClass = "bg-[#ECECE8] text-[#4A5651]";
-            if (m.variant === "green") badgeClass = "bg-[#E1F4EA] text-[#0B5A3E]";
-            if (m.variant === "amber") badgeClass = "bg-[#FEF3D6] text-[#6B4700]";
-            return (
-              <div
-                key={m.name}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-3.5 border-b border-[#EEEEEA] last:border-0"
-              >
-                <div>
-                  <div className="font-semibold text-[15px] text-[#17302A]">{m.name}</div>
-                  <div className="text-[12px] text-[#5F6B66]">Due {m.due}</div>
+        {loading ? (
+          <div className="text-center py-8 text-[#5F6B66]">Loading milestones from database...</div>
+        ) : (
+          <div className="space-y-3">
+            {milestones.map((m) => {
+              let badgeClass = "bg-[#ECECE8] text-[#4A5651]";
+              if (m.status === "Completed") badgeClass = "bg-[#E1F4EA] text-[#0B5A3E]";
+              if (m.status === "Active" || m.status === "In progress") badgeClass = "bg-[#FEF3D6] text-[#6B4700]";
+              return (
+                <div
+                  key={m.id || m.milestone}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-3.5 border-b border-[#EEEEEA] last:border-0"
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#17302A] text-white">
+                        {m.phase}
+                      </span>
+                      <span className="font-semibold text-[15px] text-[#17302A]">{m.milestone}</span>
+                    </div>
+                    <div className="text-[12px] text-[#5F6B66] mt-1">
+                      Official Due Date: <span className="font-semibold text-[#17302A]">{m.deadline}</span> &middot; Weightage: {m.submission_weight}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${badgeClass}`}>
+                      {m.status}
+                    </span>
+                    <span className="text-[13px] font-medium text-[#17302A] min-w-[110px] text-right">
+                      Weight: <span className="font-bold">{m.submission_weight}</span>
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${badgeClass}`}>
-                    {m.status}
-                  </span>
-                  <span className="text-[13px] font-medium text-[#17302A] min-w-[110px] text-right">
-                    Evaluation: <span className="font-bold">{m.eval}</span>
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

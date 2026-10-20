@@ -5,5 +5,7 @@ from models.feedback import Feedback
 from models.document import Document
 from models.evaluation import Evaluation
 from models.notification import Notification
+from models.milestone import Milestone
 
-__all__ = ["Base", "User", "Project", "Feedback", "Document", "Evaluation", "Notification"]
+__all__ = ["Base", "User", "Project", "Feedback", "Document", "Evaluation", "Notification", "Milestone"]
+

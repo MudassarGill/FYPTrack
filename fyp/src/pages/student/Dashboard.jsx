@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useToast } from "../../components/shared/Toast";
-import { getMyProjects } from "../../services/api";
+import { getMyProjects, getMilestones, getNotifications } from "../../services/api";
 import {
   AreaChart,
   Area,
@@ -113,6 +113,23 @@ function CustomizedDot(props) {
   );
 }
 
+function getDaysRemaining(dateStr) {
+  if (!dateStr) return "Scheduled";
+  const parsed = new Date(dateStr);
+  if (isNaN(parsed.getTime())) return "Upcoming";
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  parsed.setHours(0, 0, 0, 0);
+  const diffTime = parsed - now;
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) return "Completed / Passed";
+  if (diffDays === 0) return "Due today";
+  if (diffDays === 1) return "Tomorrow";
+  if (diffDays < 7) return `In ${diffDays} days`;
+  if (diffDays < 30) return `In ${Math.ceil(diffDays / 7)} weeks`;
+  return `In ${Math.ceil(diffDays / 30)} months`;
+}
+
 export default function Dashboard() {
   const user = getStoredUser();
   const student = user?.student || {};
@@ -128,6 +145,8 @@ export default function Dashboard() {
     message: "",
   });
   const [project, setProject] = useState(null);
+  const [milestones, setMilestones] = useState([]);
+  const [liveNotifications, setLiveNotifications] = useState([]);
 
   useEffect(() => {
     getMyProjects()
@@ -137,7 +156,59 @@ export default function Dashboard() {
         }
       })
       .catch((err) => console.error(err));
+
+    getMilestones()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setMilestones(data);
+        }
+      })
+      .catch((err) => console.error(err));
+
+    getNotifications()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setLiveNotifications(data);
+        }
+      })
+      .catch((err) => console.error(err));
   }, []);
+
+  const totalMilestones = milestones.length > 0 ? milestones.length : 6;
+  const completedMilestones = milestones.filter((m) => m.status === "Completed").length;
+  const inProgressMilestones = milestones.filter(
+    (m) => m.status === "Active" || m.status === "In progress"
+  ).length;
+  const upcomingMilestones = Math.max(0, totalMilestones - completedMilestones - inProgressMilestones);
+
+  const currentPercent = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
+
+  const nextMilestone =
+    milestones.find((m) => m.status === "Active" || m.status === "Upcoming") ||
+    milestones[milestones.length - 1] || {
+      milestone: "SRS Document",
+      deadline: "12 Nov 2026",
+    };
+
+  const dynamicPieData = [
+    { name: "Completed", value: completedMilestones, color: "#17302A" },
+    { name: "In progress", value: inProgressMilestones, color: "#EBB44B" },
+    { name: "Upcoming", value: upcomingMilestones, color: "#E6E9E6" },
+  ];
+
+  const dynamicWeeklyData = [
+    { week: "W1", progress: 0 },
+    { week: "W2", progress: Math.min(10, currentPercent) },
+    { week: "W3", progress: Math.min(20, currentPercent) },
+    { week: "W4", progress: Math.min(30, currentPercent) },
+    { week: "W5", progress: Math.min(currentPercent, 40) },
+    { week: "W6", progress: Math.min(currentPercent, 60) },
+    { week: "Current", progress: currentPercent },
+  ];
+
+  const upcomingDeadlinesList = (milestones.length > 0 ? milestones : projectMilestones)
+    .filter((m) => m.status !== "Completed")
+    .slice(0, 3);
 
   const { addToast } = useToast();
 
@@ -146,6 +217,7 @@ export default function Dashboard() {
     addToast("Message dispatched to FYP Coordinator successfully.");
     setCoordForm({ subject: "milestone", message: "" });
   };
+
 
   return (
     <div className="space-y-8 pb-12">
@@ -216,11 +288,15 @@ export default function Dashboard() {
         <div className="card-base card-hover flex flex-col justify-between">
           <div className="text-[13px] text-[#5F6B66] font-semibold">Milestones</div>
           <div className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] my-1">
-            3 of 7 done
+            {completedMilestones} of {totalMilestones} done
           </div>
           <div>
             <span className="inline-block px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#FEF3D6] text-[#6B4700]">
-              On track
+              {completedMilestones === totalMilestones
+                ? "Completed"
+                : completedMilestones > 0
+                ? "On track"
+                : "Not started"}
             </span>
           </div>
         </div>
@@ -228,12 +304,12 @@ export default function Dashboard() {
         {/* Card 4: Next Deadline */}
         <div className="card-base card-hover flex flex-col justify-between">
           <div className="text-[13px] text-[#5F6B66] font-semibold">Next Deadline</div>
-          <div className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] my-1">
-            12 Nov 2026
+          <div className="font-['Bricolage_Grotesque'] text-[22px] font-bold text-[#17302A] my-1 truncate">
+            {nextMilestone?.deadline || "TBA"}
           </div>
           <div>
-            <span className="inline-block px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#ECECE8] text-[#4A5651]">
-              SRS Document
+            <span className="inline-block px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#ECECE8] text-[#4A5651] truncate max-w-full">
+              {nextMilestone?.milestone || "Upcoming Phase"}
             </span>
           </div>
         </div>
@@ -248,11 +324,11 @@ export default function Dashboard() {
               <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
                 Weekly Progress
               </h3>
-              <span className="text-[13px] text-[#5F6B66]">Spring 2026</span>
+              <span className="text-[13px] text-[#5F6B66]">Session 2026</span>
             </div>
             <div className="h-[220px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={weeklyData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                <AreaChart data={dynamicWeeklyData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                   <CartesianGrid stroke="#EEEEEA" vertical={false} />
                   <XAxis
                     dataKey="week"
@@ -281,7 +357,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="text-[13px] text-[#5F6B66] mt-4 pt-3 border-t border-[#EEEEEA]">
-            Overall completion has grown from 5% to 43% over seven weeks.
+            Overall verified milestone progress is at {currentPercent}%.
           </p>
         </div>
 
@@ -296,7 +372,7 @@ export default function Dashboard() {
                 <PieChart>
                   <Tooltip content={<DonutTooltip />} />
                   <Pie
-                    data={milestonePieData}
+                    data={dynamicPieData}
                     innerRadius={54}
                     outerRadius={72}
                     startAngle={90}
@@ -304,17 +380,17 @@ export default function Dashboard() {
                     dataKey="value"
                     stroke="none"
                   >
-                    {milestonePieData.map((entry, index) => (
+                    {dynamicPieData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
 
-              {/* Centered text: "3 of 7" and "completed" */}
+              {/* Centered text: dynamic completed of total */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] leading-tight">
-                  3 of 7
+                  {completedMilestones} of {totalMilestones}
                 </span>
                 <span className="text-[11px] text-[#5F6B66] uppercase tracking-wider">
                   completed
@@ -327,15 +403,15 @@ export default function Dashboard() {
           <div className="flex items-center justify-center gap-4 pt-3 border-t border-[#EEEEEA] text-[12px] text-[#5F6B66]">
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#17302A]" />
-              <span>Done (3)</span>
+              <span>Done ({completedMilestones})</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#EBB44B]" />
-              <span>In progress (1)</span>
+              <span>In progress ({inProgressMilestones})</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#E6E9E6]" />
-              <span>Upcoming (3)</span>
+              <span>Upcoming ({upcomingMilestones})</span>
             </div>
           </div>
         </div>
@@ -352,27 +428,30 @@ export default function Dashboard() {
                 Project Progress
               </h3>
               <span className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
-                43%
+                {currentPercent}%
               </span>
             </div>
 
             {/* 8px progress bar, track #E6E9E6, fill #17302A */}
             <div className="w-full h-2 bg-[#E6E9E6] rounded-full overflow-hidden mb-6">
-              <div className="h-full bg-[#17302A] rounded-full" style={{ width: "43%" }} />
+              <div
+                className="h-full bg-[#17302A] rounded-full transition-all duration-500"
+                style={{ width: `${currentPercent}%` }}
+              />
             </div>
 
             {/* Rows with badges */}
             <div className="space-y-3">
-              {projectMilestones.map((m) => {
+              {(milestones.length > 0 ? milestones : projectMilestones).map((m) => {
                 let badgeClass = "bg-[#ECECE8] text-[#4A5651]";
-                if (m.variant === "green") badgeClass = "bg-[#E1F4EA] text-[#0B5A3E]";
-                if (m.variant === "blue") badgeClass = "bg-[#E3EEF9] text-[#1E3A8A]";
+                if (m.status === "Completed") badgeClass = "bg-[#E1F4EA] text-[#0B5A3E]";
+                if (m.status === "Active" || m.status === "In progress") badgeClass = "bg-[#FEF3D6] text-[#6B4700]";
                 return (
                   <div
-                    key={m.name}
+                    key={m.id || m.name || m.milestone}
                     className="flex items-center justify-between py-2 border-b border-[#EEEEEA] last:border-0"
                   >
-                    <span className="text-[14px] font-medium text-[#17302A]">{m.name}</span>
+                    <span className="text-[14px] font-medium text-[#17302A]">{m.milestone || m.name}</span>
                     <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${badgeClass}`}>
                       {m.status}
                     </span>
@@ -388,20 +467,26 @@ export default function Dashboard() {
               Upcoming Deadlines
             </h3>
             <div className="space-y-3">
-              {deadlines.map((d) => (
-                <div
-                  key={d.title}
-                  className="flex items-center justify-between py-2.5 border-b border-[#EEEEEA] last:border-0"
-                >
-                  <div>
-                    <div className="text-[14px] font-semibold text-[#17302A]">{d.title}</div>
-                    <div className="text-[12px] text-[#5F6B66]">{d.date}</div>
-                  </div>
-                  <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#FEF3D6] text-[#6B4700]">
-                    {d.remaining}
-                  </span>
+              {upcomingDeadlinesList.length === 0 ? (
+                <div className="text-[13px] text-[#0B5A3E] font-medium p-3 bg-[#E1F4EA] rounded-lg">
+                  All scheduled departmental milestones are marked as completed!
                 </div>
-              ))}
+              ) : (
+                upcomingDeadlinesList.map((d) => (
+                  <div
+                    key={d.id || d.milestone || d.title}
+                    className="flex items-center justify-between py-2.5 border-b border-[#EEEEEA] last:border-0"
+                  >
+                    <div>
+                      <div className="text-[14px] font-semibold text-[#17302A]">{d.milestone || d.title}</div>
+                      <div className="text-[12px] text-[#5F6B66]">{d.deadline || d.date}</div>
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#FEF3D6] text-[#6B4700]">
+                      {getDaysRemaining(d.deadline || d.date)}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -417,20 +502,16 @@ export default function Dashboard() {
                 </h3>
               </div>
               <div className="space-y-3">
-                {notifications.map((n) => (
+                {(liveNotifications.length > 0 ? liveNotifications.slice(0, 3) : notifications).map((n, idx) => (
                   <div
-                    key={n.title}
+                    key={n.id || idx}
                     className="flex items-center justify-between gap-2 py-2 border-b border-[#EEEEEA] last:border-0"
                   >
                     <span className="text-[13px] text-[#17302A] leading-snug">{n.title}</span>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 ${
-                        n.badgeType === "blue"
-                          ? "bg-[#E3EEF9] text-[#1E3A8A]"
-                          : "bg-[#ECECE8] text-[#4A5651]"
-                      }`}
+                      className="px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 bg-[#E3EEF9] text-[#1E3A8A]"
                     >
-                      {n.badge}
+                      {n.badge || "New"}
                     </span>
                   </div>
                 ))}
@@ -445,6 +526,7 @@ export default function Dashboard() {
               </Link>
             </div>
           </div>
+
 
           {/* Card: Latest Feedback */}
           <div className="card-base flex flex-col justify-between">

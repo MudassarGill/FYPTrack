@@ -101,6 +101,71 @@ def seed_database():
 
             db.commit()
             print("Database seeded with initial demonstration accounts & projects.")
+
+        # 5. Seed department milestones if table empty
+        from models.milestone import Milestone
+        ms_count = db.scalar(select(Milestone).limit(1))
+        if not ms_count:
+            default_milestones = [
+                Milestone(
+                    milestone="Project Proposal Defense",
+                    phase="Phase 1",
+                    deadline="20 Sep 2026",
+                    submission_weight="10%",
+                    status="Completed",
+                    compliance="48 / 48 Groups (100%)",
+                    order_index=1,
+                ),
+                Milestone(
+                    milestone="Software Requirements Specification (SRS)",
+                    phase="Phase 2",
+                    deadline="10 Oct 2026",
+                    submission_weight="15%",
+                    status="Completed",
+                    compliance="48 / 48 Groups (100%)",
+                    order_index=2,
+                ),
+                Milestone(
+                    milestone="System Design Document & Architecture",
+                    phase="Phase 3",
+                    deadline="12 Nov 2026",
+                    submission_weight="15%",
+                    status="Active",
+                    compliance="26 / 48 Groups Submitted",
+                    order_index=3,
+                ),
+                Milestone(
+                    milestone="Mid-Term Progress Defense",
+                    phase="Phase 4",
+                    deadline="20 Dec 2026",
+                    submission_weight="20%",
+                    status="Upcoming",
+                    compliance="Rubric Published",
+                    order_index=4,
+                ),
+                Milestone(
+                    milestone="Prototype Demonstration & Code Freeze",
+                    phase="Phase 5",
+                    deadline="15 Mar 2027",
+                    submission_weight="20%",
+                    status="Upcoming",
+                    compliance="Pending Phase",
+                    order_index=5,
+                ),
+                Milestone(
+                    milestone="Final Dissertation & External Defense",
+                    phase="Phase 6",
+                    deadline="25 May 2027",
+                    submission_weight="20%",
+                    status="Upcoming",
+                    compliance="Final Gate",
+                    order_index=6,
+                ),
+            ]
+            for m in default_milestones:
+                db.add(m)
+            db.commit()
+            print("Database seeded with department milestones.")
     except Exception as e:
         db.rollback()
         print(f"Error seeding database: {e}")
