@@ -1,6 +1,7 @@
 import { useState } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Card from "../../components/shared/Card";
+import { useToast } from "../../components/shared/Toast";
 
 const evaluationGroups = [
   {
@@ -33,6 +34,7 @@ const evaluationGroups = [
 export default function Evaluations() {
   const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
   const [groupsData, setGroupsData] = useState(evaluationGroups);
+  const { addToast } = useToast();
   const [remarks, setRemarks] = useState(
     "Overall steady progress. Group 14 showed commendable empirical rigor in crop dataset processing."
   );
@@ -50,9 +52,8 @@ export default function Evaluations() {
     return (marksObj.criteria1 || 0) + (marksObj.criteria2 || 0) + (marksObj.criteria3 || 0) + (marksObj.criteria4 || 0);
   };
 
-  const handleSaveMarks = (e) => {
     e.preventDefault();
-    alert(`Evaluation scores for ${activeGroup.group} recorded and submitted to Department FYP Committee.`);
+    addToast(`Evaluation scores for ${activeGroup.group} submitted successfully.`);
   };
 
   return (
@@ -216,7 +217,7 @@ export default function Evaluations() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => alert("Draft evaluation marks saved.")}
+                onClick={() => addToast("Draft marks saved.")}
                 className="px-4 py-2 rounded-[10px] border border-[#D3D8D4] text-[13px] font-bold text-[#17302A] hover:bg-gray-50 cursor-pointer"
               >
                 Save Draft

@@ -460,7 +460,7 @@ export default function SupervisorOverview() {
           </div>
         </Card>
 
-        {/* AI Supervisor Intelligence Card (1fr) */}
+        {/* Originality & Progress Summary Card (1fr) */}
         <div
           className="rounded-[16px] p-6 text-white flex flex-col justify-between shadow-[0_12px_28px_rgba(23,48,42,0.18)]"
           style={{ backgroundColor: "#17302A" }}
@@ -468,28 +468,28 @@ export default function SupervisorOverview() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#EBB44B]/20 text-[#F6D88E] border border-[#EBB44B]/30">
-                AI Embeddings Engine
+                Originality Check
               </span>
-              <span className="text-[11px] text-[#A9B8B2]">Open-Source NLP</span>
+              <span className="text-[11px] text-[#A9B8B2]">Automated</span>
             </div>
             <h3 className="font-['Bricolage_Grotesque'] text-[19px] font-bold text-white mb-2">
-              Topic & Plagiarism Vector Fit
+              Project Originality Status
             </h3>
             <p className="text-[13px] text-[#D5E3DD] leading-relaxed mb-4">
-              All student proposals & documents are processed via open-source embedding models (sentence-transformers / MiniLM).
+              All student proposals are checked against the department archive to ensure originality and prevent topic duplication.
             </p>
             <div className="space-y-2.5 text-[12px] text-[#CFE0D9]">
               <div className="flex justify-between py-1 border-b border-white/10">
-                <span>Avg Topic Alignment:</span>
-                <span className="font-bold text-[#EBB44B]">92.4% Match</span>
+                <span>Avg Originality Score:</span>
+                <span className="font-bold text-[#EBB44B]">92.4%</span>
               </div>
               <div className="flex justify-between py-1 border-b border-white/10">
-                <span>Plagiarism Anomaly Check:</span>
+                <span>Flagged Submissions:</span>
                 <span className="font-bold text-emerald-400">0 High Risk</span>
               </div>
               <div className="flex justify-between py-1">
-                <span>Suggested Next Action:</span>
-                <span className="text-white">Sign off Group 14 SRS v2</span>
+                <span>Next Action:</span>
+                <span className="text-white">Review Group 14 SRS v2</span>
               </div>
             </div>
           </div>
@@ -498,7 +498,7 @@ export default function SupervisorOverview() {
             to="/supervisor/proposals"
             className="block text-center mt-6 rounded-[8px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[13px] py-2 transition-colors"
           >
-            Review Proposals with AI &rarr;
+            Review Proposals &rarr;
           </Link>
         </div>
       </div>

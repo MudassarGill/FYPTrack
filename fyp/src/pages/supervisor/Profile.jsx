@@ -2,9 +2,11 @@ import { useState } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Card from "../../components/shared/Card";
 import { getStoredUser } from "../../services/auth";
+import { useToast } from "../../components/shared/Toast";
 
 export default function SupervisorProfile() {
   const user = getStoredUser();
+  const { addToast } = useToast();
 
   const [profile, setProfile] = useState({
     fullName: user?.full_name || "Dr. Imran Shah",
@@ -49,14 +51,14 @@ export default function SupervisorProfile() {
 
   const handleSave = (e) => {
     e.preventDefault();
-    alert("Profile and supervision parameters updated successfully!");
+    addToast("Profile updated successfully!");
   };
 
   return (
     <div className="space-y-8 pb-12">
       <PageHeader
         title="Supervisor Profile"
-        description="Manage your academic credentials, office hours, supervision quota, and research domain tags used for AI recommendations."
+        description="Manage your academic credentials, office hours, supervision quota, and research specializations."
       />
 
       <form onSubmit={handleSave} className="space-y-6">
@@ -182,14 +184,14 @@ export default function SupervisorProfile() {
               </div>
             </Card>
 
-            {/* Research Domains & AI Embedding Profiles */}
+            {/* Research Domains */}
             <Card className="p-6 space-y-4">
               <div>
                 <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-1">
-                  Research Expertise & AI Vector Keywords
+                  Research Specializations
                 </h3>
                 <p className="text-[13px] text-[#5F6B66]">
-                  These keywords are converted into dense vector embeddings for the AI supervisor-proposal recommendation engine.
+                  Add your areas of expertise. These help the coordinator match student proposals to the most suitable supervisor.
                 </p>
               </div>
 

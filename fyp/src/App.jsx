@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
+import { ToastProvider } from "./components/shared/Toast";
 
 // Existing Auth Components (preserved exactly as requested)
 import AuthLayout from "./components/Auth/AuthLayout";
@@ -157,6 +158,7 @@ function WelcomePageRoute() {
    ============================================================ */
 export default function App() {
   return (
+    <ToastProvider>
     <BrowserRouter>
       <Routes>
         {/* Public Home Page */}
@@ -237,5 +239,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+    </ToastProvider>
   );
 }
