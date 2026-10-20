@@ -4,8 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import settings
 from database.connection import Base, engine
-from models.user import User  # Ensure models are registered with Base metadata
+import models  # Ensure all models are registered with Base metadata
 from routes.router import api_router
+from services.seed_service import seed_database
 
 
 @asynccontextmanager
@@ -13,6 +14,7 @@ async def lifespan(app: FastAPI):
     # Auto-create SQLite database tables on startup
     Base.metadata.create_all(bind=engine)
     print("Database tables verified/created successfully.")
+    seed_database()
     yield
 
 

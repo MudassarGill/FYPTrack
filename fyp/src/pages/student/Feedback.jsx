@@ -1,145 +1,161 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "../../components/shared/Toast";
-
-const initialFeedbackList = [
-  {
-    id: 1,
-    from: "Dr. Imran Shah",
-    role: "Supervisor",
-    date: "28 Oct 2026",
-    deliverable: "SRS Document Submission",
-    status: "Action Required",
-    variant: "amber",
-    text: "The requirements specification is generally sound. However, Section 3.2 must include a rigorous mathematical definition of the rolling harvest window and data provenance pipeline for historical APMC market arrivals.",
-  },
-  {
-    id: 2,
-    from: "Dr. Imran Shah",
-    role: "Supervisor",
-    date: "15 Oct 2026",
-    deliverable: "Proposal Defense",
-    status: "Approved",
-    variant: "green",
-    text: "Solid presentation during defense. Make sure your research paper methodology comparison table includes SARIMA, XGBoost, and Temporal Fusion Transformers before the prototype demo.",
-  },
-  {
-    id: 3,
-    from: "FYP Coordinator Office",
-    role: "Coordinator",
-    date: "20 Sep 2026",
-    deliverable: "Initial Proposal Submission",
-    status: "Cleared",
-    variant: "blue",
-    text: "AI similarity check completed with 94% uniqueness. Project registered under CS Capstone track 2026.",
-  },
-];
+import { getMyProjects, getProjectFeedback, postFeedback } from "../../services/api";
 
 export default function Feedback() {
   const { addToast } = useToast();
-  const [items, setItems] = useState(initialFeedbackList);
+  const [loading, setLoading] = useState(true);
+  const [project, setProject] = useState(null);
+  const [items, setItems] = useState([]);
   const [replyText, setReplyText] = useState("");
-  const [replyingTo, setReplyingTo] = useState(null);
+  const [sending, setSending] = useState(false);
 
-  const handleSendReply = (id) => {
+  useEffect(() => {
+    loadFeedbackData();
+  }, []);
+
+  async function loadFeedbackData() {
+    try {
+      setLoading(true);
+      const projects = await getMyProjects();
+      if (projects && projects.length > 0) {
+        const p = projects[0];
+        setProject(p);
+        const fbList = await getProjectFeedback(p.id);
+        setItems(fbList);
+      }
+    } catch (err) {
+      console.error("Failed to load feedback:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleSendReply = async () => {
     if (!replyText.trim()) return;
-    addToast("Reply dispatched to supervisor successfully.");
-    setReplyText("");
-    setReplyingTo(null);
+    if (!project) {
+      addToast("Please submit a proposal first before messaging.", "info");
+      return;
+    }
+    try {
+      setSending(true);
+      const newFb = await postFeedback(project.id, replyText);
+      setItems([...items, newFb]);
+      addToast("Reply dispatched to supervisor successfully.");
+      setReplyText("");
+    } catch (err) {
+      addToast(err.message || "Failed to send message.", "error");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Header = H1 30px Bricolage + muted subtitle */}
+      {/* Header */}
       <div>
         <h1 className="font-['Bricolage_Grotesque'] text-[30px] font-bold text-[#17302A] leading-tight">
-          Supervisor Feedback
+          Supervisor Feedback &amp; Discussion
         </h1>
         <p className="text-[14px] text-[#5F6B66] mt-1">
-          Review structured evaluation comments and guidance attached to each deliverable.
+          Review structured evaluation remarks and revision requests from your supervisor.
         </p>
       </div>
 
-      <div className="space-y-6">
-        {items.map((item) => {
-          let badgeClass = "bg-[#ECECE8] text-[#4A5651]";
-          if (item.variant === "green") badgeClass = "bg-[#E1F4EA] text-[#0B5A3E]";
-          if (item.variant === "amber") badgeClass = "bg-[#FEF3D6] text-[#6B4700]";
-          if (item.variant === "blue") badgeClass = "bg-[#E3EEF9] text-[#1E3A8A]";
-
-          return (
-            <div key={item.id} className="card-base flex flex-col justify-between">
-              <div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-[#EEEEEA]">
-                  <div className="flex items-center gap-3">
-                    <div className="w-[42px] h-[42px] rounded-full bg-[#EBB44B] text-[#17302A] font-['Bricolage_Grotesque'] font-bold text-[16px] flex items-center justify-center shrink-0">
-                      {item.from.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+      {/* Main feedback feed */}
+      {items.length === 0 ? (
+        <div className="card-base text-center py-12">
+          <div className="text-[16px] font-semibold text-[#17302A]">No feedback messages recorded yet</div>
+          <p className="text-[13px] text-[#5F6B66] mt-1 max-w-md mx-auto">
+            Once your supervisor reviews your proposal or deliverables, their revision notes and guidance will be listed here live.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {items.map((item) => {
+            const isSupervisor = item.from_role === "supervisor";
+            const isCoordinator = item.from_role === "coordinator";
+            return (
+              <div key={item.id} className="card-base flex flex-col justify-between">
+                <div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#EEEEEA]">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-[40px] h-[40px] rounded-full font-['Bricolage_Grotesque'] font-bold text-[15px] flex items-center justify-center shrink-0 ${
+                          isSupervisor
+                            ? "bg-[#EBB44B] text-[#17302A]"
+                            : isCoordinator
+                            ? "bg-[#17302A] text-white"
+                            : "bg-[#E1F4EA] text-[#0B5A3E]"
+                        }`}
+                      >
+                        {item.from_user_name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .slice(0, 2)
+                          .join("")}
+                      </div>
+                      <div>
+                        <div className="font-['Bricolage_Grotesque'] font-bold text-[15px] text-[#17302A]">
+                          {item.from_user_name}
+                        </div>
+                        <div className="text-[12px] text-[#5F6B66] capitalize">
+                          {item.from_role} &bull; {new Date(item.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
                     </div>
+
                     <div>
-                      <div className="font-['Bricolage_Grotesque'] font-bold text-[16px] text-[#17302A]">
-                        {item.from}
-                      </div>
-                      <div className="text-[12px] text-[#5F6B66]">
-                        {item.role} &bull; {item.date}
-                      </div>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${
+                          item.action_type === "revision_request"
+                            ? "bg-red-100 text-red-800"
+                            : item.action_type === "approval"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-blue-100 text-blue-800"
+                        }`}
+                      >
+                        {item.action_type === "revision_request"
+                          ? "Revision Required"
+                          : item.action_type === "approval"
+                          ? "Approved"
+                          : "Note"}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className="text-[12px] font-medium text-[#5F6B66] hidden sm:inline">
-                      {item.deliverable}
-                    </span>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${badgeClass}`}>
-                      {item.status}
-                    </span>
+                  <div className="pt-3 text-[14px] text-[#17302A] leading-relaxed">
+                    {item.message}
                   </div>
                 </div>
-
-                <div className="pt-4 text-[14px] text-[#17302A] leading-relaxed">
-                  {item.text}
-                </div>
               </div>
+            );
+          })}
+        </div>
+      )}
 
-              {/* Reply section */}
-              <div className="mt-5 pt-3.5 border-t border-[#EEEEEA]">
-                {replyingTo === item.id ? (
-                  <div className="space-y-3">
-                    <textarea
-                      rows={3}
-                      placeholder="Write your response or question for the supervisor..."
-                      value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
-                      className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[10px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6] resize-none"
-                    />
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleSendReply(item.id)}
-                        className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[13px] px-[16px] py-[8px] transition-colors cursor-pointer"
-                      >
-                        Send Reply
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setReplyingTo(null)}
-                        className="rounded-[10px] border-[1.5px] border-[#17302A] text-[#17302A] font-bold text-[13px] px-[16px] py-[8px] hover:bg-[#17302A] hover:text-white transition-colors cursor-pointer"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setReplyingTo(item.id)}
-                    className="rounded-[10px] border-[1.5px] border-[#17302A] text-[#17302A] hover:bg-[#17302A] hover:text-white font-bold text-[13px] px-[16px] py-[8px] transition-colors cursor-pointer"
-                  >
-                    Reply to feedback
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
+      {/* Reply Box */}
+      <div className="card-base">
+        <h3 className="font-['Bricolage_Grotesque'] text-[18px] font-bold text-[#17302A] mb-3">
+          Send Message or Clarification to Supervisor
+        </h3>
+        <div className="space-y-3">
+          <textarea
+            rows={3}
+            placeholder="Type your response, clarification, or milestone progress update..."
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[10px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6] resize-none"
+          />
+          <button
+            type="button"
+            disabled={sending || !replyText.trim()}
+            onClick={handleSendReply}
+            className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[13px] px-[18px] py-[9px] transition-colors cursor-pointer disabled:opacity-50"
+          >
+            {sending ? "Sending..." : "Send Message to Supervisor"}
+          </button>
+        </div>
       </div>
     </div>
   );

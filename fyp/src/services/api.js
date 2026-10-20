@@ -1,0 +1,157 @@
+import { getStoredToken, API_BASE_URL } from "./auth";
+
+async function authFetch(url, options = {}) {
+  const token = getStoredToken();
+  const headers = {
+    Accept: "application/json",
+    ...(options.headers || {}),
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  // Don't set Content-Type for FormData
+  if (!(options.body instanceof FormData) && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const response = await fetch(`${API_BASE_URL}${url}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const message = errorData.detail || errorData.message || "Request failed.";
+    throw new Error(message);
+  }
+
+  return response.json();
+}
+
+/* ============================================================
+   Projects & Proposals API
+   ============================================================ */
+export async function getMyProjects() {
+  return authFetch("/projects/my");
+}
+
+export async function getAllProjects() {
+  return authFetch("/projects/all");
+}
+
+export async function getProjectById(id) {
+  return authFetch(`/projects/${id}`);
+}
+
+export async function submitProposal(data) {
+  return authFetch("/projects/", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateProject(id, data) {
+  return authFetch(`/projects/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function assignSupervisorToProject(projectId, supervisorId, supervisorName) {
+  return authFetch(`/projects/${projectId}/assign-supervisor`, {
+    method: "POST",
+    body: JSON.stringify({ supervisor_id: supervisorId, supervisor_name: supervisorName }),
+  });
+}
+
+export async function submitSupervisorDecision(projectId, status, feedback) {
+  return authFetch(`/projects/${projectId}/supervisor-decision`, {
+    method: "POST",
+    body: JSON.stringify({ status, feedback }),
+  });
+}
+
+export async function submitCoordinatorDecision(projectId, coordinatorStatus, coordinatorNotes) {
+  return authFetch(`/projects/${projectId}/coordinator-decision`, {
+    method: "POST",
+    body: JSON.stringify({
+      coordinator_status: coordinatorStatus,
+      coordinator_notes: coordinatorNotes,
+    }),
+  });
+}
+
+/* ============================================================
+   Feedback & Comments API
+   ============================================================ */
+export async function getProjectFeedback(projectId) {
+  return authFetch(`/feedback/project/${projectId}`);
+}
+
+export async function postFeedback(projectId, message, actionType = "comment") {
+  return authFetch("/feedback/", {
+    method: "POST",
+    body: JSON.stringify({ project_id: projectId, message, action_type: actionType }),
+  });
+}
+
+/* ============================================================
+   Documents & Deliverables API
+   ============================================================ */
+export async function getProjectDocuments(projectId) {
+  return authFetch(`/documents/project/${projectId}`);
+}
+
+export async function uploadDocumentFile(formData) {
+  return authFetch("/documents/upload", {
+    method: "POST",
+    body: formData,
+  });
+}
+
+export async function reviewDocumentFile(documentId, status, supervisorComment) {
+  return authFetch(`/documents/${documentId}/review`, {
+    method: "POST",
+    body: JSON.stringify({ status, supervisor_comment: supervisorComment }),
+  });
+}
+
+export function getDocumentDownloadUrl(documentId) {
+  return `${API_BASE_URL}/documents/download/${documentId}`;
+}
+
+/* ============================================================
+   Evaluations API
+   ============================================================ */
+export async function getProjectEvaluations(projectId) {
+  return authFetch(`/evaluations/project/${projectId}`);
+}
+
+export async function submitEvaluationMarks(data) {
+  return authFetch("/evaluations/", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/* ============================================================
+   Notifications API
+   ============================================================ */
+export async function getNotifications() {
+  return authFetch("/notifications/my");
+}
+
+export async function markNotificationAsRead(id) {
+  return authFetch(`/notifications/read/${id}`, {
+    method: "POST",
+  });
+}
+
+/* ============================================================
+   Supervisors Allocation API
+   ============================================================ */
+export async function getSupervisorsList() {
+  return authFetch("/supervisors/list");
+}

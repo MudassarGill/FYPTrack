@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useToast } from "../../components/shared/Toast";
+import { getMyProjects } from "../../services/api";
 import {
   AreaChart,
   Area,
@@ -126,6 +127,17 @@ export default function Dashboard() {
     subject: "milestone",
     message: "",
   });
+  const [project, setProject] = useState(null);
+
+  useEffect(() => {
+    getMyProjects()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setProject(data[0]);
+        }
+      })
+      .catch((err) => console.error(err));
+  }, []);
 
   const { addToast } = useToast();
 
@@ -152,10 +164,10 @@ export default function Dashboard() {
           Your Final Year Project
         </span>
         <h1 className="font-['Bricolage_Grotesque'] font-bold text-[36px] sm:text-[44px] lg:text-[48px] leading-[1.08] tracking-tight text-white mb-3">
-          Crop Price Prediction and Market Advisory System
+          {project?.title || "Final Year Project"}
         </h1>
         <p className="text-[16px] text-[#D5E3DD] max-w-2xl leading-relaxed mb-6">
-          Machine learning system forecasting mandi prices and guiding crop harvest timing across Punjab agricultural districts.
+          {project?.abstract || "Submit your proposal to start your FYP milestone tracking and supervisor reviews."}
         </p>
 
         {/* Three pills (white at 14%) */}
@@ -164,10 +176,10 @@ export default function Dashboard() {
             Roll No: {rollNo}
           </span>
           <span className="px-3 py-1 rounded-full text-[12px] font-semibold bg-white/14 text-white">
-            {groupName}
+            {project?.group_name || groupName}
           </span>
           <span className="px-3 py-1 rounded-full text-[12px] font-semibold bg-white/14 text-white">
-            {program}
+            {project?.domain || program}
           </span>
         </div>
       </div>
@@ -176,13 +188,13 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-2 sm:px-4" style={{ marginTop: "-56px" }}>
         {/* Card 1: Proposal */}
         <div className="card-base card-hover flex flex-col justify-between">
-          <div className="text-[13px] text-[#5F6B66] font-semibold">Proposal</div>
-          <div className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] my-1">
-            Approved
+          <div className="text-[13px] text-[#5F6B66] font-semibold">Proposal Status</div>
+          <div className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] my-1 truncate">
+            {project?.status || "Draft"}
           </div>
           <div>
             <span className="inline-block px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E1F4EA] text-[#0B5A3E]">
-              By Coordinator
+              {project?.coordinator_status || "Institutional Track"}
             </span>
           </div>
         </div>
@@ -191,11 +203,11 @@ export default function Dashboard() {
         <div className="card-base card-hover flex flex-col justify-between">
           <div className="text-[13px] text-[#5F6B66] font-semibold">Supervisor</div>
           <div className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] my-1 truncate">
-            Dr. Imran Shah
+            {project?.supervisor_name || "Pending Allocation"}
           </div>
           <div>
             <span className="inline-block px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E3EEF9] text-[#1E3A8A]">
-              Assigned
+              {project?.supervisor_name ? "Allocated" : "Awaiting"}
             </span>
           </div>
         </div>
@@ -530,17 +542,23 @@ export default function Dashboard() {
             </h3>
             <div className="flex items-center gap-3.5 mb-3">
               <div className="w-[48px] h-[48px] rounded-full bg-[#EBB44B] text-[#17302A] font-['Bricolage_Grotesque'] font-bold text-[18px] flex items-center justify-center shrink-0">
-                IS
+                {project?.supervisor_name
+                  ? project.supervisor_name.split(" ").map((n) => n[0]).slice(0, 2).join("")
+                  : "NA"}
               </div>
               <div>
                 <div className="font-['Bricolage_Grotesque'] font-bold text-[16px] text-[#17302A]">
-                  Dr. Imran Shah
+                  {project?.supervisor_name || "Pending Coordinator Allocation"}
                 </div>
-                <div className="text-[12px] text-[#5F6B66]">imran.shah@university.edu</div>
+                <div className="text-[12px] text-[#5F6B66]">
+                  {project?.supervisor_name ? "Assigned Mentor" : "Coordinator Reviewing"}
+                </div>
               </div>
             </div>
             <p className="text-[13px] text-[#5F6B66] leading-relaxed">
-              Machine Learning, Data Mining, Agricultural Analytics
+              {project?.supervisor_name
+                ? "Available for milestone consultations, document sign-offs, and continuous evaluation."
+                : "A supervisor will be paired once your proposal is reviewed by the coordinator."}
             </p>
           </div>
           <div className="pt-3 border-t border-[#EEEEEA] mt-4">

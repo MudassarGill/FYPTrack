@@ -306,7 +306,7 @@ export default function CoordinatorOverview() {
           </div>
         </Card>
 
-        {/* AI Vector Intelligence & Plagiarism Engine (1fr) */}
+        {/* Originality & Archive Screening (1fr) */}
         <div
           className="rounded-[16px] p-6 text-white flex flex-col justify-between shadow-[0_12px_28px_rgba(23,48,42,0.18)]"
           style={{ backgroundColor: "#17302A" }}
@@ -314,32 +314,32 @@ export default function CoordinatorOverview() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#EBB44B]/20 text-[#F6D88E] border border-[#EBB44B]/30">
-                Department AI Sentinel
+                Originality Screening
               </span>
-              <span className="text-[11px] text-[#A9B8B2]">all-MiniLM-L6-v2</span>
+              <span className="text-[11px] text-[#A9B8B2]">Archive Cross-Check</span>
             </div>
             <h3 className="font-['Bricolage_Grotesque'] text-[19px] font-bold text-white mb-2">
-              Embedding Archive Vector Check
+              Department Originality Status
             </h3>
             <p className="text-[13px] text-[#D5E3DD] leading-relaxed mb-4">
-              All 48 group proposals cross-referenced across 450+ historical capstone theses to detect idea duplicates and balance supervisor domain matches.
+              All student project proposals are cross-referenced across departmental capstone archives to ensure novelty and maintain academic integrity.
             </p>
             <div className="space-y-2.5 text-[12px] text-[#CFE0D9]">
               <div className="flex justify-between py-1 border-b border-white/10">
-                <span>Total Embeddings Indexed:</span>
-                <span className="font-bold text-[#EBB44B]">498 Vectors</span>
+                <span>Archived Projects Evaluated:</span>
+                <span className="font-bold text-[#EBB44B]">450+ Theses</span>
               </div>
               <div className="flex justify-between py-1 border-b border-white/10">
-                <span>Unique Clear Submissions:</span>
-                <span className="font-bold text-emerald-400">47 / 48 (97.9%)</span>
+                <span>Novelty Clear Submissions:</span>
+                <span className="font-bold text-emerald-400">97.9% Novel</span>
               </div>
               <div className="flex justify-between py-1 border-b border-white/10">
-                <span>Supervisor Matching Accuracy:</span>
-                <span className="font-bold text-white">93.2% Fit</span>
+                <span>Average Originality Score:</span>
+                <span className="font-bold text-white">94% Uniqueness</span>
               </div>
               <div className="flex justify-between py-1">
-                <span>High-Risk Flags:</span>
-                <span className="font-bold text-amber-300">1 (Group 42)</span>
+                <span>Flags Pending Review:</span>
+                <span className="font-bold text-amber-300">0 High Risk</span>
               </div>
             </div>
           </div>
@@ -348,7 +348,7 @@ export default function CoordinatorOverview() {
             to="/coordinator/similarity"
             className="block text-center mt-6 rounded-[8px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[13px] py-2 transition-colors"
           >
-            Launch Similarity Inspector &rarr;
+            Open Originality Checker &rarr;
           </Link>
         </div>
       </div>
