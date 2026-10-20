@@ -117,7 +117,7 @@ function BuildingIcon() {
 }
 
 const contactRows = [
-  { label: "Email", value: "[EMAIL_ADDRESSY", icon: <MailIcon /> },
+  { label: "Email", value: "anshbaengineer@gmail.com", icon: <MailIcon /> },
   { label: "Office hours", value: "Mon to Fri, 9:00 to 17:00", icon: <ClockIcon /> },
   { label: "Department", value: "Computer Science, Main Campus", icon: <BuildingIcon /> },
 ];
