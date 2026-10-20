@@ -1,5 +1,17 @@
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api";
+export function getApiBaseUrl() {
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (host === "localhost") {
+      return "http://localhost:8000/api";
+    }
+    if (host === "127.0.0.1") {
+      return "http://127.0.0.1:8000/api";
+    }
+  }
+  return import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+}
+
+export const API_BASE_URL = getApiBaseUrl();
 
 const TOKEN_KEY = "fypTrack_auth_token";
 const USER_KEY = "fypTrack_auth_user";
@@ -55,8 +67,25 @@ async function handleResponse(response) {
   return data;
 }
 
+async function robustFetch(endpoint, options) {
+  const primary = `${getApiBaseUrl()}${endpoint}`;
+  const alt = primary.includes("localhost")
+    ? primary.replace("localhost", "127.0.0.1")
+    : primary.replace("127.0.0.1", "localhost");
+
+  try {
+    return await fetch(primary, options);
+  } catch (err) {
+    try {
+      return await fetch(alt, options);
+    } catch {
+      throw new Error("Unable to connect to backend server. Make sure Python uvicorn is running on port 8000.");
+    }
+  }
+}
+
 export async function signUp({ full_name, email, password, role = "student" }) {
-  const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+  const response = await robustFetch("/auth/signup", {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({ full_name, email, password, role }),
@@ -69,7 +98,7 @@ export async function signUp({ full_name, email, password, role = "student" }) {
 }
 
 export async function logIn({ email, password }) {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+  const response = await robustFetch("/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({ email, password }),
@@ -85,7 +114,7 @@ export async function getCurrentUser(token) {
   const authToken = token || getStoredToken();
   if (!authToken) throw new Error("No token provided");
 
-  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+  const response = await robustFetch("/auth/me", {
     headers: {
       Authorization: `Bearer ${authToken}`,
       Accept: "application/json",
@@ -94,8 +123,8 @@ export async function getCurrentUser(token) {
   return handleResponse(response);
 }
 
-export async function forgotPassword({ email }) {
-  const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+export async function forgotPassword(email) {
+  const response = await robustFetch("/auth/forgot-password", {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({ email }),
@@ -103,11 +132,11 @@ export async function forgotPassword({ email }) {
   return handleResponse(response);
 }
 
-export async function resetPassword({ token, new_password, confirm_password }) {
-  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+export async function resetPassword({ token, new_password }) {
+  const response = await robustFetch("/auth/reset-password", {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ token, new_password, confirm_password }),
+    body: JSON.stringify({ token, new_password }),
   });
   return handleResponse(response);
 }

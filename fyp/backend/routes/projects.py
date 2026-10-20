@@ -1,6 +1,6 @@
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from database.connection import get_db
@@ -84,7 +84,7 @@ def create_project(
         return existing
 
     # Assign group name
-    count = db.scalar(select(Project).count()) or 0
+    count = db.scalar(select(func.count(Project.id))) or 0
     group_name = f"Group {count + 1:02d}"
 
     project = Project(

@@ -1,4 +1,4 @@
-import { getStoredToken, API_BASE_URL } from "./auth";
+import { getStoredToken, getApiBaseUrl } from "./auth";
 
 async function authFetch(url, options = {}) {
   const token = getStoredToken();
@@ -16,10 +16,27 @@ async function authFetch(url, options = {}) {
     headers["Content-Type"] = "application/json";
   }
 
-  const response = await fetch(`${API_BASE_URL}${url}`, {
-    ...options,
-    headers,
-  });
+  const primaryBase = getApiBaseUrl();
+  const fallbackBase = primaryBase.includes("localhost")
+    ? primaryBase.replace("localhost", "127.0.0.1")
+    : primaryBase.replace("127.0.0.1", "localhost");
+
+  let response;
+  try {
+    response = await fetch(`${primaryBase}${url}`, {
+      ...options,
+      headers,
+    });
+  } catch (err) {
+    try {
+      response = await fetch(`${fallbackBase}${url}`, {
+        ...options,
+        headers,
+      });
+    } catch {
+      throw new Error("Unable to connect to backend server. Make sure Python uvicorn is running on port 8000.");
+    }
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -119,7 +136,7 @@ export async function reviewDocumentFile(documentId, status, supervisorComment) 
 }
 
 export function getDocumentDownloadUrl(documentId) {
-  return `${API_BASE_URL}/documents/download/${documentId}`;
+  return `${getApiBaseUrl()}/documents/download/${documentId}`;
 }
 
 /* ============================================================
