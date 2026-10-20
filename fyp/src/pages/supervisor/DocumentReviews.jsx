@@ -6,6 +6,7 @@ import { useToast } from "../../components/shared/Toast";
 import {
   getMyProjects,
   getProjectDocuments,
+  getDocumentsForReview,
   reviewDocumentFile,
   getDocumentDownloadUrl,
 } from "../../services/api";
@@ -25,22 +26,8 @@ export default function DocumentReviews() {
   async function loadAllDocs() {
     try {
       setLoading(true);
-      const myProjs = await getMyProjects();
-      setProjects(myProjs || []);
-
-      const docPromises = (myProjs || []).map((p) =>
-        getProjectDocuments(p.id).then((docs) =>
-          docs.map((d) => ({
-            ...d,
-            group_name: p.group_name,
-            project_title: p.title,
-            student_name: p.student_name,
-          }))
-        )
-      );
-      const nestedDocs = await Promise.all(docPromises);
-      const allDocs = nestedDocs.flat();
-      setDocuments(allDocs);
+      const docs = await getDocumentsForReview();
+      setDocuments(docs || []);
     } catch (err) {
       console.error("Failed to load documents for review:", err);
     } finally {

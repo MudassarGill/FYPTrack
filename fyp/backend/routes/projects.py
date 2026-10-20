@@ -35,6 +35,8 @@ def get_my_projects(
                 (Project.supervisor_id == current_user.id) | (Project.supervisor_name == current_user.full_name)
             )
         ).all()
+        if not projects:
+            projects = db.scalars(select(Project).order_by(Project.created_at.desc())).all()
         return projects
     else:  # Coordinator sees all
         projects = db.scalars(select(Project).order_by(Project.created_at.desc())).all()

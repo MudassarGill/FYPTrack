@@ -1,0 +1,22 @@
+# Node
+node_modules/
+dist/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.db
+fyp/backend/fyptrack.db
+fyp/backend/uploads/*
+!fyp/backend/uploads/.gitkeep
+
+# Environment
+.env
+.env.local
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db

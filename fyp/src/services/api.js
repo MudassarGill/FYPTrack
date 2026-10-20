@@ -121,6 +121,10 @@ export async function getProjectDocuments(projectId) {
   return authFetch(`/documents/project/${projectId}`);
 }
 
+export async function getDocumentsForReview() {
+  return authFetch("/documents/review-list");
+}
+
 export async function uploadDocumentFile(formData) {
   return authFetch("/documents/upload", {
     method: "POST",

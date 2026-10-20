@@ -26,3 +26,12 @@ dist-ssr
 # Environment variables (keep .env.example as template)
 .env
 !.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+backend/fyptrack.db
+backend/uploads/*
+!backend/uploads/.gitkeep
+

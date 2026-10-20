@@ -20,6 +20,34 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
 
+@router.get("/review-list", summary="Get all student documents for supervisor review")
+def get_documents_for_review(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    docs = db.scalars(select(Document).order_by(Document.created_at.desc())).all()
+    result = []
+    for d in docs:
+        p = db.get(Project, d.project_id)
+        result.append({
+            "id": d.id,
+            "project_id": d.project_id,
+            "student_id": d.student_id,
+            "file_name": d.file_name,
+            "file_size": d.file_size,
+            "file_format": d.file_format,
+            "doc_type": d.doc_type,
+            "version": d.version,
+            "status": d.status,
+            "supervisor_comment": d.supervisor_comment,
+            "created_at": d.created_at.isoformat() if hasattr(d.created_at, "isoformat") else str(d.created_at),
+            "group_name": p.group_name if p else "Group",
+            "project_title": p.title if p else "Project",
+            "student_name": p.student_name if p else "Student",
+        })
+    return result
+
+
 @router.get("/project/{project_id}", response_model=List[DocumentResponse], summary="Get documents for a project")
 def get_project_documents(
     project_id: int,

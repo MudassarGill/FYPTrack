@@ -1,254 +1,384 @@
 # FYPTrack — Intelligent Final Year Project Management System
 
-**FYPTrack** is an enterprise-grade, role-based web application engineered for university academic departments (Computer Science, Software Engineering, AI, and Data Science) to govern, track, and evaluate Final Year Projects (FYP) from initial proposal submission to final external defense.
+**FYPTrack** is a full-stack, enterprise-grade Final Year Project (FYP) management platform built for university academic departments (Computer Science, Software Engineering, AI, and Information Technology). It connects and synchronizes all three core stakeholders — **Students**, **Faculty Supervisors**, and the **FYP Coordinator** — into a unified, real-time workflow backed by a persistent relational database.
 
 ---
 
 ## 📑 Table of Contents
-1. [Project Overview & Problem Statement](#1-project-overview--problem-statement)
-2. [Technology Stack & Core Architecture](#2-technology-stack--core-architecture)
-3. [AI & Semantic Vector Embeddings Architecture](#3-ai--semantic-vector-embeddings-architecture)
-4. [Role-Based Access Control (RBAC) & Workflow Matrix](#4-role-based-access-control-rbac--workflow-matrix)
-5. [End-to-End Page & Portal Directory](#5-end-to-end-page--portal-directory)
-   * [Public Landing Page](#public-landing-page)
-   * [Authentication Flow](#authentication-flow)
-   * [Student Portal (8 Pages)](#student-portal-8-pages)
-   * [Supervisor Portal (10 Pages)](#supervisor-portal-10-pages)
-   * [Coordinator Portal (10 Pages)](#coordinator-portal-10-pages)
-6. [Environment Variables & Configuration](#6-environment-variables--configuration)
-7. [Step-by-Step Testing Guide (All 3 Portals)](#7-step-by-step-testing-guide-all-3-portals)
-8. [Codebase Structure & Reusability Design](#8-codebase-structure--reusability-design)
+1. [System Overview & Real-World Purpose](#1-system-overview--real-world-purpose)
+2. [Technology Stack](#2-technology-stack)
+3. [System Architecture & Database Design](#3-system-architecture--database-design)
+4. [Role-Based Access Control (RBAC) & Features](#4-role-based-access-control-rbac--features)
+   * [Student Portal](#student-portal-8-pages)
+   * [Supervisor Portal](#supervisor-portal-10-pages)
+   * [Coordinator Portal](#coordinator-portal-10-pages)
+5. [End-to-End Live Workflow & Testing Guide](#5-end-to-end-live-workflow--testing-guide)
+6. [Complete REST API Reference](#6-complete-rest-api-reference)
+7. [Installation & Local Deployment Guide](#7-installation--local-deployment-guide)
+8. [Project Directory Structure](#8-project-directory-structure)
 
 ---
 
-## 1. Project Overview & Problem Statement
+## 1. System Overview & Real-World Purpose
 
-Traditional academic departments manage Final Year Projects using disjointed spreadsheets, email threads, and WhatsApp groups. This causes:
-* **Duplicate/Plagiarized Project Ideas:** Students submitting topics already completed in previous years without detection.
-* **Supervisor Workload Imbalance:** Unequal student group distribution where some faculty members are overloaded while others have empty slots.
-* **Scattered Deliverables & Feedback:** Revision notes, SRS documents, and code archives get lost across personal inboxes.
-* **Untracked Deadlines:** Lack of department-wide compliance visibility for milestone deliverables.
+In academic institutions, managing final year capstone projects via informal channels (emails, WhatsApp, Google Drive, paper forms, and disparate spreadsheets) leads to severe operational bottlenecks:
+* **Untracked Deliverables:** Loss of official SRS documents, architecture specs, and code submissions across faculty email inboxes.
+* **Unbalanced Faculty Workload:** Some professors are overwhelmed with 8+ groups while others supervise few or none.
+* **Lack of Accountability & Traceability:** Students and supervisors dispute feedback deadlines and continuous assessment marks.
+* **Coordinator Blindness:** Department heads and coordinators lack a bird's-eye view of project completion rates and defense readiness.
 
-**FYPTrack** resolves this by consolidating all stakeholders into three synchronized portals unified under an open-source AI semantic vector engine.
-
----
-
-## 2. Technology Stack & Core Architecture
-
-| Layer | Technologies Used | Rationale |
-| :--- | :--- | :--- |
-| **Frontend UI** | **React 19, Vite, Tailwind CSS v4** | Blazing-fast HMR, component reusability, modern CSS variables, zero runtime overhead. |
-| **Routing** | **React Router v7** | Client-side role-based protected routing, nested layout outlets, and deep linking. |
-| **Visual Analytics** | **Recharts** | Responsive SVG charts (Area, Donut, Multi-Bar) for progress tracking and workload balance. |
-| **Iconography** | **Lucide React** | Clean, lightweight SVG iconography maintaining strict design continuity. |
-| **Backend API** | **FastAPI (Python 3.10+)** | High-performance asynchronous REST endpoints, automatic OpenAPI documentation (`/docs`). |
-| **ORM & Database** | **SQLAlchemy 2.0, SQLite (`fyptrack.db`)** | Robust relational mapping, migration flexibility, portable local database storage. |
-| **Security & Auth** | **Bcrypt, Python-JOSE (JWT)** | Secure password hashing with salt, encrypted JWT token verification, stateless authorization. |
-| **AI Vector Engine** | **Sentence-Transformers (`all-MiniLM-L6-v2`)** | 384-dimensional dense semantic vector embeddings for topic similarity and supervisor matching. |
+**FYPTrack solves these challenges** by establishing a single source of truth where:
+1. Every proposal, review, document, feedback message, and evaluation score is recorded permanently in the backend database.
+2. File deliverables are uploaded directly to the server with versioning and can be downloaded by supervisors for offline inspection.
+3. Live status updates propagate across all user portals instantly.
 
 ---
 
-## 3. AI & Semantic Vector Embeddings Architecture
+## 2. Technology Stack
 
-FYPTrack utilizes an **open-source vector embedding model** (`all-MiniLM-L6-v2` via HuggingFace Sentence-Transformers):
+### Frontend Architecture
+* **React 19 & Vite 8:** High-speed development with instant Hot Module Replacement (HMR) and optimized production builds.
+* **React Router v7:** Declarative client-side routing, protected routes based on authenticated role permissions, and persistent layout outlets.
+* **Tailwind CSS & Custom Design System:** Clean institutional aesthetic utilizing curated typography (`Bricolage Grotesque` and `Plus Jakarta Sans`), CSS variables, glassmorphic cards, and responsive tables.
+* **Recharts:** Interactive SVG charts (Cohort Area Charts, Progress Donut Gauges, Workload Distribution Bars).
+* **Lucide React:** Lightweight, accessible SVG iconography.
+* **Custom Floating Toast System:** Non-intrusive animated feedback banners (`useToast`) replacing browser `alert()` popups.
+
+### Backend Architecture
+* **FastAPI (Python 3.10+):** High-throughput, asynchronous RESTful API framework with automatic interactive Swagger documentation (`/docs`).
+* **SQLAlchemy 2.0 ORM:** Modern relational database abstraction with typed models and robust session management.
+* **SQLite (`fyptrack.db`):** Embedded, zero-configuration ACID-compliant SQL database, pre-seeded with initial academic faculty, students, and coordinators.
+* **Security & Auth:**
+  * **Passlib (Bcrypt):** Salted password hashing for credentials security.
+  * **Python-JOSE:** Cryptographic JSON Web Tokens (JWT) containing role claims and expiration timestamps.
+* **File Processing:** Python `multipart` stream handler storing student deliverables on server disk (`backend/uploads/`) and serving secure downloads via `FileResponse`.
+
+---
+
+## 3. System Architecture & Database Design
+
+### Entity Relationship Diagram (ERD)
 
 ```
-[Student Proposal Abstract]
-            │
-            ▼
-┌────────────────────────┐
-│  Vector Embeddings     │  ==> 384-dimensional dense semantic vector
-│  (all-MiniLM-L6-v2)   │
-└────────────────────────┘
-            │
-      ┌─────┴────────────────────────┐
-      ▼                              ▼
-┌────────────────────────┐   ┌────────────────────────┐
-│ Plagiarism / Archives  │   │ Supervisor Domain Match│
-│ Cosine Similarity      │   │ Dot Product with       │
-│ Against 450+ Theses    │   │ Faculty Expertise Tags │
-└────────────────────────┘   └────────────────────────┘
+┌─────────────────────────────────┐
+│              User               │
+├─────────────────────────────────┤
+│ id (PK)                         │
+│ full_name                       │
+│ email (Unique)                  │
+│ role (student|supervisor|coord) │
+│ department                      │
+└────────────────┬────────────────┘
+                 │ 1
+                 │
+                 │ *
+┌────────────────┴────────────────┐       1    * ┌─────────────────────────────┐
+│             Project             ├─────────────►│          Document           │
+├─────────────────────────────────┤              ├─────────────────────────────┤
+│ id (PK)                         │              │ id (PK)                     │
+│ title                           │              │ project_id (FK)             │
+│ abstract                        │              │ file_name, file_path        │
+│ domain, tech_stack              │              │ doc_type, version, status   │
+│ status                          │              │ supervisor_comment          │
+│ student_id (FK -> User)         │              └─────────────────────────────┘
+│ supervisor_id (FK -> User)       │
+│ coordinator_status              │       1    * ┌─────────────────────────────┐
+│ current_stage                   ├─────────────►│          Feedback           │
+└────────────────┬────────────────┘              ├─────────────────────────────┤
+                 │                               │ id (PK), project_id (FK)    │
+                 │ 1                             │ sender_id, sender_name      │
+                 │                               │ sender_role, message        │
+                 │ *                             └─────────────────────────────┘
+┌────────────────┴────────────────┐
+│           Evaluation            │       1    * ┌─────────────────────────────┐
+├─────────────────────────────────┤ ◄────────────┤        Notification         │
+│ id (PK)                         │ (User ID)    ├─────────────────────────────┤
+│ project_id (FK), supervisor_id  │              │ id (PK), user_id (FK)       │
+│ phase, scores (JSON), total     │              │ title, message, is_read     │
+└─────────────────────────────────┘              └─────────────────────────────┘
 ```
 
-1. **Plagiarism & Duplicate Topic Prevention:**
-   * Incoming project abstracts are converted into dense vector embeddings.
-   * Cosine distance is measured against hundreds of past departmental project vectors.
-   * If similarity exceeds the threshold (e.g. 20%), the proposal is flagged for coordinator review.
-2. **Workload & Domain Matching:**
-   * Each supervisor profile contains research expertise vectors (e.g. NLP, Edge Computing, Computer Vision).
-   * Unassigned student proposals are ranked by cosine similarity against supervisor profiles and current quota limits to recommend optimal academic mentors.
+### Key Models in `backend/models/`:
+1. **`User` (`models/user.py`):** Holds user credentials, department, and role (`student`, `supervisor`, `coordinator`).
+2. **`Project` (`models/project.py`):** Represents an FYP project. Tracks title, abstract, tech stack, domain, student owner, assigned supervisor, submission status (`Submitted`, `Under Review`, `Approved`, `Changes Requested`), and coordinator sign-off status.
+3. **`Document` (`models/document.py`):** Tracks file submissions (SRS, Design Document, Code Zip, Thesis). Holds file path on server, version number, size, verification status (`Pending`, `Approved`, `Changes Requested`), and supervisor evaluation remarks.
+4. **`Feedback` (`models/feedback.py`):** Threaded project conversations between students and supervisors.
+5. **`Evaluation` (`models/evaluation.py`):** Rubric-based marks entries with criteria breakdown (Literature, SRS/Design, Implementation, Defense), totals, and confidential committee feedback.
+6. **`Notification` (`models/notification.py`):** System notifications dispatched on proposal submission, supervisor assignment, document upload, and review decisions.
 
 ---
 
-## 4. Role-Based Access Control (RBAC) & Workflow Matrix
-
-| Capability / Permission | Student Portal | Supervisor Portal | Coordinator Portal |
-| :--- | :---: | :---: | :---: |
-| **Self-Registration** |  Public Allowed |  Restricted (Admin only) |  Restricted (Admin only) |
-| **Default Post-Login Route** | `/student/dashboard` | `/supervisor/overview` | `/coordinator/overview` |
-| **Project Data Scope** | Own group only | Assigned groups only | Department-wide (All groups) |
-| **Submit Proposal / Files** |  Yes |  No (Inspect & Download) |  No (Inspect & Download) |
-| **Endorse Proposals** |  No |  **Yes** (Academic feasibility) |  N/A |
-| **Ratify / Approve Proposals** |  No |  No |  **Yes** (Binding institution sign-off) |
-| **Milestone Sign-Off** |  No |  **Yes** (Deliverable completion) |  **Yes** (Overrides & adjustments) |
-| **Official Rubric Marks Entry** |  No (View published only) |  **Yes** (Phase evaluations) |  **Yes** (Audit & lock grades) |
-| **Supervisor Workload Quotas** |  No |  Views own capacity (4/5) |  **Sets & balances all quotas** |
-| **Department Academic Deadlines** |  Views deadlines |  Views deadlines |  **Publishes & broadcasts dates** |
-| **Accreditation Analytics Export** |  No |  No |  **Yes** (CSV / ABET PDF dossiers) |
-
----
-
-## 5. End-to-End Page & Portal Directory
-
-### Public Landing Page
-* **[`/`](file:///d:/FYPTrack/fyp/src/pages/Home.jsx):**
-  * **Brand Navbar:** Official circular logo (`fyplogo.png`), dynamic navigation.
-  * **Hero Section:** Interactive live sample project card, direct sign-up CTAs.
-  * **Stats & Features:** 6 key capability cards with image hover zoom effects.
-  * **3 Roles Matrix:** Clear breakdown for Students, Supervisors, and Coordinators with customized pill badges.
-  * **Why FYPTrack:** Visual comparison between traditional spreadsheet chaos vs. modern automated tracking.
-  * **FAQ & Contact Form:** Accordion Q&A and direct departmental contact details.
-
----
-
-### Authentication Flow
-* **Login (`/login`):** Role-aware credentials form. Automatically routes users to their role portal upon authentication.
-* **Sign Up (`/signup`):** Student self-registration with automatic role validation.
-* **Forgot & Reset Password (`/forgot-password`, `/reset-password`):** Secure token dispatch and verification.
-
----
+## 4. Role-Based Access Control (RBAC) & Features
 
 ### Student Portal (8 Pages)
-1. **Dashboard (`/student/dashboard`):** Project title, weekly velocity chart, milestone progress donut, upcoming deadlines, and team members.
-2. **My Proposal (`/student/proposal`):** Submission form for project domain, title, abstract, tech stack, and PDF upload.
-3. **My Project (`/student/project`):** Project repository links, assigned supervisor details, and phase completion indicators.
-4. **Milestones (`/student/milestones`):** 5-stage timeline from Proposal Defense to Final External Defense.
-5. **Documents (`/student/documents`):** Deliverable center for SRS, system architecture, test plans, and code archives.
-6. **Feedback (`/student/feedback`):** Direct feedback threads received from the supervisor.
-7. **Notifications (`/student/notifications`):** Alert feed for reviews, deadlines, and committee announcements.
-8. **Profile (`/student/profile`):** Student academic profile, roll number, and degree program.
+| Page | URL Route | Core Capabilities |
+| :--- | :--- | :--- |
+| **Dashboard** | `/student/dashboard` | Live project overview, assigned supervisor badge, submission status, completion progress. |
+| **My Proposal** | `/student/proposal` | Form to draft and submit new FYP proposal (Title, Abstract, Domain, Tech Stack) directly to database. |
+| **My Project** | `/student/project` | Detailed view of the group's approved project, GitHub repo link, and assigned supervisor. |
+| **Milestones** | `/student/milestones` | 5-stage timeline from Proposal Defense to Final External Defense. |
+| **Documents** | `/student/documents` | Upload real deliverable files (PDF, ZIP, DOCX) to server; view review status and supervisor notes. |
+| **Feedback** | `/student/feedback` | Live chat thread with supervisor; send queries and receive revision instructions. |
+| **Notifications** | `/student/notifications` | Feed of system alerts when proposal is approved, supervisor assigned, or documents verified. |
+| **Profile** | `/student/profile` | Student academic credentials, registration number, and department. |
 
 ---
 
 ### Supervisor Portal (10 Pages)
-1. **Supervisor Overview (`/supervisor/overview`):** Workload metrics (Students, Projects, Pending Reviews, Deadlines), Recharts cohort progress area chart, milestone donut chart, pending review queue, and AI vector summary card.
-2. **My Students (`/supervisor/students`):** Roster of supervised students with search, status filters (*On Track*, *Needs Attention*, *Under Review*), progress bars, and detail modal.
-3. **My Projects (`/supervisor/projects`):** Project cards grouped by domain, student team members, tech stacks, and milestone pipeline trackers.
-4. **Proposal Reviews (`/supervisor/proposals`):** AI vector similarity check (`all-MiniLM-L6-v2`), endorsement actions, and revision request forms.
-5. **Document Reviews (`/supervisor/documents`):** File review workspace (SRS, Design, Code Archives) with file downloads and approval/revision actions.
-6. **Milestone Reviews (`/supervisor/milestones`):** Group milestone monitoring, overdue deliverable alerts, and milestone sign-off certification.
-7. **Evaluations & Marks (`/supervisor/evaluations`):** Official rubric scoring across 4 criteria, individual student marks inputs, auto-totals (out of 30 marks), and confidential committee remarks.
-8. **Feedback (`/supervisor/feedback`):** Deliverable-attached threaded chat with student groups with instant reply support.
-9. **Notifications (`/supervisor/notifications`):** Submission alerts, deadline reminders, and memos with mark-as-read controls.
-10. **Supervisor Profile (`/supervisor/profile`):** Academic credentials, office hours, supervision quota tracking (e.g., 4/5 groups allocated), and research domain tags for AI matching.
+| Page | URL Route | Core Capabilities |
+| :--- | :--- | :--- |
+| **Overview** | `/supervisor/overview` | Supervised groups counter, pending review queue, cohort progress chart. |
+| **My Students** | `/supervisor/students` | Roster of students under supervision with search, status filters, and progress bars. |
+| **My Projects** | `/supervisor/projects` | Cards for all assigned projects showing group name, tech stack, and current milestone. |
+| **Proposal Reviews** | `/supervisor/proposals` | Review proposals submitted by student groups, inspect abstracts, and provide academic endorsement or revision requests. |
+| **Document Reviews** | `/supervisor/documents` | Inspect submitted student deliverables; download file directly from server; approve or request corrections with notes. |
+| **Milestones** | `/supervisor/milestones` | Sign off on completed milestone phases. |
+| **Evaluations & Marks** | `/supervisor/evaluations` | Official rubric grading across 4 criteria (30 marks total) saved directly to database. |
+| **Feedback** | `/supervisor/feedback` | Reply to student inquiries and issue formal milestone guidance. |
+| **Notifications** | `/supervisor/notifications` | Submission alerts when students upload new files or submit proposals. |
+| **Profile** | `/supervisor/profile` | Faculty credentials, supervision capacity (e.g. 4/5 groups), and research domains. |
 
 ---
 
 ### Coordinator Portal (10 Pages)
-1. **Coordinator Overview (`/coordinator/overview`):** Department-wide project pipeline funnel chart, faculty workload balance chart, pending proposal decision queue, and AI vector archive index card.
-2. **Proposal Decisions (`/coordinator/proposals`):** Institutional review board for all 48 department proposals with filters, supervisor notes, and binding Ratify / Reject / Request Revision decisions.
-3. **AI Supervisor Allocation (`/coordinator/supervisors`):** Open-source AI semantic topic matching between proposals and faculty research tags, paired with workload quota balancers.
-4. **Vector Similarity Sentinel (`/coordinator/similarity`):** Side-by-side semantic diff inspector comparing new 2026 proposals against 450+ archived historical theses with clear/flag actions.
-5. **Projects Master Registry (`/coordinator/projects`):** Department-wide project directory with domain filters, current stage, supervisor, progress bars, and defense eligibility status.
-6. **Student Registry (`/coordinator/students`):** Master roster of all 142 candidates across degree programs, checking credit completion (e.g. 128/136) and defense eligibility.
-7. **Deadlines & Academic Calendar (`/coordinator/milestones`):** Department milestone timeline, submission weightages, date adjustment modals, and broadcast reminder dispatch.
-8. **Analytics & Accreditation Reports (`/coordinator/reports`):** Department performance analytics, grade distributions, CSV exporter, and ABET/NCEAC accreditation dossier compiler.
-9. **Notices & Communication Center (`/coordinator/notifications`):** Official circular composer with target audience selectors (*All*, *Supervisors*, *Students*).
-10. **Department Programme Administration (`/coordinator/profile`):** Policy parameters including max group size, faculty supervision quotas, and AI similarity cosine thresholds.
+| Page | URL Route | Core Capabilities |
+| :--- | :--- | :--- |
+| **Overview** | `/coordinator/overview` | Department-wide analytics, project pipeline funnel, faculty workload distribution, and decision queue. |
+| **Proposal Decisions** | `/coordinator/proposals` | Central committee review board; ratify (`Approved`), reject, or request revisions on proposals across all groups. |
+| **Supervisor Allocation** | `/coordinator/supervisors` | Assign supervisors to newly submitted projects based on expertise and workload quota balance. |
+| **Topic Originality** | `/coordinator/similarity` | Inspection dashboard cross-referencing proposals against department archives to prevent duplicate projects. |
+| **Projects Master Registry**| `/coordinator/projects` | Department-wide registry of all active projects with search, domain filtering, and progress status. |
+| **Student Registry** | `/coordinator/students` | Master list of all registered candidates, checking credit hours and defense eligibility. |
+| **Deadlines & Calendar** | `/coordinator/milestones` | Set submission deadlines for Proposal, Mid-term, SRS, and Final Defense with broadcast alerts. |
+| **Accreditation Reports**| `/coordinator/reports` | Export performance summaries, grade distribution, and ABET/HEC accreditation documentation. |
+| **Department Circulars** | `/coordinator/notifications` | Broadcast official memos to all students and faculty. |
+| **Settings & Policies** | `/coordinator/profile` | Configure max group size, faculty supervision limits, and departmental parameters. |
 
 ---
 
-## 6. Environment Variables & Configuration
+## 5. End-to-End Live Workflow & Testing Guide
 
-Configuration files are located in `fyp/.env` and `fyp/.env.example`:
+You can test the entire interconnected lifecycle simultaneously using three different browser windows (or an Incognito window and standard window):
 
+```
+┌─────────────────┐       1. Submits Proposal       ┌────────────────────┐
+│ Student Portal  ├────────────────────────────────►│ Coordinator Portal │
+└────────┬────────┘                                 └─────────┬──────────┘
+         │                                                    │
+         │                               2. Assigns Supervisor│
+         │                                  & Ratifies Project│
+         │                                                    ▼
+         │        3. Uploads Deliverables           ┌────────────────────┐
+         └─────────────────────────────────────────►│ Supervisor Portal  │
+                  4. Inspects & Downloads File ◄────┤                    │
+                  5. Evaluates & Enters Marks  ◄────┤                    │
+                  6. Interactive Feedback Chat ◄───►│                    │
+                                                    └────────────────────┘
+```
+
+### Pre-Configured Test Accounts
+
+| Role | Email | Password | Pre-Seeded Name |
+| :--- | :--- | :--- | :--- |
+| **Student** | `storyreal208@gmail.com` | `Password123!` | Mudassar Gill |
+| **Supervisor** | `supervisor@university.edu` | `Password123!` | Dr. Imran Shah |
+| **Coordinator** | `coordinator@university.edu` | `Password123!` | Prof. Dr. Tariq Mahmood |
+
+*(Note: You can also register any new student directly via `/signup`).*
+
+---
+
+### Step-by-Step Testing Procedure
+
+#### Step 1: Submit Proposal (Student)
+1. Open `http://localhost:5173/login` in Browser 1.
+2. Login with student credentials (`storyreal208@gmail.com` / `Password123!`).
+3. Navigate to **My Proposal** (`/student/proposal`).
+4. Fill in the Title, Domain (e.g. *Artificial Intelligence*), Tech Stack, and Abstract.
+5. Click **Submit Proposal**. A floating toast confirms submission and the proposal status changes to `Submitted`.
+
+#### Step 2: Assign Supervisor & Ratify (Coordinator)
+1. Open `http://localhost:5173/login` in Browser 2 (or Incognito).
+2. Login as coordinator (`coordinator@university.edu` / `Password123!`).
+3. Navigate to **Allocations** (`/coordinator/supervisors`).
+4. Locate the newly submitted project in the unallocated list.
+5. Select **Dr. Imran Shah** from the supervisor dropdown and click **Assign**.
+6. Navigate to **Proposals** (`/coordinator/proposals`).
+7. Click **Ratify Proposal** (`Approved`). The decision is recorded in the database.
+
+#### Step 3: Upload Project Deliverable (Student)
+1. In Browser 1 (Student Portal), navigate to **Documents** (`/student/documents`).
+2. Select Document Type (e.g. *Software Requirements Specification (SRS)*) and Version (`v1.0`).
+3. Choose any file from your computer (PDF, Word doc, ZIP, etc.) and click **Upload Deliverable**.
+4. The file is uploaded to the backend server's `backend/uploads/` directory and appears in your documents table with status `Pending`.
+
+#### Step 4: Inspect & Approve Deliverable (Supervisor)
+1. Open `http://localhost:5173/login` in Browser 3 (or switch user).
+2. Login as supervisor (`supervisor@university.edu` / `Password123!`).
+3. Navigate to **Document Reviews** (`/supervisor/documents`).
+4. The uploaded file is displayed with the student's name, group, and submission timestamp.
+5. Click **Download File** to download the exact file from the server.
+6. Click **Review Deliverable**, enter review feedback (e.g., *"Architecture and functional requirements meet standard."*), and click **Approve Deliverable**.
+7. The status updates to `Approved` in the database. Switch back to the Student Documents tab to confirm the real-time status update!
+
+#### Step 5: Enter Continuous Evaluation Marks (Supervisor)
+1. As Supervisor, navigate to **Evaluations & Marks** (`/supervisor/evaluations`).
+2. Select the group and evaluation phase (*Proposal Defense* or *SRS Evaluation*).
+3. Score criteria using the rubric sliders/inputs (Literature Review, SRS & Architecture, Implementation, Defense).
+4. Enter confidential committee remarks and click **Submit Evaluation Marks**.
+5. Total score (out of 30 marks) is saved to the database.
+
+#### Step 6: Interactive Feedback Discussion
+1. In Student Portal, go to **Feedback** (`/student/feedback`).
+2. Post a question: *"Dear Supervisor, we have started the implementation phase. Please review the database schema."*
+3. In Supervisor Portal, go to **Feedback** (`/supervisor/feedback`).
+4. View the student's message and send an instant reply. The thread persists in the SQLite database.
+
+---
+
+## 6. Complete REST API Reference
+
+All backend endpoints are prefixed with `/api` and documentable interactively at `http://localhost:8000/docs`.
+
+### Authentication Endpoints (`routes/auth.py`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/login` | Authenticate user credentials, returns JWT bearer token & user info. |
+| `POST` | `/api/auth/signup` | Student registration with automatic role assignment. |
+| `GET` | `/api/auth/me` | Fetch authenticated user profile from token claims. |
+
+### Projects & Proposals (`routes/projects.py`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/projects/my` | Get projects associated with current logged-in user. |
+| `GET` | `/api/projects/all` | Get all departmental projects (Coordinator/Audit scope). |
+| `POST` | `/api/projects/` | Create & submit a new FYP project proposal. |
+| `POST` | `/api/projects/{id}/assign-supervisor` | Assign faculty supervisor to project. |
+| `POST` | `/api/projects/{id}/supervisor-decision` | Record supervisor proposal endorsement/revision decision. |
+| `POST` | `/api/projects/{id}/coordinator-decision`| Record binding coordinator ratification decision. |
+
+### Documents & Deliverables (`routes/documents.py`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/documents/upload` | Multipart file upload; saves file to server disk and records metadata. |
+| `GET` | `/api/documents/review-list` | Fetch all student documents for supervisor review with group & project info. |
+| `GET` | `/api/documents/project/{project_id}` | Fetch all deliverable versions for a specific project. |
+| `GET` | `/api/documents/download/{id}` | Stream file download from server disk. |
+| `POST` | `/api/documents/{id}/review` | Record supervisor verification status (`Approved` / `Changes Requested`) and comments. |
+
+### Feedback & Discussions (`routes/feedback.py`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/feedback/project/{project_id}` | Fetch threaded discussion for a project. |
+| `POST` | `/api/feedback/` | Post new message or guidance note. |
+
+### Evaluations & Marks (`routes/evaluations.py`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/evaluations/project/{project_id}` | Get evaluation records and rubric scores for a project. |
+| `POST` | `/api/evaluations/` | Submit rubric assessment marks and committee notes. |
+
+---
+
+## 7. Installation & Local Deployment Guide
+
+### Prerequisites
+* **Node.js:** v18.0.0 or higher
+* **Python:** v3.10 or higher
+* **Git**
+
+---
+
+### Step 1: Clone Repository
 ```bash
-# Frontend API endpoint
-VITE_API_BASE_URL=http://127.0.0.1:8000/api
-
-# Open-source embedding model identifier
-VITE_AI_MODEL_NAME=sentence-transformers/all-MiniLM-L6-v2
-
-# Optional Cloud API keys (Leave blank for local open-source execution)
-OPENAI_API_KEY=
-HUGGINGFACE_API_KEY=
+git clone https://github.com/MudassarGill/FYPTrack.git
+cd FYPTrack
 ```
 
 ---
 
-## 7. Step-by-Step Testing Guide (All 3 Portals)
+### Step 2: Backend Setup
+```bash
+cd fyp/backend
 
-Ensure both development servers are running:
-* **Frontend:** In `fyp/`, run `npm run dev` (Available at `http://localhost:5173`)
-* **Backend:** In `fyp/backend/`, run `python -m uvicorn main:app --reload` (Available at `http://127.0.0.1:8000`)
+# Create virtual environment (recommended)
+python -m venv venv
 
-### Test Account 1: FYP Coordinator Portal
-* **URL:** `http://localhost:5173/login`
-* **Email:** `coordinator@university.edu`
-* **Password:** `Password123!`
-* **Expected Result:**
-  * System detects role `coordinator` and navigates to **`/coordinator/overview`**.
-  * Top navigation displays: **Overview**, **Proposals**, **Allocations**, **Similarity**, **Projects**, and **More** dropdown (*Students Registry*, *Deadlines & Calendar*, *Reports & Analytics*, *Department Memos*, *Department Settings*).
-  * Avatar circle displays `CD` (*Prof. Dr. Tariq Mahmood*).
+# Activate virtual environment
+# Windows:
+.\venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
 
-### Test Account 2: Supervisor Portal
-* **URL:** `http://localhost:5173/login`
-* **Email:** `supervisor@university.edu` *(or `imran.shah@university.edu`)*
-* **Password:** `Password123!`
-* **Expected Result:**
-  * System detects role `supervisor` and navigates to **`/supervisor/overview`**.
-  * Top navigation displays: **Overview**, **My Students**, **My Projects**, **Proposals**, **Documents**, and **More** dropdown (*Milestone Reviews*, *Evaluations & Marks*, *Feedback*, *Notifications*, *My Profile*).
-  * Avatar circle displays `IS` (*Dr. Imran Shah*).
+# Install dependencies
+pip install fastapi uvicorn sqlalchemy pydantic python-jose passlib bcrypt python-multipart
 
-### Test Account 3: Student Portal
-* **URL:** `http://localhost:5173/login`
-* **Email:** `storyreal208@gmail.com` *(or create a new student account via `/signup`)*
-* **Password:** `Password123!`
-* **Expected Result:**
-  * System detects role `student` and navigates to **`/student/dashboard`**.
-  * Top navigation displays: **Dashboard**, **My Proposal**, **My Project**, **Milestones**, **Documents**, and **More** dropdown (*Feedback*, *Notifications*, *Profile*).
-
-### Direct Route Demo Preview (No Login Required)
-* Coordinator Control Center: `http://localhost:5173/coordinator/overview`
-* Supervisor Overview: `http://localhost:5173/supervisor/overview`
-* Student Dashboard: `http://localhost:5173/student/dashboard`
+# Start FastAPI backend server
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+> The database (`fyptrack.db`) and demo accounts are automatically initialized and seeded on first startup.
+> API Documentation: Visit `http://127.0.0.1:8000/docs`.
 
 ---
 
-## 8. Codebase Structure & Reusability Design
+### Step 3: Frontend Setup
+Open a new terminal window:
+```bash
+cd fyp
+
+# Install dependencies
+npm install
+
+# Start Vite development server
+npm run dev
+```
+> Open your browser at `http://localhost:5173`.
+
+---
+
+## 8. Project Directory Structure
 
 ```
 FYPTrack/
-├── fyp/
-│   ├── .env.example             # Documented environment template
-│   ├── .env                     # Local environment settings
-│   ├── src/
-│   │   ├── assets/              # Logos, stock illustrations, icons
-│   │   ├── components/
-│   │   │   ├── Auth/            # Reusable Auth forms & branding panel
-│   │   │   ├── shared/          # Shared Badge, Card, StatCard, PageHeader, Navbar, Footer
-│   │   │   └── ProtectedRoute.jsx
-│   │   ├── layouts/
-│   │   │   ├── StudentLayout.jsx      # Student portal wrapper
-│   │   │   ├── SupervisorLayout.jsx   # Supervisor portal wrapper
-│   │   │   └── CoordinatorLayout.jsx  # Coordinator portal wrapper
-│   │   ├── pages/
-│   │   │   ├── Home.jsx         # Public landing page
-│   │   │   ├── student/         # 8 Student portal pages
-│   │   │   ├── supervisor/      # 10 Supervisor portal pages
-│   │   │   └── coordinator/     # 10 Coordinator portal pages
-│   │   ├── services/
-│   │   │   └── auth.js          # Authentication API calls & token storage
-│   │   ├── App.jsx              # Central router configuration
-│   │   └── index.css            # Tailwind theme tokens & design system rules
-│   └── backend/
-│       ├── database/            # SQLite engine & database connection
-│       ├── models/              # User ORM model with role column
-│       ├── routes/              # Auth routes (/api/auth/login, signup, me)
-│       ├── services/            # JWT token creation & bcrypt hashing
-│       ├── fyptrack.db          # SQLite database containing seeded users
-│       └── main.py              # FastAPI application root
-└── README.md
+├── README.md                          # Master Project Documentation
+└── fyp/
+    ├── .env                           # Frontend environment configuration
+    ├── .env.example                   # Template for environment settings
+    ├── package.json                   # React 19 dependencies & scripts
+    ├── vite.config.js                 # Vite bundler configuration
+    ├── src/
+    │   ├── assets/                    # University logos, illustrations, graphics
+    │   ├── components/
+    │   │   ├── Auth/                  # Login, Signup, AuthLayout components
+    │   │   └── shared/                # Badge, Card, StatCard, Toast, PageHeader, Navbar, Footer
+    │   ├── layouts/
+    │   │   ├── StudentLayout.jsx      # Student portal frame & navigation
+    │   │   ├── SupervisorLayout.jsx   # Supervisor portal frame & navigation
+    │   │   └── CoordinatorLayout.jsx  # Coordinator portal frame & navigation
+    │   ├── pages/
+    │   │   ├── Home.jsx               # Public university landing page
+    │   │   ├── student/               # 8 Student portal views
+    │   │   ├── supervisor/            # 10 Supervisor portal views
+    │   │   └── coordinator/           # 10 Coordinator portal views
+    │   ├── services/
+    │   │   ├── api.js                 # Unified REST client with dual-host auto-fallback
+    │   │   └── auth.js                # JWT session manager & role resolver
+    │   ├── App.jsx                    # Central client router & role guard
+    │   └── index.css                  # Design tokens, theme colors & font styles
+    └── backend/
+        ├── main.py                    # FastAPI entrypoint, CORS & DB lifecycle
+        ├── core/                      # Application settings & security configs
+        ├── database/                  # SQLite connection & session generator
+        ├── models/                    # SQLAlchemy ORM models (User, Project, Document, Feedback, etc.)
+        ├── routes/                    # REST route controllers (/auth, /projects, /documents, etc.)
+        ├── schemas/                   # Pydantic request/response validation schemas
+        ├── services/                  # Seed service & business logic
+        ├── uploads/                   # Secure storage for student file deliverables
+        └── fyptrack.db                # SQLite database
 ```
 
-All portals share unified typography, CSS design tokens, badge styles, and card components without duplication, guaranteeing a seamless institutional experience.
+---
+
+## 💡 Troubleshooting & Notes
+* **Network Resolution (Dual-Host Fallback):** The frontend API client automatically tests both `localhost:8000` and `127.0.0.1:8000`. If one address is restricted by Windows loopback firewall rules, it seamlessly fails over to the other.
+* **Persistent State:** If you wish to reset all database data back to clean initial demo states, delete `fyp/backend/fyptrack.db` and restart the backend server; `seed_service.py` will regenerate fresh initial accounts.
