@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { getStoredUser, clearStoredSession } from "../../services/auth";
+import fyplogo from "../../assets/fyplogo.png";
 
 export default function Navbar({ mode = "public" }) {
   const location = useLocation();
@@ -11,6 +12,8 @@ export default function Navbar({ mode = "public" }) {
   const dropdownRef = useRef(null);
 
   const loggedUser = getStoredUser();
+  const isSupervisorPortal =
+    mode === "supervisor" || (mode === "auto" && location.pathname.startsWith("/supervisor"));
   const isStudentPortal =
     mode === "student" || (mode === "auto" && location.pathname.startsWith("/student"));
 
@@ -71,6 +74,23 @@ export default function Navbar({ mode = "public" }) {
     { label: "Documents", href: "/student/documents" },
   ];
 
+  const supervisorNav = [
+    { label: "Overview", href: "/supervisor/overview" },
+    { label: "My Students", href: "/supervisor/students" },
+    { label: "My Projects", href: "/supervisor/projects" },
+    { label: "Proposals", href: "/supervisor/proposals" },
+    { label: "Documents", href: "/supervisor/documents" },
+  ];
+
+  const isPortal = isStudentPortal || isSupervisorPortal;
+  const currentNav = isSupervisorPortal ? supervisorNav : studentNav;
+  const portalHome = isSupervisorPortal
+    ? "/supervisor/overview"
+    : isStudentPortal
+    ? "/student/dashboard"
+    : "/";
+
+  const defaultInitials = isSupervisorPortal ? "SP" : "ST";
   const userInitials = loggedUser?.full_name
     ? loggedUser.full_name
         .split(" ")
@@ -78,7 +98,12 @@ export default function Navbar({ mode = "public" }) {
         .slice(0, 2)
         .join("")
         .toUpperCase()
-    : "ST";
+    : defaultInitials;
+
+  const notificationsUrl = isSupervisorPortal
+    ? "/supervisor/notifications"
+    : "/student/notifications";
+  const profileUrl = isSupervisorPortal ? "/supervisor/profile" : "/student/profile";
 
   return (
     <header
@@ -90,14 +115,15 @@ export default function Navbar({ mode = "public" }) {
       }}
     >
       <div className="max-w-[1200px] mx-auto px-6 h-full flex items-center justify-between">
-        {/* Logo left: 12px amber dot + "FYPTrack" (Bricolage 20px, 800, white) */}
+        {/* Brand Logo & Name */}
         <Link
-          to={isStudentPortal ? "/student/dashboard" : "/"}
-          className="flex items-center gap-2.5 focus:outline-none"
+          to={portalHome}
+          className="flex items-center gap-2.5 focus:outline-none group"
         >
-          <span
-            className="w-3 h-3 rounded-full shrink-0"
-            style={{ backgroundColor: "#EBB44B" }}
+          <img
+            src={fyplogo}
+            alt="FYPTrack Logo"
+            className="w-8 h-8 rounded-full object-cover shadow-sm ring-1 ring-white/20 group-hover:ring-[#EBB44B] transition-all"
           />
           <span
             className="font-['Bricolage_Grotesque'] text-[20px] font-extrabold text-white tracking-tight"
@@ -108,7 +134,7 @@ export default function Navbar({ mode = "public" }) {
 
         {/* Desktop Navigation (>= 820px) */}
         <nav className="hidden min-[820px]:flex items-center gap-1">
-          {!isStudentPortal ? (
+          {!isPortal ? (
             // Public mode links
             publicNav.map((item) => {
               const isActive =
@@ -129,9 +155,9 @@ export default function Navbar({ mode = "public" }) {
               );
             })
           ) : (
-            // Student mode links
+            // Portal (Student or Supervisor) mode links
             <>
-              {studentNav.map((item) => {
+              {currentNav.map((item) => {
                 const isActive = location.pathname === item.href;
                 return (
                   <Link
@@ -160,30 +186,72 @@ export default function Navbar({ mode = "public" }) {
                 {/* Dropdown menu */}
                 {moreDropdownOpen && (
                   <div
-                    className="absolute right-0 top-full mt-2 bg-white rounded-[12px] p-[6px] min-w-[190px] z-50 border border-[#E6E6E1]"
+                    className="absolute right-0 top-full mt-2 bg-white rounded-[12px] p-[6px] min-w-[200px] z-50 border border-[#E6E6E1]"
                     style={{ boxShadow: "0 24px 48px rgba(23,48,42,.28)" }}
                   >
-                    <Link
-                      to="/student/feedback"
-                      onClick={() => setMoreDropdownOpen(false)}
-                      className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
-                    >
-                      Feedback
-                    </Link>
-                    <Link
-                      to="/student/notifications"
-                      onClick={() => setMoreDropdownOpen(false)}
-                      className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
-                    >
-                      Notifications
-                    </Link>
-                    <Link
-                      to="/student/profile"
-                      onClick={() => setMoreDropdownOpen(false)}
-                      className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
-                    >
-                      Profile
-                    </Link>
+                    {isSupervisorPortal ? (
+                      <>
+                        <Link
+                          to="/supervisor/milestones"
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                        >
+                          Milestone Reviews
+                        </Link>
+                        <Link
+                          to="/supervisor/evaluations"
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                        >
+                          Evaluations
+                        </Link>
+                        <Link
+                          to="/supervisor/feedback"
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                        >
+                          Feedback
+                        </Link>
+                        <Link
+                          to="/supervisor/notifications"
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                        >
+                          Notifications
+                        </Link>
+                        <Link
+                          to="/supervisor/profile"
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                        >
+                          My Profile
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          to="/student/feedback"
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                        >
+                          Feedback
+                        </Link>
+                        <Link
+                          to="/student/notifications"
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                        >
+                          Notifications
+                        </Link>
+                        <Link
+                          to="/student/profile"
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
+                        >
+                          Profile
+                        </Link>
+                      </>
+                    )}
                     <div className="my-1 border-t border-[#EEEEEA]" />
                     <button
                       type="button"
@@ -191,7 +259,7 @@ export default function Navbar({ mode = "public" }) {
                         setMoreDropdownOpen(false);
                         handleLogout();
                       }}
-                      className="w-full text-left px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors cursor-pointer"
+                      className="w-full text-left px-3.5 py-2 text-[14px] font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
                     >
                       Logout
                     </button>
@@ -204,13 +272,13 @@ export default function Navbar({ mode = "public" }) {
 
         {/* Desktop Right Actions (>= 820px) */}
         <div className="hidden min-[820px]:flex items-center gap-3">
-          {!isStudentPortal ? (
+          {!isPortal ? (
             loggedUser ? (
               <Link
-                to="/student/dashboard"
-                className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors"
+                to={loggedUser.role === "supervisor" ? "/supervisor/overview" : "/student/dashboard"}
+                className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors shadow-sm"
               >
-                Go to dashboard
+                Go to portal
               </Link>
             ) : (
               <>
@@ -229,19 +297,19 @@ export default function Navbar({ mode = "public" }) {
               </>
             )
           ) : (
-            // Student mode: Bell icon + 38px amber circle with initials
+            // Portal mode: Bell icon + 38px amber circle with initials
             <div className="flex items-center gap-3">
               <Link
-                to="/student/notifications"
+                to={notificationsUrl}
                 className="relative p-2 text-[#CFE0D9] hover:text-white transition-colors"
                 aria-label="Notifications"
               >
                 <Bell className="w-5 h-5" />
               </Link>
               <Link
-                to="/student/profile"
-                className="w-[38px] h-[38px] rounded-full bg-[#EBB44B] text-[#17302A] font-['Bricolage_Grotesque'] font-bold text-[14px] flex items-center justify-center transition-transform hover:scale-105"
-                title={loggedUser?.full_name || "Profile"}
+                to={profileUrl}
+                className="w-[38px] h-[38px] rounded-full bg-[#EBB44B] text-[#17302A] font-['Bricolage_Grotesque'] font-bold text-[14px] flex items-center justify-center transition-transform hover:scale-105 shadow-sm"
+                title={loggedUser?.full_name || (isSupervisorPortal ? "Supervisor Profile" : "Student Profile")}
               >
                 {userInitials}
               </Link>
@@ -251,9 +319,9 @@ export default function Navbar({ mode = "public" }) {
 
         {/* Mobile / Tablet Menu Button (< 820px) */}
         <div className="min-[820px]:hidden flex items-center gap-2">
-          {isStudentPortal && (
+          {isPortal && (
             <Link
-              to="/student/notifications"
+              to={notificationsUrl}
               className="p-2 text-[#CFE0D9] hover:text-white"
               aria-label="Notifications"
             >
@@ -276,7 +344,7 @@ export default function Navbar({ mode = "public" }) {
           className="min-[820px]:hidden border-t border-white/10 px-6 py-4 space-y-2"
           style={{ backgroundColor: "#17302A" }}
         >
-          {!isStudentPortal ? (
+          {!isPortal ? (
             <>
               {publicNav.map((item) => (
                 <Link
@@ -291,11 +359,11 @@ export default function Navbar({ mode = "public" }) {
               <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
                 {loggedUser ? (
                   <Link
-                    to="/student/dashboard"
+                    to={loggedUser.role === "supervisor" ? "/supervisor/overview" : "/student/dashboard"}
                     onClick={() => setMobileMenuOpen(false)}
                     className="block text-center rounded-[10px] bg-[#EBB44B] text-[#17302A] font-bold text-[14px] py-[11px]"
                   >
-                    Go to dashboard
+                    Go to portal
                   </Link>
                 ) : (
                   <>
@@ -319,7 +387,7 @@ export default function Navbar({ mode = "public" }) {
             </>
           ) : (
             <>
-              {studentNav.map((item) => (
+              {currentNav.map((item) => (
                 <Link
                   key={item.label}
                   to={item.href}
@@ -329,27 +397,69 @@ export default function Navbar({ mode = "public" }) {
                   {item.label}
                 </Link>
               ))}
-              <Link
-                to="/student/feedback"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
-              >
-                Feedback
-              </Link>
-              <Link
-                to="/student/notifications"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
-              >
-                Notifications
-              </Link>
-              <Link
-                to="/student/profile"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
-              >
-                Profile
-              </Link>
+              {isSupervisorPortal ? (
+                <>
+                  <Link
+                    to="/supervisor/milestones"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                  >
+                    Milestone Reviews
+                  </Link>
+                  <Link
+                    to="/supervisor/evaluations"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                  >
+                    Evaluations
+                  </Link>
+                  <Link
+                    to="/supervisor/feedback"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                  >
+                    Feedback
+                  </Link>
+                  <Link
+                    to="/supervisor/notifications"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                  >
+                    Notifications
+                  </Link>
+                  <Link
+                    to="/supervisor/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                  >
+                    My Profile
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/student/feedback"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                  >
+                    Feedback
+                  </Link>
+                  <Link
+                    to="/student/notifications"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                  >
+                    Notifications
+                  </Link>
+                  <Link
+                    to="/student/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
+                  >
+                    Profile
+                  </Link>
+                </>
+              )}
               <div className="pt-2 border-t border-white/10">
                 <button
                   type="button"

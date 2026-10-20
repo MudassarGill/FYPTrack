@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import fyplogo from "../../assets/fyplogo.png";
 
 export default function Footer() {
   return (
@@ -11,15 +12,16 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12 pb-10">
           {/* Column 1 (2fr) */}
           <div className="md:col-span-2 space-y-3">
-            <div className="flex items-center gap-2.5">
-              <span
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{ backgroundColor: "#EBB44B" }}
+            <Link to="/" className="flex items-center gap-2.5">
+              <img
+                src={fyplogo}
+                alt="FYPTrack Logo"
+                className="w-6 h-6 rounded-full object-cover shadow-sm ring-1 ring-white/20"
               />
               <span className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-white tracking-tight">
                 FYPTrack
               </span>
-            </div>
+            </Link>
             <p className="text-[14px] leading-relaxed max-w-sm text-[#A9B8B2]">
               Intelligent Final Year Project Management and Automation System for universities.
             </p>
@@ -61,7 +63,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/login" className="hover:text-[#F59E0B] transition-colors">
+                <Link to="/supervisor/overview" className="hover:text-[#F59E0B] transition-colors">
                   Supervisors
                 </Link>
               </li>
