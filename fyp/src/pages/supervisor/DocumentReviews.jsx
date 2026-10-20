@@ -2,6 +2,7 @@ import { useState } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
+import { useToast } from "../../components/shared/Toast";
 
 const initialDocuments = [
   {
@@ -67,6 +68,7 @@ const initialDocuments = [
 ];
 
 export default function DocumentReviews() {
+  const { addToast } = useToast();
   const [documents, setDocuments] = useState(initialDocuments);
   const [filter, setFilter] = useState("All");
   const [activeDoc, setActiveDoc] = useState(null);
@@ -95,7 +97,7 @@ export default function DocumentReviews() {
     );
     setActiveDoc(null);
     setReviewInput("");
-    alert("Document review and feedback recorded successfully!");
+    addToast("Document review submitted successfully.");
   };
 
   return (
@@ -174,7 +176,7 @@ export default function DocumentReviews() {
             <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
               <button
                 type="button"
-                onClick={() => alert(`Downloading ${doc.docName} (${doc.version})...`)}
+                onClick={() => addToast(`Downloading ${doc.docName} (${doc.version})...`, "info")}
                 className="text-[13px] font-bold text-[#17302A] hover:text-[#C2410C] flex items-center gap-1.5 cursor-pointer"
               >
                 &darr; Download File ({doc.fileFormat})

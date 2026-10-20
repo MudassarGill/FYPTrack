@@ -52,6 +52,7 @@ export default function Evaluations() {
     return (marksObj.criteria1 || 0) + (marksObj.criteria2 || 0) + (marksObj.criteria3 || 0) + (marksObj.criteria4 || 0);
   };
 
+  const handleSaveMarks = (e) => {
     e.preventDefault();
     addToast(`Evaluation scores for ${activeGroup.group} submitted successfully.`);
   };
