@@ -32,6 +32,19 @@ import Feedback from "./pages/student/Feedback";
 import Notifications from "./pages/student/Notifications";
 import Profile from "./pages/student/Profile";
 
+// Supervisor Portal Layout & Pages
+import SupervisorLayout from "./layouts/SupervisorLayout";
+import SupervisorOverview from "./pages/supervisor/Overview";
+import MyStudents from "./pages/supervisor/MyStudents";
+import MyProjects from "./pages/supervisor/MyProjects";
+import ProposalReviews from "./pages/supervisor/ProposalReviews";
+import DocumentReviews from "./pages/supervisor/DocumentReviews";
+import MilestoneReviews from "./pages/supervisor/MilestoneReviews";
+import Evaluations from "./pages/supervisor/Evaluations";
+import SupervisorFeedback from "./pages/supervisor/Feedback";
+import SupervisorNotifications from "./pages/supervisor/Notifications";
+import SupervisorProfile from "./pages/supervisor/Profile";
+
 import "./App.css";
 
 /* ============================================================
@@ -50,7 +63,12 @@ function LoginPage() {
           if (response?.user) {
             setStoredSession(response.access_token, response.user);
           }
-          navigate("/student/dashboard");
+          const role = response?.user?.role;
+          if (role === "supervisor") {
+            navigate("/supervisor/overview");
+          } else {
+            navigate("/student/dashboard");
+          }
         }}
         onForgotPassword={() => navigate("/forgot-password")}
       />
@@ -140,7 +158,7 @@ export default function App() {
         <Route
           path="/student"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="student">
               <StudentLayout />
             </ProtectedRoute>
           }
@@ -154,6 +172,28 @@ export default function App() {
           <Route path="feedback" element={<Feedback />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="profile" element={<Profile />} />
+        </Route>
+
+        {/* Protected Supervisor Portal */}
+        <Route
+          path="/supervisor"
+          element={
+            <ProtectedRoute requiredRole="supervisor">
+              <SupervisorLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="/supervisor/overview" replace />} />
+          <Route path="overview" element={<SupervisorOverview />} />
+          <Route path="students" element={<MyStudents />} />
+          <Route path="projects" element={<MyProjects />} />
+          <Route path="proposals" element={<ProposalReviews />} />
+          <Route path="documents" element={<DocumentReviews />} />
+          <Route path="milestones" element={<MilestoneReviews />} />
+          <Route path="evaluations" element={<Evaluations />} />
+          <Route path="feedback" element={<SupervisorFeedback />} />
+          <Route path="notifications" element={<SupervisorNotifications />} />
+          <Route path="profile" element={<SupervisorProfile />} />
         </Route>
 
         {/* Fallback Catch-all Route */}
