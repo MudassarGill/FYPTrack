@@ -164,11 +164,22 @@ export async function getNotifications() {
   return authFetch("/notifications/my");
 }
 
+export async function getUnreadNotificationsCount() {
+  return authFetch("/notifications/unread-count");
+}
+
 export async function markNotificationAsRead(id) {
   return authFetch(`/notifications/read/${id}`, {
     method: "POST",
   });
 }
+
+export async function markAllNotificationsAsRead() {
+  return authFetch("/notifications/read-all", {
+    method: "POST",
+  });
+}
+
 
 /* ============================================================
    Supervisors Allocation API

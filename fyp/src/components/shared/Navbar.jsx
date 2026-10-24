@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { getStoredUser, clearStoredSession } from "../../services/auth";
+import { getUnreadNotificationsCount } from "../../services/api";
 import fyplogo from "../../assets/fyplogo.png";
 
 export default function Navbar({ mode = "public" }) {
@@ -20,6 +21,7 @@ export default function Navbar({ mode = "public" }) {
     mode === "student" || (mode === "auto" && location.pathname.startsWith("/student"));
 
   function handleLogout() {
+
     clearStoredSession();
     navigate("/login");
   }
@@ -93,7 +95,22 @@ export default function Navbar({ mode = "public" }) {
   ];
 
   const isPortal = isStudentPortal || isSupervisorPortal || isCoordinatorPortal;
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (isPortal) {
+      getUnreadNotificationsCount()
+        .then((res) => {
+          if (res && typeof res.unread_count === "number") {
+            setUnreadCount(res.unread_count);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [location.pathname, isPortal]);
+
   const currentNav = isCoordinatorPortal
+
     ? coordinatorNav
     : isSupervisorPortal
     ? supervisorNav
@@ -373,6 +390,11 @@ export default function Navbar({ mode = "public" }) {
                 aria-label="Notifications"
               >
                 <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
               </Link>
               <Link
                 to={profileUrl}
@@ -390,10 +412,15 @@ export default function Navbar({ mode = "public" }) {
           {isPortal && (
             <Link
               to={notificationsUrl}
-              className="p-2 text-[#CFE0D9] hover:text-white"
+              className="relative p-2 text-[#CFE0D9] hover:text-white"
               aria-label="Notifications"
             >
               <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
             </Link>
           )}
           <button

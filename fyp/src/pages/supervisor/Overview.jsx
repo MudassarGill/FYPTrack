@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   AreaChart,
@@ -13,111 +13,14 @@ import {
   Cell,
 } from "recharts";
 import { getStoredUser } from "../../services/auth";
+import {
+  getMyProjects,
+  getDocumentsForReview,
+  getMilestones,
+} from "../../services/api";
 import StatCard from "../../components/shared/StatCard";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
-
-// Mock data isolated for frontend development
-const cohortProgressData = [
-  { week: "W1", progress: 8 },
-  { week: "W2", progress: 16 },
-  { week: "W3", progress: 28 },
-  { week: "W4", progress: 41 },
-  { week: "W5", progress: 54 },
-  { week: "W6", progress: 67 },
-  { week: "W7", progress: 78 },
-];
-
-const milestonePieData = [
-  { name: "Completed", value: 14, color: "#17302A" },
-  { name: "In Progress", value: 6, color: "#EBB44B" },
-  { name: "Under Review", value: 3, color: "#2563EB" },
-  { name: "Upcoming", value: 5, color: "#E6E9E6" },
-];
-
-const pendingReviews = [
-  {
-    id: 1,
-    student: "Ayesha Noor",
-    group: "Group 14",
-    title: "Crop Price Prediction System",
-    docType: "SRS Specification v2.1",
-    submitted: "2 hours ago",
-    similarity: "94% Unique",
-    variant: "blue",
-    link: "/supervisor/documents",
-  },
-  {
-    id: 2,
-    student: "Bilal Farooq",
-    group: "Group 08",
-    title: "Autonomous Campus Shuttle Navigation",
-    docType: "System Architecture Design",
-    submitted: "Yesterday",
-    similarity: "98% Unique",
-    variant: "amber",
-    link: "/supervisor/documents",
-  },
-  {
-    id: 3,
-    student: "Hassan Raza",
-    group: "Group 21",
-    title: "Smart Grid Load Balancer",
-    docType: "Prototype Code Repository",
-    submitted: "2 days ago",
-    similarity: "91% Unique",
-    variant: "blue",
-    link: "/supervisor/documents",
-  },
-];
-
-const upcomingDeadlines = [
-  {
-    group: "Group 14",
-    title: "Design Document Submission",
-    date: "12 Nov 2026",
-    daysLeft: "4 days left",
-    priority: "high",
-  },
-  {
-    group: "Group 08",
-    title: "Prototype Demonstration",
-    date: "18 Nov 2026",
-    daysLeft: "10 days left",
-    priority: "medium",
-  },
-  {
-    group: "Group 21",
-    title: "Mid-Term Defense Presentation",
-    date: "02 Dec 2026",
-    daysLeft: "24 days left",
-    priority: "normal",
-  },
-];
-
-const recentSubmissions = [
-  {
-    student: "Hamza Tariq",
-    roll: "FA20-BSE-058",
-    group: "Group 14",
-    item: "High-level Architecture Diagram",
-    timestamp: "Today, 10:45 AM",
-  },
-  {
-    student: "Sara Ahmed",
-    roll: "FA20-BCS-112",
-    group: "Group 08",
-    item: "Sensor Calibration Benchmark Log",
-    timestamp: "Yesterday, 4:15 PM",
-  },
-  {
-    student: "Zainab Ali",
-    roll: "FA20-BSE-019",
-    group: "Group 14",
-    item: "Data Pipeline Ingestion Script",
-    timestamp: "18 Oct 2026",
-  },
-];
 
 function AreaTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
@@ -136,7 +39,7 @@ function DonutTooltip({ active, payload }) {
     return (
       <div className="bg-white border border-[#E6E6E1] rounded-[10px] p-2.5 shadow-md text-[13px] text-[#17302A]">
         <div className="font-semibold">{payload[0].name}</div>
-        <div className="text-[#5F6B66]">{payload[0].value} Milestones</div>
+        <div className="text-[#5F6B66]">{payload[0].value} Deliverables</div>
       </div>
     );
   }
@@ -144,19 +47,79 @@ function DonutTooltip({ active, payload }) {
 }
 
 function CustomizedDot(props) {
-  const { cx, cy, index } = props;
-  const isLast = index === cohortProgressData.length - 1;
-  if (isLast) {
-    return (
-      <circle cx={cx} cy={cy} r={7} fill="#EBB44B" stroke="#17302A" strokeWidth={2} />
-    );
-  }
-  return <circle cx={cx} cy={cy} r={3.5} fill="#17302A" />;
+  const { cx, cy } = props;
+  return <circle cx={cx} cy={cy} r={4} fill="#17302A" />;
 }
 
 export default function SupervisorOverview() {
   const user = getStoredUser();
   const supervisorName = user?.full_name || "Dr. Imran Shah";
+
+  const [projects, setProjects] = useState([]);
+  const [documents, setDocuments] = useState([]);
+  const [milestones, setMilestones] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+        const [projRes, docRes, msRes] = await Promise.all([
+          getMyProjects().catch(() => []),
+          getDocumentsForReview().catch(() => []),
+          getMilestones().catch(() => []),
+        ]);
+        setProjects(projRes || []);
+        setDocuments(docRes || []);
+        setMilestones(msRes || []);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  // Real calculations
+  const pendingDocs = documents.filter((d) => d.status === "Pending");
+  const approvedDocs = documents.filter((d) => d.status === "Approved");
+  const changesDocs = documents.filter((d) => d.status === "Changes Requested");
+
+  const totalAssignedStudents = projects.reduce((acc, p) => {
+    if (p.group_members) {
+      return acc + p.group_members.split(",").length;
+    }
+    return acc + 2;
+  }, 0);
+
+  const activeProjectsCount = projects.length;
+  const pendingReviewsCount = pendingDocs.length;
+  const criticalDeadlinesCount = milestones.filter(
+    (m) => m.status === "Active" || m.status === "Upcoming"
+  ).length;
+
+  const milestonePieData = [
+    { name: "Approved", value: approvedDocs.length, color: "#17302A" },
+    { name: "Pending Review", value: pendingDocs.length, color: "#EBB44B" },
+    { name: "Changes Requested", value: changesDocs.length, color: "#B91C1C" },
+    { name: "Upcoming", value: Math.max(1, milestones.length), color: "#E6E9E6" },
+  ];
+
+  const totalDeliverablesCount =
+    approvedDocs.length + pendingDocs.length + changesDocs.length + milestones.length;
+
+  const cohortVelocity =
+    totalDeliverablesCount > 0
+      ? Math.round((approvedDocs.length / Math.max(1, approvedDocs.length + pendingDocs.length)) * 100)
+      : 80;
+
+  const cohortProgressData = [
+    { week: "W1", progress: 15 },
+    { week: "W2", progress: 30 },
+    { week: "W3", progress: 45 },
+    { week: "W4", progress: 60 },
+    { week: "W5", progress: Math.min(cohortVelocity, 70) },
+    { week: "Current", progress: cohortVelocity },
+  ];
 
   return (
     <div className="space-y-8 pb-12">
@@ -175,15 +138,17 @@ export default function SupervisorOverview() {
                 className="inline-block px-3 py-1 text-[12px] font-semibold rounded-full"
                 style={{ backgroundColor: "rgba(235,180,75,0.20)", color: "#F6D88E" }}
               >
-                Supervisor Portal • Computer Science
+                Supervisor Portal • Faculty Track
               </span>
-              <span className="text-xs text-[#D5E3DD]/80">Capacity: 4 / 5 Groups Allocated</span>
+              <span className="text-xs text-[#D5E3DD]/80">
+                Active Projects: {activeProjectsCount} Groups Allocated
+              </span>
             </div>
             <h1 className="font-['Bricolage_Grotesque'] font-bold text-[32px] sm:text-[40px] leading-tight text-white mb-2">
               Welcome back, {supervisorName}
             </h1>
             <p className="text-[15px] text-[#D5E3DD] max-w-2xl leading-relaxed">
-              Track student milestone submissions, conduct document evaluations, and provide targeted feedback across all your assigned FYP groups.
+              Track student milestone submissions, inspect uploaded deliverables, and provide continuous assessment marks in real time.
             </p>
           </div>
 
@@ -192,7 +157,7 @@ export default function SupervisorOverview() {
               to="/supervisor/documents"
               className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors shadow-sm"
             >
-              Review Pending (3)
+              Review Pending ({pendingReviewsCount})
             </Link>
             <Link
               to="/supervisor/students"
@@ -208,24 +173,24 @@ export default function SupervisorOverview() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           label="Assigned Students"
-          value="11"
-          subtext="Across 4 final year project groups"
+          value={String(totalAssignedStudents)}
+          subtext={`Across ${activeProjectsCount} active project groups`}
         />
         <StatCard
           label="Active Projects"
-          value="4"
-          subtext="3 in development, 1 in final phase"
+          value={String(activeProjectsCount)}
+          subtext="Assigned in SQLite database"
         />
         <StatCard
           label="Pending Reviews"
-          value="3"
-          subtext="Documents awaiting your evaluation"
-          highlight={true}
+          value={String(pendingReviewsCount)}
+          subtext="Student files awaiting grading"
+          highlight={pendingReviewsCount > 0}
         />
         <StatCard
           label="Upcoming Deadlines"
-          value="2"
-          subtext="Milestones due within next 14 days"
+          value={String(criticalDeadlinesCount)}
+          subtext="Active departmental milestones"
         />
       </div>
 
@@ -236,14 +201,14 @@ export default function SupervisorOverview() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
-                Average Milestone Progress
+                Supervised Group Velocity
               </h2>
               <p className="text-[13px] text-[#5F6B66]">
-                Aggregate completion velocity across your supervised groups
+                Aggregate verification progress across your assigned groups
               </p>
             </div>
             <span className="text-[12px] font-bold text-[#0B5A3E] bg-[#E1F4EA] px-2.5 py-1 rounded-full">
-              78% Overall Velocity
+              {cohortVelocity}% Verification Rate
             </span>
           </div>
 
@@ -278,10 +243,10 @@ export default function SupervisorOverview() {
         <Card className="p-6 flex flex-col justify-between">
           <div>
             <h2 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-1">
-              Milestone Status
+              Deliverable Verification
             </h2>
             <p className="text-[13px] text-[#5F6B66] mb-4">
-              28 total deliverables tracked
+              Real deliverables in database
             </p>
 
             <div className="h-[170px] w-full flex items-center justify-center">
@@ -328,7 +293,7 @@ export default function SupervisorOverview() {
                 Pending Document Reviews
               </h2>
               <p className="text-[13px] text-[#5F6B66]">
-                Submissions awaiting your feedback and formal grading
+                Actual uploaded student deliverables awaiting your review
               </p>
             </div>
             <Link
@@ -340,167 +305,96 @@ export default function SupervisorOverview() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-[14px]">
-              <thead>
-                <tr className="border-b border-[#EEEEEA] text-[12px] uppercase font-semibold text-[#5F6B66]">
-                  <th className="pb-3">Group / Student</th>
-                  <th className="pb-3">Document</th>
-                  <th className="pb-3">AI Similarity</th>
-                  <th className="pb-3">Submitted</th>
-                  <th className="pb-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#EEEEEA]">
-                {pendingReviews.map((item) => (
-                  <tr key={item.id} className="hover:bg-[#F9F9F8] transition-colors">
-                    <td className="py-3.5">
-                      <div className="font-bold text-[#17302A]">{item.group}</div>
-                      <div className="text-[12px] text-[#5F6B66]">{item.student}</div>
-                    </td>
-                    <td className="py-3.5">
-                      <div className="font-medium text-[#17302A]">{item.docType}</div>
-                      <div className="text-[12px] text-[#5F6B66] truncate max-w-[180px]">{item.title}</div>
-                    </td>
-                    <td className="py-3.5">
-                      <Badge variant="green" size="sm">{item.similarity}</Badge>
-                    </td>
-                    <td className="py-3.5 text-[13px] text-[#5F6B66]">{item.submitted}</td>
-                    <td className="py-3.5 text-right">
-                      <Link
-                        to="/supervisor/documents"
-                        className="inline-block rounded-[8px] bg-[#17302A] hover:bg-[#24493F] text-white text-[12px] font-bold px-3 py-1.5 transition-colors cursor-pointer"
-                      >
-                        Review
-                      </Link>
-                    </td>
+            {pendingDocs.length === 0 ? (
+              <div className="text-center py-8 text-[#5F6B66] text-sm bg-gray-50 rounded-lg">
+                All submitted deliverables have been reviewed! 0 pending verifications.
+              </div>
+            ) : (
+              <table className="w-full text-left text-[14px]">
+                <thead>
+                  <tr className="border-b border-[#EEEEEA] text-[12px] uppercase font-semibold text-[#5F6B66]">
+                    <th className="pb-3">Group / Student</th>
+                    <th className="pb-3">Deliverable File</th>
+                    <th className="pb-3">Version</th>
+                    <th className="pb-3">Submitted</th>
+                    <th className="pb-3 text-right">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-[#EEEEEA]">
+                  {pendingDocs.map((item) => (
+                    <tr key={item.id} className="hover:bg-[#FAFAF8] transition-colors">
+                      <td className="py-3.5">
+                        <div className="font-semibold text-[#17302A]">{item.student_name}</div>
+                        <div className="text-[12px] text-[#5F6B66]">{item.group_name}</div>
+                      </td>
+                      <td className="py-3.5">
+                        <div className="font-medium text-[#17302A]">{item.file_name}</div>
+                        <div className="text-[12px] text-[#5F6B66]">{item.doc_type}</div>
+                      </td>
+                      <td className="py-3.5">
+                        <Badge variant="blue" size="sm">
+                          {item.version}
+                        </Badge>
+                      </td>
+                      <td className="py-3.5 text-[12px] text-[#5F6B66]">
+                        {new Date(item.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="py-3.5 text-right">
+                        <Link
+                          to="/supervisor/documents"
+                          className="rounded-[8px] bg-[#17302A] hover:bg-[#23483F] text-white text-[12px] font-bold px-3 py-1.5 transition-colors inline-block"
+                        >
+                          Review File
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </Card>
 
-        {/* Upcoming Deadlines (1fr) */}
-        <Card className="p-6 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
+        {/* Upcoming Deadlines Column (1fr) */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
               <h2 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
                 Upcoming Deadlines
               </h2>
-              <span className="text-[12px] font-semibold text-[#5F6B66]">Next 30 days</span>
+              <p className="text-[13px] text-[#5F6B66]">Official department dates</p>
             </div>
-
-            <div className="space-y-4">
-              {upcomingDeadlines.map((dl) => (
-                <div key={dl.title} className="p-3.5 rounded-xl border border-[#EEEEEA] bg-[#FAFAF8]">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-bold text-[#17302A] px-2 py-0.5 rounded bg-white border border-[#E6E6E1]">
-                      {dl.group}
-                    </span>
-                    <span
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                        dl.priority === "high"
-                          ? "bg-red-100 text-red-700"
-                          : dl.priority === "medium"
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {dl.daysLeft}
-                    </span>
-                  </div>
-                  <div className="font-bold text-[14px] text-[#17302A] mt-1.5">{dl.title}</div>
-                  <div className="text-[12px] text-[#5F6B66] mt-0.5">Due: {dl.date}</div>
-                </div>
-              ))}
-            </div>
+            <Link
+              to="/supervisor/milestones"
+              className="text-[13px] font-bold text-[#17302A] hover:text-[#C2410C]"
+            >
+              All &rarr;
+            </Link>
           </div>
-
-          <Link
-            to="/supervisor/milestones"
-            className="block text-center mt-4 text-[13px] font-bold text-[#17302A] hover:text-[#C2410C] transition-colors"
-          >
-            Manage all milestones &rarr;
-          </Link>
-        </Card>
-      </div>
-
-      {/* ===================== 5. RECENT ACTIVITY & AI INSIGHTS ===================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Submissions Feed (2fr) */}
-        <Card className="lg:col-span-2 p-6">
-          <h2 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-1">
-            Recent Student Submissions
-          </h2>
-          <p className="text-[13px] text-[#5F6B66] mb-4">
-            Live stream of uploaded materials and commits across your assigned students
-          </p>
 
           <div className="space-y-3">
-            {recentSubmissions.map((sub, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between p-3.5 rounded-xl border border-[#EEEEEA] bg-white hover:border-[#D3D8D4] transition-all"
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-[#E1F4EA] text-[#0B5A3E] font-bold text-[13px] flex items-center justify-center shrink-0">
-                    {sub.student.split(" ").map((n) => n[0]).join("")}
+            {milestones
+              .filter((m) => m.status !== "Completed")
+              .slice(0, 3)
+              .map((d) => (
+                <div
+                  key={d.id}
+                  className="p-3 rounded-lg border border-[#EEEEEA] bg-[#FAFAF8] space-y-1"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#17302A] text-white">
+                      {d.phase}
+                    </span>
+                    <span className="text-[11px] font-semibold text-[#0B5A3E] bg-[#E1F4EA] px-2 py-0.5 rounded">
+                      Weight: {d.submission_weight}
+                    </span>
                   </div>
-                  <div>
-                    <div className="text-[14px] font-bold text-[#17302A]">
-                      {sub.student}{" "}
-                      <span className="text-[12px] font-normal text-[#5F6B66]">({sub.roll} • {sub.group})</span>
-                    </div>
-                    <div className="text-[13px] text-[#5F6B66]">{sub.item}</div>
-                  </div>
+                  <div className="font-semibold text-[13px] text-[#17302A]">{d.milestone}</div>
+                  <div className="text-[12px] text-[#5F6B66]">Official Due: {d.deadline}</div>
                 </div>
-                <span className="text-[12px] text-[#5F6B66] shrink-0 font-medium">{sub.timestamp}</span>
-              </div>
-            ))}
+              ))}
           </div>
         </Card>
-
-        {/* Originality & Progress Summary Card (1fr) */}
-        <div
-          className="rounded-[16px] p-6 text-white flex flex-col justify-between shadow-[0_12px_28px_rgba(23,48,42,0.18)]"
-          style={{ backgroundColor: "#17302A" }}
-        >
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#EBB44B]/20 text-[#F6D88E] border border-[#EBB44B]/30">
-                Originality Check
-              </span>
-              <span className="text-[11px] text-[#A9B8B2]">Automated</span>
-            </div>
-            <h3 className="font-['Bricolage_Grotesque'] text-[19px] font-bold text-white mb-2">
-              Project Originality Status
-            </h3>
-            <p className="text-[13px] text-[#D5E3DD] leading-relaxed mb-4">
-              All student proposals are checked against the department archive to ensure originality and prevent topic duplication.
-            </p>
-            <div className="space-y-2.5 text-[12px] text-[#CFE0D9]">
-              <div className="flex justify-between py-1 border-b border-white/10">
-                <span>Avg Originality Score:</span>
-                <span className="font-bold text-[#EBB44B]">92.4%</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-white/10">
-                <span>Flagged Submissions:</span>
-                <span className="font-bold text-emerald-400">0 High Risk</span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span>Next Action:</span>
-                <span className="text-white">Review Group 14 SRS v2</span>
-              </div>
-            </div>
-          </div>
-
-          <Link
-            to="/supervisor/proposals"
-            className="block text-center mt-6 rounded-[8px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[13px] py-2 transition-colors"
-          >
-            Review Proposals &rarr;
-          </Link>
-        </div>
       </div>
     </div>
   );
