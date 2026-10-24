@@ -1,156 +1,368 @@
-# FYPTrack — Real-World University Verification & Deployment Guide
+# FYPTrack - Real-World University Verification & End-to-End Testing Manual
 
-This guide provides end-to-end instructions for testing and validating **FYPTrack** for real-world university deployment across the **Student**, **Supervisor**, and **Coordinator** portals.
+This master verification guide provides exhaustive, step-by-step instructions for testing and validating **FYPTrack** in an authentic higher education university environment. It follows a single real capstone group through the complete institutional lifecycle across the **Student Portal**, **Supervisor Portal**, and **Coordinator Portal**, detailing exact inputs, expected visual results, and database state transitions for every dashboard.
 
 ---
 
-## 1. Verified System Credentials (Active in Database)
+## Table of Contents
+1. Verified Academic User Accounts
+2. Server Launch and Port Verification
+3. Real-World Capstone Project Test Case Specification
+4. Step-by-Step Portal Walkthroughs & Expected Results
+   - Phase 1: Student Portal - Proposal Drafting and Dynamic Teammates
+   - Phase 2: Student Dashboard - Verification of Real Group Members
+   - Phase 3: Coordinator Portal - Automated AI Similarity & Plagiarism Audit
+   - Phase 4: Coordinator Portal - AI Supervisor Recommendation & Quota Allocation
+   - Phase 5: Coordinator Portal - Formal Committee Proposal Ratification
+   - Phase 6: Student Portal - Live Background Notification Verification
+   - Phase 7: Student Portal - Official Deliverable Upload to Server Storage
+   - Phase 8: Supervisor Portal - Document Inspection, Download, and Review
+   - Phase 9: Supervisor Portal - Continuous Assessment Rubric Evaluation (30 Marks)
+   - Phase 10: Feedback & Discussion Channel Verification
+   - Phase 11: Coordinator Portal - Academic Calendar & Milestone Management
+   - Phase 12: Coordinator Portal - Accreditation Metric Audits & PDF Generation
+5. Edge Cases & High-Similarity Plagiarism Test Case
+6. System Verification Matrix
 
-All three institutional roles are pre-seeded in the local database with verified credentials:
+---
 
-| Role | Name | Email | Password | Academic Scope / Department |
+## 1. Verified Academic User Accounts
+
+All three academic roles are pre-seeded in the database with verified credentials:
+
+| Institutional Role | Name | Email Address | Password | Departmental Scope / Title |
 | :--- | :--- | :--- | :--- | :--- |
-| **Student** | Hamza Tariq | `student@university.edu` | `student123` | BS Software Engineering (Group 14 Lead) |
-| **Supervisor** | Dr. Imran Shah | `supervisor@university.edu` | `super123` | Associate Professor, Machine Learning & AI |
-| **Supervisor** | Dr. Sadia Malik | `sadia.malik@university.edu` | `super123` | Assistant Professor, Cybersecurity & Distributed Systems |
-| **Coordinator** | Prof. Dr. Tariq Mahmood | `coordinator@university.edu` | `coord123` | Head of FYP Committee / Department Administration |
+| **Student (Lead)** | Hamza Tariq | `student@university.edu` | `student123` | BS Software Engineering (Group 14 Lead) |
+| **Supervisor** | Dr. Imran Shah | `supervisor@university.edu` | `super123` | Associate Professor (Machine Learning & AI) |
+| **Supervisor** | Dr. Sadia Malik | `sadia.malik@university.edu` | `super123` | Assistant Professor (Cybersecurity & Blockchain) |
+| **Coordinator** | Prof. Dr. Tariq Mahmood | `coordinator@university.edu` | `coord123` | Head of Department / FYP Committee Chair |
 
-> **Self-Registration for Real University Students & Faculty:**
-> Anyone can also register a fresh account via `/signup` by selecting their designated role (**Student** or **Supervisor**). Passwords and sessions use PBKDF2-SHA256 password hashing and JWT authentication.
+> **Note on Self-Registration:** Students and faculty members can also create brand-new accounts via `http://localhost:5173/signup` by choosing either **Student** or **Supervisor** as their designated institutional role.
 
 ---
 
-## 2. Server Architecture & Execution
+## 2. Server Launch and Port Verification
 
-Both servers run concurrently:
+Ensure both system layers are active concurrently in separate terminal consoles:
 
 1. **Backend Server (FastAPI + SQLite + NLP Engine):**
-   - Path: `d:\FYPTrack\fyp\backend`
+   - Path: `fyp/backend`
    - Command: `python -m uvicorn main:app --reload --port 8000`
-   - Interactive Swagger API: `http://localhost:8000/docs`
-   - SQLite Database: `d:\FYPTrack\fyp\backend\fyptrack.db`
+   - Verification URL: Open `http://localhost:8000/docs` in your browser. The interactive OpenAPI Swagger UI must load.
+   - Database File: `fyp/backend/fyptrack.db`
 
-2. **Frontend Client (React + Vite):**
-   - Path: `d:\FYPTrack\fyp`
+2. **Frontend Client (React 19 + Vite):**
+   - Path: `fyp`
    - Command: `npm run dev`
-   - Portal Access: `http://localhost:5173/`
+   - Verification URL: Open `http://localhost:5173/` in your browser. The university landing page must load.
 
 ---
 
-## 3. Real-World University Workflow (Step-by-Step Test Plan)
+## 3. Real-World Capstone Project Test Case Specification
 
-Follow this 6-step flow to verify that all operations occur dynamically with real database storage:
+For this complete testing walkthrough, we use an authentic Computer Science capstone project:
 
-### Step 1: Student Portal — Proposal Submission & Dynamic Members
-1. Open `http://localhost:5173/login` and log in as student:
+- **Group Designation**: Group 14
+- **Lead Student**: Hamza Tariq (`student@university.edu`, FA20-BSE-042)
+- **Teammates**: Ayesha Noor (FA20-BSE-019), Zainab Ali (FA20-BSE-058)
+- **Project Title**: *Deep Learning for Mandi Agricultural Pricing and Yield Prediction*
+- **Technical Domain**: *Machine Learning*
+- **Technology Stack**: *Python, PyTorch, FastAPI, React, PostgreSQL, Scikit-Learn*
+- **Project Abstract**:
+  > Forecasting wholesale mandi pricing using multi-season arrival volume and meteorological indices via bidirectional LSTM networks and ARIMA baseline algorithms. Predicting regional crop output using seasonal rainfall, satellite NDVI vegetative indices, and district mandi supply logs to optimize supply chain distribution.
+
+---
+
+## 4. Step-by-Step Portal Walkthroughs & Expected Results
+
+---
+
+### Phase 1: Student Portal - Proposal Drafting and Dynamic Teammates
+
+#### Actions
+1. Open a clean browser window at `http://localhost:5173/login`.
+2. Enter the Student credentials:
    - Email: `student@university.edu`
    - Password: `student123`
-2. Navigate to **My Proposal** (`/student/proposal`).
-3. Fill in your project proposal:
-   - **Title**: *Autonomous Agricultural Drone for Mandi Yield Surveillance*
-   - **Domain**: *Machine Learning & AI*
-   - **Group Members**: Enter real member names e.g., `Ali Khan (FA21-BCS-010), Usman Tariq (FA21-BCS-045)`
-   - **Abstract**: Type a detailed problem statement and methodology.
-4. Click **Submit Proposal**.
-5. Navigate to **Dashboard** (`/student/dashboard`):
-   - **Result Verification**:
-     - Card 2 (**Group Members**) now renders **strictly** the names you entered (`Ali Khan` and `Usman Tariq`) alongside your logged-in student account labeled with the `You` pill.
-     - Hardcoded static demo members are completely eliminated.
-     - The footer displays the exact member count dynamically (`Group 14 • 3 members`).
+3. Click **Sign in**.
+4. In the top navigation bar, click **My Proposal** (`/student/proposal`).
+5. Complete the proposal form with the following values:
+   - **Project Title**: `Deep Learning for Mandi Agricultural Pricing and Yield Prediction`
+   - **Academic Domain**: Select or type `Machine Learning`
+   - **Group Members**: Type `Ayesha Noor (FA20-BSE-019), Zainab Ali (FA20-BSE-058)`
+   - **Technology Stack**: `Python, PyTorch, FastAPI, React, PostgreSQL`
+   - **Abstract / Problem Statement**: Paste the abstract from Section 3.
+6. Click **Submit Proposal**.
+
+#### Expected Visual Results on Screen
+- A green floating toast alert appears: *"Project proposal submitted successfully for supervisor and coordinator review."*
+- The proposal status badge updates from unsubmitted to `Submitted`.
+
+#### Expected Database State
+- A new or updated row in the `projects` table with `student_id` pointing to Hamza Tariq, `title`, `domain`, `abstract`, and `group_members` JSON array containing `["Ayesha Noor (FA20-BSE-019)", "Zainab Ali (FA20-BSE-058)"]`.
+- The AI similarity scan is automatically triggered in the background against the institutional thesis archive pool.
 
 ---
 
-### Step 2: Coordinator Portal — Real AI Similarity & Novelty Audit
-1. Open a new incognito window or log out and log in as coordinator:
+### Phase 2: Student Dashboard - Verification of Real Group Members
+
+#### Actions
+1. From the top navigation bar, click **Dashboard** (`/student/dashboard`).
+
+#### Expected Visual Results on Screen
+- **Card 1 (Project Overview)**: Displays the submitted title, `Machine Learning` domain badge, and `Submitted` status pill.
+- **Card 2 (Group Members)**:
+  - Renders **strictly** the real group members entered in Phase 1:
+    - `Hamza Tariq` (labeled with a dark `You` pill)
+    - `Ayesha Noor`
+    - `Zainab Ali`
+  - Hardcoded demo students are completely eliminated.
+  - The card footer displays: `Group 14 - 3 members`.
+- **Card 3 (Milestone Timeline)**: Stage 1 (Proposal Submission) is marked active.
+
+---
+
+### Phase 3: Coordinator Portal - Automated AI Similarity & Plagiarism Audit
+
+#### Actions
+1. Open an Incognito window or second browser at `http://localhost:5173/login`.
+2. Sign in with the Coordinator credentials:
    - Email: `coordinator@university.edu`
    - Password: `coord123`
-2. You will land on the **Coordinator Overview** (`/coordinator/overview`):
-   - Notice the **Department Project Pipeline** and **Faculty Workload & Quota** charts render cleanly with zero clipping.
-3. In the navigation bar, click **Similarity** (`/coordinator/similarity`):
-   - **Audit Queue Tab**: View all active proposals. Click any proposal to open the **NLP Vector Diff Inspector**.
-   - Notice the side-by-side comparison:
-     - Left: Current student proposal abstract.
-     - Right: Closest institutional archive match from the past thesis pool (2021–2025).
-     - Tags: Intersecting significant terms (e.g. `mandi`, `forecasting`, `pricing`) and calculated overlap percentage.
-   - **Live Proposal Scanner Tab**:
-     - Paste any test proposal text.
-     - Click **Run Live Similarity Scan**.
-     - The backend computes cosine distance using TF-IDF tokenization and returns real-time similarity metrics and closest archive match.
-   - **Archive Pool Tab**:
-     - Inspect the institutional benchmark archive pool spanning past departmental years (2021 to 2025).
+3. Click **Similarity** in the navigation bar (`/coordinator/similarity`).
+
+#### Expected Visual Results on Screen
+- **Clean Audit Screen**: The messy technical jargon banner and weird tab buttons have been eliminated.
+- **Left Column (Submitted Proposals)**:
+  - All active departmental proposals appear automatically.
+  - `Group 14` (*Deep Learning for Mandi Agricultural Pricing...*) appears with an overlap score badge (e.g. `48% Overlap - High Risk` or `Cleared`).
+  - Status indicator reads: `Review Required` or `Cleared by Committee`.
+- **Right Column (Semantic Diff Inspector)**:
+  - Clicking on Group 14 displays the side-by-side comparison:
+    - **Left Box (Current 2026 Proposal)**: Group 14 abstract, lead author Hamza Tariq.
+    - **Right Box (Historical Archive Match)**: Matched historical thesis `ARCH-2023-014: Wheat Yield Forecasting and Mandi Analytics (2023)` supervised by Dr. Imran Shah.
+    - **Significant Semantic Terms**: Highlights overlapping concepts: `mandi`, `pricing`, `forecasting`, `lstm`, `crop`.
+- Click the green button: **Approve as Legitimate Novelty**.
+- Expected Result: Toast alert confirms: *"Originality check cleared and approved by Coordinator."* Status badge updates to green `Cleared by Committee`.
 
 ---
 
-### Step 3: Coordinator Portal — Proposal Ratification & Supervisor Allocation
-1. Click **Proposals** (`/coordinator/proposals`):
-   - Filter by **Pending Decision**.
-   - Click on the proposal submitted in Step 1.
-   - Select **Approve Proposal** or **Request Topic Revision** and submit notes.
-2. Click **Allocations** (`/coordinator/supervisors`):
-   - Locate the student group under **Groups Pending Allocation**.
-   - Select a faculty supervisor (e.g., **Dr. Imran Shah**).
-   - Click **Allocate Supervisor**.
+### Phase 4: Coordinator Portal - AI Supervisor Recommendation & Quota Allocation
+
+#### Actions
+1. In the Coordinator portal, click **Allocations** in the top navigation bar (`/coordinator/supervisors`).
+
+#### Expected Visual Results on Screen
+- **Unassigned Proposals Section**:
+  - Displays Group 14 (*Deep Learning for Mandi Agricultural Pricing and Yield Prediction*).
+  - **AI Recommendation Box**:
+    - Top recommendation: **Dr. Imran Shah** (Associate Professor).
+    - AI Match Score: Displays `96.4% Match - Top AI Recommendation`.
+    - Rationale tags: Displays `Domain alignment in Machine Learning`, `Specialized in neural, lstm, forecasting`, `High Availability (3 slots)`.
+  - **Supervisor Dropdown**: Supervisors are ranked in descending order of AI match score.
+  - Faculty quota limits are enforced (max 5 groups per faculty).
+2. Click **Allocate Dr. Imran Shah (96.4% Match)**.
+3. Expected Result:
+   - Green toast alert: *"Group 14 allocated to Dr. Imran Shah successfully!"*
+   - Group 14 moves out of the unassigned queue.
+   - Dr. Imran Shah's workload counter increments by 1 group in the bottom faculty capacity grid.
 
 ---
 
-### Step 4: Real-Time Notification Verification
-1. Return to the Student portal window (logged in as `student@university.edu`).
-2. Without manually refreshing the page, watch the bell icon in the top navigation bar.
-3. **Result Verification**:
-   - Within **8 seconds**, the badge count increments automatically via periodic background polling.
-   - Click the bell icon:
-     - A notification appears: *"Dr. Imran Shah has been assigned as your project supervisor."*
-     - A notification appears: *"Coordinator Decision Announced: Project proposal Approved."*
+### Phase 5: Coordinator Portal - Formal Committee Proposal Ratification
+
+#### Actions
+1. In the Coordinator portal, click **Proposals** (`/coordinator/proposals`).
+2. Locate Group 14 under the **Pending Decision** filter.
+3. Notice that the allocated supervisor is now displayed as `Dr. Imran Shah`.
+4. Enter formal committee remarks: `Approved by Department FYP Committee. Proceed with SRS formulation under Dr. Imran Shah.`
+5. Click **Approve Proposal**.
+
+#### Expected Visual Results on Screen
+- Floating toast confirms approval.
+- Proposal status updates to `Approved` in the database.
+- An institutional approval notification is dispatched to all Group 14 members.
 
 ---
 
-### Step 5: Supervisor Portal — Document & Milestone Reviews
-1. Log in as supervisor:
+### Phase 6: Student Portal - Live Background Notification Verification
+
+#### Actions
+1. Return to Browser 1 (logged in as Student `student@university.edu`).
+2. Do **NOT** refresh the page manually. Watch the bell icon in the top navigation bar.
+
+#### Expected Visual Results on Screen
+- Within **8 seconds**, the notification badge counter on the bell icon automatically increments from `0` to `2` (via the periodic polling engine).
+- Click on the bell icon:
+  - Notification 1: *"Dr. Imran Shah has been assigned as your project supervisor."*
+  - Notification 2: *"Coordinator Decision Announced: Project proposal Approved."*
+- Click **Mark all as read**: Badge counter resets to zero cleanly.
+
+---
+
+### Phase 7: Student Portal - Official Deliverable Upload to Server Storage
+
+#### Actions
+1. In the Student portal, navigate to **Documents** (`/student/documents`).
+2. Fill out the deliverable upload card:
+   - **Document Type**: Select `Software Requirements Specification (SRS)`
+   - **Document Version**: Select `v1.0`
+   - **File Selection**: Choose any PDF or Word file from your computer (e.g. `Group14_SRS_v1.0.pdf`).
+3. Click **Upload Deliverable**.
+
+#### Expected Visual Results on Screen
+- Floating toast confirms: *"Deliverable uploaded successfully to departmental repository."*
+- The document appears in the **Submitted Project Deliverables** table with:
+  - Document Title: `Software Requirements Specification (SRS)`
+  - Version: `v1.0`
+  - Upload Timestamp: Current date and time
+  - Status Badge: Amber `Pending Supervisor Review`
+  - Download Button: Clickable link to download the file directly from the backend server.
+
+#### Expected Database & Disk State
+- The physical file is saved on the server disk under `fyp/backend/uploads/` with a unique timestamp prefix.
+- A row is inserted into the `documents` table referencing `project_id`, `file_path`, and `status = 'Pending'`.
+
+---
+
+### Phase 8: Supervisor Portal - Document Inspection, Download, and Review
+
+#### Actions
+1. Open a new browser window or tab at `http://localhost:5173/login`.
+2. Sign in with Supervisor credentials:
    - Email: `supervisor@university.edu`
    - Password: `super123`
-2. Check the **Supervisor Overview** (`/supervisor/overview`):
-   - Displays real count of assigned students and supervised projects.
-3. Click **Evaluations** (`/supervisor/evaluations`):
-   - Select the assigned student group.
-   - Input marks across the 4 official departmental criteria:
-     - Problem Formulation & Scope (out of 10)
-     - Technical Methodology (out of 10)
-     - Implementation Progress (out of 5)
-     - Presentation & Viva Defense (out of 5)
-   - Add qualitative remarks and click **Save & Finalize Evaluation**.
-4. Check the Student portal notifications:
-   - Notification arrives: *"Supervisor has graded milestone: 27/30. Remarks: Approved."*
+3. Click **Document Reviews** (`/supervisor/documents`).
+
+#### Expected Visual Results on Screen
+- The uploaded `Software Requirements Specification (SRS) v1.0` for Group 14 appears in the review queue.
+- Click **Download Deliverable**:
+  - The browser initiates a direct binary download from `http://localhost:8000/api/documents/download/{id}`.
+  - The downloaded file matches the exact bytes uploaded by the student.
+4. Click **Review Deliverable**:
+   - A modal or review box opens.
+   - Enter supervisor feedback: `SRS functional requirements, use-case diagrams, and LSTM architecture specifications approved for mid-term defense.`
+   - Click **Approve Deliverable**.
+5. Expected Result:
+   - Toast confirms deliverable approval.
+   - Status badge updates to green `Approved`.
+   - A notification is transmitted to the student group.
 
 ---
 
-### Step 6: Milestone Calendar & Academic Compliance
-1. As coordinator, navigate to **Milestones** (`/coordinator/milestones`):
-   - Update any upcoming deadline (e.g. SRS or Mid-Term Evaluation date).
-2. The system automatically creates broadcast deadline update notifications for all enrolled students and faculty members.
+### Phase 9: Supervisor Portal - Continuous Assessment Rubric Evaluation (30 Marks)
+
+#### Actions
+1. In the Supervisor portal, click **Evaluations & Marks** (`/supervisor/evaluations`).
+2. Select **Group 14** from the assigned projects dropdown.
+3. Select Evaluation Phase: `SRS & Architecture Defense`.
+4. Enter rubric scores across the 4 official criteria:
+   - **Problem Formulation & Scope**: `9 / 10`
+   - **Technical Methodology & Architecture**: `9 / 10`
+   - **Implementation & Prototype Progress**: `5 / 5`
+   - **Presentation & Viva Defense**: `4 / 5`
+5. Computed Total: Displays `27 / 30 (90%)`.
+6. Enter qualitative remarks: `Outstanding mathematical formulation of loss functions. Ensure dataset augmentation is complete before mid-term.`
+7. Click **Save & Finalize Evaluation**.
+
+#### Expected Visual Results on Screen
+- Toast alert: *"Evaluation scores recorded and submitted to departmental records."*
+- The evaluation summary card locks in the score of `27 / 30`.
+- Return to the Student portal: The notification alerts the student that their milestone has been graded with 27/30 marks.
 
 ---
 
-## 4. Institutional NLP Similarity Engine Technical Details
+### Phase 10: Feedback & Discussion Channel Verification
 
-- **Algorithm**: TF-IDF (Term Frequency – Inverse Document Frequency) Cosine Distance.
-- **Stopwords**: Standard academic and English stopword elimination with custom technical n-gram extraction (unigrams + bigrams).
-- **Archive Corpus**: Indexed historical capstone dissertations from 2021 to 2025 across Machine Learning, Cybersecurity, Embedded Robotics, Healthcare AI, and Distributed Systems.
-- **Thresholds**:
-  - `Similarity < 10%`: Low Risk (High Novelty, green badge)
-  - `10% <= Similarity < 20%`: Moderate Overlap (Requires review, amber badge)
-  - `Similarity >= 20%`: High Risk (Coordinator audit flag triggered, automatic notification sent to coordinator)
+#### Actions
+1. In the Student portal, navigate to **Feedback** (`/student/feedback`).
+2. Type a message: `Dear Dr. Imran Shah, we have integrated the mandi arrival dataset with 5-year historical records. Please review the schema.`
+3. Click **Send Message**.
+4. Switch to the Supervisor portal and navigate to **Feedback** (`/supervisor/feedback`).
+5. Select Group 14.
+6. The student's message is immediately visible in the threaded chat.
+7. Reply: `Schema looks solid. Proceed with feature scaling and train-test splits.`
+8. Click **Send Reply**.
+9. Both messages persist in the relational `feedback` table.
 
 ---
 
-## 5. Verification Checklist
+### Phase 11: Coordinator Portal - Academic Calendar & Milestone Management
 
-| Item | Component | Verification Status |
-| :--- | :--- | :---: |
-| 1 | Hardcoded group members ("Ayesha Noor, Hamza Tariq, Zainab Ali") replaced with dynamic database group members | **PASSED** |
-| 2 | Coordinator Overview dashboard loaded without crashing (charts and stages guarded) | **PASSED** |
-| 3 | AI NLP Similarity checker comparing real proposals against historical benchmark pool | **PASSED** |
-| 4 | Real-time live proposal testing scanner available for coordinators | **PASSED** |
-| 5 | Live periodic notification polling (8s) notifying students of supervisor/coordinator actions | **PASSED** |
-| 6 | Supervisor evaluations, document reviews, and proposal endorsements persisting in database | **PASSED** |
-| 7 | Coordinator supervisor allocation balancing faculty capacity quotas | **PASSED** |
-| 8 | Password reset and authentication flows operating against real backend endpoints | **PASSED** |
+#### Actions
+1. In the Coordinator portal, click **Milestones** (`/coordinator/milestones`).
+2. View the 5 official department stages:
+   - Proposal Defense (Weight 10%)
+   - Software Requirements Specification (Weight 15%)
+   - Mid-Term Architecture Defense (Weight 25%)
+   - Final Implementation & Code Audit (Weight 30%)
+   - External Viva & Thesis Defense (Weight 20%)
+3. Click **Edit Deadline** on Mid-Term Defense.
+4. Set the date to `2026-11-20`.
+5. Click **Save & Broadcast Alert**.
+
+#### Expected Visual Results on Screen
+- Toast alert confirms: *"Milestone deadline updated and broadcasted to all departmental candidates and faculty."*
+- Student and Supervisor portals receive a system-wide calendar reminder.
+
+---
+
+### Phase 12: Coordinator Portal - Accreditation Metric Audits & PDF Generation
+
+#### Actions
+1. In the Coordinator portal, click **Reports** (`/coordinator/reports`).
+2. Inspect the analytics cards:
+   - Department On-Time Rate: `91.6%`
+   - Cohort Average Score: `79.4`
+   - Total Project Artifacts: `384`
+   - Accreditation Readiness: `100%`
+3. Click **Generate Accreditation PDF**.
+
+#### Expected Visual Results on Screen
+- A clean, professional modal opens displaying the official institutional accreditation summary with:
+  - Departmental project count
+  - Faculty supervision quota balance
+  - Originality compliance rate
+  - Rubric continuous evaluation averages
+- Click **Print / Save as PDF** to generate an official hardcopy report.
+
+---
+
+## 5. Edge Cases & High-Similarity Plagiarism Test Case
+
+To verify that the AI similarity system properly catches plagiarized or duplicate submissions:
+
+1. Log in as any student or register a new account (`teststudent@university.edu`).
+2. Submit a proposal that deliberately copies a past thesis:
+   - **Title**: *Fabric Defect Detection on Edge TPU*
+   - **Domain**: *Computer Vision & Embedded*
+   - **Abstract**: *Embedded camera utilizing quantized MobileNet SSD running on Coral Edge TPU for defect localization and weave warp inconsistency detection on high-speed industrial textile looms.*
+3. Submit the proposal.
+4. Log in as Coordinator and open **Similarity** (`/coordinator/similarity`).
+5. **Expected Result**:
+   - The proposal is immediately flagged with a red badge: `85% Overlap - High Risk`.
+   - The status is marked: `Review Required (High Overlap Detected)`.
+   - The inspector side-by-side shows an exact match with historical thesis `ARCH-2022-072`.
+   - The coordinator clicks **Require Topic Revision**; a revision order is dispatched to the student, blocking proposal approval.
+
+---
+
+## 6. System Verification Matrix
+
+| Test Step | Component Tested | Pre-Conditions | Expected Result | Status |
+| :---: | :--- | :--- | :--- | :---: |
+| 1 | Student Proposal Submission | Student logged in | Saved to database with status `Submitted` | PASSED |
+| 2 | Dynamic Group Members | Proposal submitted | Renders real members and `You` badge; no hardcoded demo names | PASSED |
+| 3 | AI Similarity Audit | 25+ benchmark pool | Automatic overlap percentage computed against archive | PASSED |
+| 4 | AI Supervisor Recommendation | Project unassigned | Faculty ranked with AI Match Score, reasons, and quotas | PASSED |
+| 5 | Supervisor Allocation | Capacity limits active | Faculty assigned, quota decrements by 1 | PASSED |
+| 6 | Proposal Ratification | Coordinator logged in | Status updates to `Approved`, notification sent | PASSED |
+| 7 | Live Notification Polling | No page reload | Badge counter increments within 8s | PASSED |
+| 8 | Deliverable File Upload | PDF/DOCX selected | Stored on server disk `backend/uploads/` | PASSED |
+| 9 | Deliverable File Download | Supervisor logged in | Streams exact binary file from server | PASSED |
+| 10 | Rubric Continuous Evaluation | 4 criteria (30 marks) | Marks computed, recorded in database, student notified | PASSED |
+| 11 | Threaded Feedback Chat | Both parties online | Messages persist and display in chronological order | PASSED |
+| 12 | Department Settings | Quotas configured | Enforced in student proposal and supervisor allocations | PASSED |
+| 13 | High Plagiarism Flag | Duplicate abstract | Flagged with red `High Risk` badge and blocked | PASSED |
+| 14 | Accreditation PDF Export | Coordinator portal | Generates formatted institutional compliance summary | PASSED |
+| 15 | Zero Emojis Compliance | Repository-wide | Entire codebase, UI, and docs have 0 emoji characters | PASSED |
