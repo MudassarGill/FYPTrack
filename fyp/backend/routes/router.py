@@ -10,6 +10,7 @@ from routes.notifications import router as notifications_router
 from routes.supervisors import router as supervisors_router
 from routes.milestones import router as milestones_router
 from routes.students import router as students_router
+from routes.similarity import router as similarity_router
 
 api_router = APIRouter()
 api_router.include_router(auth_router)
@@ -22,4 +23,6 @@ api_router.include_router(notifications_router)
 api_router.include_router(supervisors_router)
 api_router.include_router(milestones_router)
 api_router.include_router(students_router)
+api_router.include_router(similarity_router)
+
 

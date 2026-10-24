@@ -17,6 +17,7 @@ from schemas.project import (
     CoordinatorDecisionRequest,
     ProjectResponse,
 )
+from services.similarity_service import scan_proposal_similarity
 
 router = APIRouter(prefix="/projects", tags=["Projects & Proposals"])
 
@@ -70,6 +71,14 @@ def create_project(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ):
+    # Compute real AI NLP similarity score against archive benchmark pool
+    sim_check = scan_proposal_similarity(
+        title=payload.title,
+        domain=payload.domain or "",
+        abstract=payload.abstract or "",
+    )
+    computed_originality = sim_check.get("originality_score", 92)
+
     # Check if student already has a project
     existing = db.scalar(select(Project).where(Project.student_id == current_user.id))
     if existing:
@@ -79,10 +88,29 @@ def create_project(
         existing.abstract = payload.abstract
         existing.technologies = payload.technologies or existing.technologies
         existing.group_members = payload.group_members or existing.group_members
+        existing.originality_score = computed_originality
         existing.status = "Submitted"
         existing.version += 1
         db.commit()
         db.refresh(existing)
+
+        # Notify coordinator
+        db.add(
+            Notification(
+                role_target="coordinator",
+                title="Proposal Resubmitted",
+                message=f"{current_user.full_name} resubmitted '{payload.title}' ({existing.group_name}). Originality: {computed_originality}%.",
+            )
+        )
+        if computed_originality < 80:
+            db.add(
+                Notification(
+                    role_target="coordinator",
+                    title="High Similarity Alert",
+                    message=f"Proposal '{payload.title}' exhibits {sim_check.get('highest_similarity_percent', 0)}% similarity with archived thesis '{sim_check.get('matched_title', '')}'.",
+                )
+            )
+        db.commit()
         return existing
 
     # Assign group name
@@ -100,7 +128,7 @@ def create_project(
         technologies=payload.technologies or "",
         group_members=payload.group_members or current_user.full_name,
         status="Submitted",
-        originality_score=94,
+        originality_score=computed_originality,
         version=1,
     )
     db.add(project)
@@ -112,9 +140,17 @@ def create_project(
         Notification(
             role_target="coordinator",
             title="New Proposal Submitted",
-            message=f"{current_user.full_name} submitted proposal '{payload.title}' ({group_name}).",
+            message=f"{current_user.full_name} submitted proposal '{payload.title}' ({group_name}). Originality: {computed_originality}%.",
         )
     )
+    if computed_originality < 80:
+        db.add(
+            Notification(
+                role_target="coordinator",
+                title="High Similarity Alert",
+                message=f"Proposal '{payload.title}' exhibits {sim_check.get('highest_similarity_percent', 0)}% similarity with archive thesis '{sim_check.get('matched_title', '')}'.",
+            )
+        )
     db.commit()
 
     return project
@@ -131,12 +167,16 @@ def update_project(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found.")
 
+    changed_content = False
     if payload.title:
         project.title = payload.title
+        changed_content = True
     if payload.domain:
         project.domain = payload.domain
+        changed_content = True
     if payload.abstract:
         project.abstract = payload.abstract
+        changed_content = True
     if payload.technologies:
         project.technologies = payload.technologies
     if payload.group_members:
@@ -148,6 +188,10 @@ def update_project(
         if project.status == "Changes Requested":
             project.status = "Submitted"
             project.version += 1
+
+    if changed_content:
+        sim = scan_proposal_similarity(project.title, project.domain or "", project.abstract or "")
+        project.originality_score = sim.get("originality_score", project.originality_score)
 
     db.commit()
     db.refresh(project)
@@ -267,6 +311,15 @@ def coordinator_decision(
             message=f"Project proposal {payload.coordinator_status}. Notes: {payload.coordinator_notes or 'Official decision recorded.'}",
         )
     )
+    # Notify supervisor if assigned
+    if project.supervisor_id:
+        db.add(
+            Notification(
+                user_id=project.supervisor_id,
+                title="Coordinator Decision Announced",
+                message=f"Coordinator decided '{payload.coordinator_status}' for {project.group_name} ({project.title}).",
+            )
+        )
     db.commit()
 
     return project

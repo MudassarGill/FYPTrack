@@ -219,3 +219,22 @@ export async function getMyStudents() {
   return authFetch("/students/my");
 }
 
+/* ============================================================
+   AI Similarity & Academic Archive Audits API
+   ============================================================ */
+export async function getSimilarityAudits() {
+  return authFetch("/similarity/audits");
+}
+
+export async function checkSimilarity(data) {
+  return authFetch("/similarity/check", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getSimilarityBenchmarks() {
+  return authFetch("/similarity/benchmarks");
+}
+
+
