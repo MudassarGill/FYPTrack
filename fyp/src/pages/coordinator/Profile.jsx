@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Card from "../../components/shared/Card";
 import { getStoredUser } from "../../services/auth";
 import { useToast } from "../../components/shared/Toast";
+import { getDepartmentSettings, updateDepartmentSettings } from "../../services/api";
 
 export default function CoordinatorProfile() {
   const { addToast } = useToast();
   const user = getStoredUser();
 
+  const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState({
     coordinatorName: user?.full_name || "Prof. Dr. Tariq Mahmood",
     designation: "Professor & FYP Programme Coordinator",
@@ -22,9 +24,53 @@ export default function CoordinatorProfile() {
     allowStudentSelfProposal: true,
   });
 
-  const handleSaveSettings = (e) => {
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  async function loadSettings() {
+    try {
+      const data = await getDepartmentSettings();
+      if (data) {
+        setSettings((prev) => ({
+          ...prev,
+          coordinatorName: data.coordinator_name || prev.coordinatorName,
+          academicSession: data.academic_session || prev.academicSession,
+          department: data.department_name || prev.department,
+          contactExt: data.contact_ext || prev.contactExt,
+          officeLocation: data.office_location || prev.officeLocation,
+          maxGroupSize: data.max_group_size ?? 3,
+          maxSupervisorQuota: data.max_supervisor_quota ?? 5,
+          similarityThresholdPct: data.similarity_threshold_pct ?? 20,
+          allowStudentSelfProposal: data.allow_student_self_proposal ?? true,
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to load department settings:", err);
+    }
+  }
+
+  const handleSaveSettings = async (e) => {
     e.preventDefault();
-    addToast("Departmental FYP configurations saved successfully!");
+    try {
+      setSaving(true);
+      await updateDepartmentSettings({
+        max_group_size: settings.maxGroupSize,
+        max_supervisor_quota: settings.maxSupervisorQuota,
+        similarity_threshold_pct: settings.similarityThresholdPct,
+        allow_student_self_proposal: settings.allowStudentSelfProposal,
+        coordinator_name: settings.coordinatorName,
+        academic_session: settings.academicSession,
+        department_name: settings.department,
+        contact_ext: settings.contactExt,
+        office_location: settings.officeLocation,
+      });
+      addToast(`Department policy settings updated! Max members per group set to ${settings.maxGroupSize}.`);
+    } catch (err) {
+      addToast(err.message || "Failed to update department settings.", "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -78,19 +124,19 @@ export default function CoordinatorProfile() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
-                    Official Coordinator Email
+                    Official Email
                   </label>
                   <input
                     type="email"
                     disabled
                     value={settings.email}
-                    className="w-full rounded-[10px] border border-[#D3D8D4] bg-[#FAFAF8] px-3.5 py-2 text-[14px] text-[#5F6B66] cursor-not-allowed"
+                    className="w-full rounded-[10px] border border-[#D3D8D4] bg-[#F7F7F6] px-3.5 py-2 text-[14px] text-[#5F6B66] cursor-not-allowed"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
-                    Department Phone / Extension
+                    Contact / Intercom Extension
                   </label>
                   <input
                     type="text"
@@ -114,8 +160,7 @@ export default function CoordinatorProfile() {
               </div>
             </Card>
 
-            {/* Department Programme Constraints & Thresholds */}
-            <Card className="p-6 space-y-4">
+            <Card className="p-6 space-y-5">
               <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] pb-3 border-b border-[#EEEEEA]">
                 Department Governance Policy Parameters
               </h3>
@@ -130,9 +175,12 @@ export default function CoordinatorProfile() {
                     min="1"
                     max="5"
                     value={settings.maxGroupSize}
-                    onChange={(e) => setSettings({ ...settings, maxGroupSize: parseInt(e.target.value) })}
+                    onChange={(e) => setSettings({ ...settings, maxGroupSize: parseInt(e.target.value) || 1 })}
                     className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3.5 py-2 text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6]"
                   />
+                  <p className="text-[11px] text-[#5F6B66] mt-1">
+                    Enforced in student proposal submission form and supervisor dashboards.
+                  </p>
                 </div>
 
                 <div>
@@ -144,9 +192,12 @@ export default function CoordinatorProfile() {
                     min="1"
                     max="10"
                     value={settings.maxSupervisorQuota}
-                    onChange={(e) => setSettings({ ...settings, maxSupervisorQuota: parseInt(e.target.value) })}
+                    onChange={(e) => setSettings({ ...settings, maxSupervisorQuota: parseInt(e.target.value) || 1 })}
                     className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3.5 py-2 text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6]"
                   />
+                  <p className="text-[11px] text-[#5F6B66] mt-1">
+                    Maximum capstone groups assigned to each faculty supervisor.
+                  </p>
                 </div>
 
                 <div>
@@ -158,7 +209,7 @@ export default function CoordinatorProfile() {
                     min="5"
                     max="50"
                     value={settings.similarityThresholdPct}
-                    onChange={(e) => setSettings({ ...settings, similarityThresholdPct: parseInt(e.target.value) })}
+                    onChange={(e) => setSettings({ ...settings, similarityThresholdPct: parseInt(e.target.value) || 5 })}
                     className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3.5 py-2 text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6]"
                   />
                   <p className="text-[11px] text-[#5F6B66] mt-1">
@@ -183,9 +234,10 @@ export default function CoordinatorProfile() {
             <div className="flex justify-end gap-3">
               <button
                 type="submit"
+                disabled={saving}
                 className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-6 py-2.5 transition-colors shadow-sm cursor-pointer"
               >
-                Save Department Policy Settings
+                {saving ? "Saving Policy..." : "Save Department Policy Settings"}
               </button>
             </div>
           </div>

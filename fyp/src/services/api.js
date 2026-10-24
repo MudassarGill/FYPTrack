@@ -237,4 +237,19 @@ export async function getSimilarityBenchmarks() {
   return authFetch("/similarity/benchmarks");
 }
 
+/* ============================================================
+   Department Policy Settings API
+   ============================================================ */
+export async function getDepartmentSettings() {
+  return authFetch("/settings/");
+}
+
+export async function updateDepartmentSettings(data) {
+  return authFetch("/settings/", {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+
 

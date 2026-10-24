@@ -27,7 +27,6 @@ const gradeDistribution = [
 
 export default function AnalyticsReports() {
   const { addToast } = useToast();
-  const [downloading, setDownloading] = useState(false);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -61,16 +60,11 @@ export default function AnalyticsReports() {
         { domain: "Robotics & Embedded", groups: 1 },
       ];
 
-  const handleExportCSV = () => {
-    setDownloading(true);
-    setTimeout(() => {
-      setDownloading(false);
-      addToast("FYPTrack_Department_Annual_Report_2026.csv generated successfully!");
-    }, 600);
-  };
-
   const handleExportPDF = () => {
-    addToast("Department Accreditation Dossier (PDF) export prepared.", "info");
+    addToast("Preparing Department Accreditation Report PDF...", "info");
+    setTimeout(() => {
+      window.print();
+    }, 400);
   };
 
   return (
@@ -79,23 +73,14 @@ export default function AnalyticsReports() {
         title="Department Analytics & Accreditation Reports"
         description="Comprehensive institutional metrics, domain distributions, cohort evaluation averages, and accreditation report exports."
         action={
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleExportCSV}
-              disabled={downloading}
-              className="rounded-[10px] bg-[#EEEEEA] hover:bg-[#E0E0DC] text-[#17302A] font-bold text-[13px] px-4 py-2 transition-colors cursor-pointer"
-            >
-              {downloading ? "Exporting..." : "Export CSV"}
-            </button>
-            <button
-              type="button"
-              onClick={handleExportPDF}
-              className="rounded-[10px] bg-[#17302A] hover:bg-[#24493F] text-white font-bold text-[13px] px-4 py-2 transition-colors cursor-pointer"
-            >
-              Generate Accreditation PDF
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleExportPDF}
+            className="rounded-[10px] bg-[#17302A] hover:bg-[#24493F] text-white font-bold text-[13px] px-4 py-2 transition-colors cursor-pointer flex items-center gap-2"
+          >
+            <span>📄</span>
+            <span>Generate Accreditation PDF</span>
+          </button>
         }
       />
 

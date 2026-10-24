@@ -9,6 +9,7 @@ from models.user import User
 from models.project import Project
 from models.feedback import Feedback
 from models.notification import Notification
+from models.setting import DepartmentSetting
 from schemas.project import (
     ProjectCreateRequest,
     ProjectUpdateRequest,
@@ -71,6 +72,17 @@ def create_project(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ):
+    # Enforce coordinator department rules (max_group_size)
+    setting = db.scalar(select(DepartmentSetting).where(DepartmentSetting.id == 1))
+    max_group = setting.max_group_size if setting else 3
+    if payload.group_members:
+        members = [m.strip() for m in payload.group_members.replace(";", ",").replace("\n", ",").split(",") if m.strip()]
+        if len(members) > max_group:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Department policy strictly allows a maximum of {max_group} members per group (you specified {len(members)}).",
+            )
+
     # Compute real AI NLP similarity score against archive benchmark pool
     sim_check = scan_proposal_similarity(
         title=payload.title,

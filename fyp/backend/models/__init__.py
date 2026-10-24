@@ -6,6 +6,7 @@ from models.document import Document
 from models.evaluation import Evaluation
 from models.notification import Notification
 from models.milestone import Milestone
+from models.setting import DepartmentSetting
 
-__all__ = ["Base", "User", "Project", "Feedback", "Document", "Evaluation", "Notification", "Milestone"]
+__all__ = ["Base", "User", "Project", "Feedback", "Document", "Evaluation", "Notification", "Milestone", "DepartmentSetting"]
 

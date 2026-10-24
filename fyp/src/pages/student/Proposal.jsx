@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useToast } from "../../components/shared/Toast";
-import { getMyProjects, submitProposal } from "../../services/api";
+import { getMyProjects, submitProposal, getDepartmentSettings } from "../../services/api";
 
 export default function Proposal() {
   const { addToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [project, setProject] = useState(null);
+  const [deptSettings, setDeptSettings] = useState({ max_group_size: 3, allow_student_self_proposal: true });
 
   const [formData, setFormData] = useState({
     title: "",
@@ -18,13 +19,19 @@ export default function Proposal() {
   });
 
   useEffect(() => {
-    loadProject();
+    loadProjectAndSettings();
   }, []);
 
-  async function loadProject() {
+  async function loadProjectAndSettings() {
     try {
       setLoading(true);
-      const data = await getMyProjects();
+      const [data, settings] = await Promise.all([
+        getMyProjects().catch(() => []),
+        getDepartmentSettings().catch(() => null),
+      ]);
+      if (settings) {
+        setDeptSettings(settings);
+      }
       if (data && data.length > 0) {
         const p = data[0];
         setProject(p);
@@ -46,6 +53,14 @@ export default function Proposal() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.group_members) {
+      const count = formData.group_members.split(/[,;\n]+/).map((s) => s.trim()).filter(Boolean).length;
+      const maxLimit = deptSettings.max_group_size || 3;
+      if (count > maxLimit) {
+        addToast(`Department policy strictly limits groups to a maximum of ${maxLimit} members. You listed ${count} members.`, "error");
+        return;
+      }
+    }
     try {
       setSubmitting(true);
       const saved = await submitProposal({
@@ -191,6 +206,9 @@ export default function Proposal() {
                 onChange={(e) => setFormData({ ...formData, group_members: e.target.value })}
                 className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[11px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6]"
               />
+              <p className="text-[11px] text-[#5F6B66] mt-1">
+                Department Policy: Maximum {deptSettings.max_group_size || 3} members per group. Separate multiple members with commas.
+              </p>
             </div>
 
             <div>

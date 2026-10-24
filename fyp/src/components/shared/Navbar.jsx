@@ -261,13 +261,6 @@ export default function Navbar({ mode = "public" }) {
                           Reports & Analytics
                         </Link>
                         <Link
-                          to="/coordinator/notifications"
-                          onClick={() => setMoreDropdownOpen(false)}
-                          className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
-                        >
-                          Department Memos
-                        </Link>
-                        <Link
                           to="/coordinator/profile"
                           onClick={() => setMoreDropdownOpen(false)}
                           className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
@@ -527,13 +520,6 @@ export default function Navbar({ mode = "public" }) {
                     className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
                   >
                     Reports & Analytics
-                  </Link>
-                  <Link
-                    to="/coordinator/notifications"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
-                  >
-                    Department Memos
                   </Link>
                   <Link
                     to="/coordinator/profile"

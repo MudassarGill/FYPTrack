@@ -17,6 +17,7 @@ import {
   getMyProjects,
   getDocumentsForReview,
   getMilestones,
+  getDepartmentSettings,
 } from "../../services/api";
 import StatCard from "../../components/shared/StatCard";
 import Badge from "../../components/shared/Badge";
@@ -58,20 +59,23 @@ export default function SupervisorOverview() {
   const [projects, setProjects] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [milestones, setMilestones] = useState([]);
+  const [deptSettings, setDeptSettings] = useState({ max_supervisor_quota: 5 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
-        const [projRes, docRes, msRes] = await Promise.all([
+        const [projRes, docRes, msRes, setRes] = await Promise.all([
           getMyProjects().catch(() => []),
           getDocumentsForReview().catch(() => []),
           getMilestones().catch(() => []),
+          getDepartmentSettings().catch(() => null),
         ]);
         setProjects(projRes || []);
         setDocuments(docRes || []);
         setMilestones(msRes || []);
+        if (setRes) setDeptSettings(setRes);
       } finally {
         setLoading(false);
       }
@@ -141,7 +145,7 @@ export default function SupervisorOverview() {
                 Supervisor Portal • Faculty Track
               </span>
               <span className="text-xs text-[#D5E3DD]/80">
-                Active Projects: {activeProjectsCount} Groups Allocated
+                Supervision Quota: {activeProjectsCount} of {deptSettings.max_supervisor_quota || 5} Max Groups Allocated
               </span>
             </div>
             <h1 className="font-['Bricolage_Grotesque'] font-bold text-[32px] sm:text-[40px] leading-tight text-white mb-2">
@@ -179,7 +183,7 @@ export default function SupervisorOverview() {
         <StatCard
           label="Active Projects"
           value={String(activeProjectsCount)}
-          subtext="Assigned in SQLite database"
+          subtext={`Quota limit: ${deptSettings.max_supervisor_quota || 5} groups`}
         />
         <StatCard
           label="Pending Reviews"
