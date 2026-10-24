@@ -25,8 +25,7 @@ def get_all_students(
     result = []
     for u in student_users:
         proj = project_by_student.get(u.id)
-        # Generate clean academic roll #
-        roll = f"FA20-BSE-{u.id:03d}" if u.id % 2 == 0 else f"FA20-BCS-{u.id:03d}"
+        roll = u.roll_number or (f"FA20-BSE-{u.id:03d}" if u.id % 2 == 0 else f"FA20-BCS-{u.id:03d}")
         
         result.append({
             "id": u.id,
@@ -73,7 +72,7 @@ def get_my_students(
         name = student.full_name if student else proj.student_name
         email = student.email if student else proj.student_email
         s_id = student.id if student else proj.id
-        roll = f"FA20-BSE-{s_id:03d}" if s_id % 2 == 0 else f"FA20-BCS-{s_id:03d}"
+        roll = (student.roll_number if student and student.roll_number else None) or (f"FA20-BSE-{s_id:03d}" if s_id % 2 == 0 else f"FA20-BCS-{s_id:03d}")
 
         result.append({
             "id": s_id,

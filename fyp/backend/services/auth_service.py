@@ -49,6 +49,7 @@ def register_user(db: Session, payload: SignUpRequest) -> tuple[User, str]:
         email=payload.email,
         password_hash=hash_password(payload.password),
         role=payload.role or "student",
+        roll_number=payload.roll_number,
     )
     db.add(user)
     try:

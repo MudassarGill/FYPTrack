@@ -15,6 +15,7 @@ class SignUpRequest(BaseModel):
     email: str = Field(max_length=320)
     password: str = Field(min_length=8, max_length=72)
     role: Optional[str] = "student"
+    roll_number: Optional[str] = None
 
     @field_validator("full_name")
     @classmethod
@@ -62,6 +63,7 @@ class UserResponse(BaseModel):
     full_name: str
     email: str
     role: str
+    roll_number: Optional[str] = None
     email_updates_enabled: bool = True
 
 
