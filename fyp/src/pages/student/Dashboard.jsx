@@ -57,11 +57,6 @@ const notifications = [
   { title: "Proposal approved", badge: "1w", badgeType: "gray" },
 ];
 
-const groupMembersList = [
-  { name: "Ayesha Noor", roll: "FA20-BSE-042", isYou: true },
-  { name: "Hamza Tariq", roll: "FA20-BSE-058", isYou: false },
-  { name: "Zainab Ali", roll: "FA20-BSE-019", isYou: false },
-];
 
 function AreaTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
@@ -134,11 +129,10 @@ export default function Dashboard() {
   const user = getStoredUser();
   const student = user?.student || {};
 
-  const rollNo = student.roll_number || user?.roll_number || "FA20-BSE-042";
-  const groupName = student.group_name || "Group 14";
+  const rollNo = student.roll_number || user?.roll_number || "Not Assigned";
+  const fullName = user?.full_name || "Student";
+  const email = user?.email || "";
   const program = student.program || "BS Software Engineering";
-  const fullName = user?.full_name || "Ayesha Noor";
-  const email = user?.email || "ayesha.noor@university.edu";
 
   const [coordForm, setCoordForm] = useState({
     subject: "milestone",
@@ -173,6 +167,31 @@ export default function Dashboard() {
       })
       .catch((err) => console.error(err));
   }, []);
+
+  const groupName = project?.group_name || student.group_name || "Unassigned Group";
+
+  // Dynamic group members parsing from user and submitted proposal
+  const rawMembers = project?.group_members;
+  let groupMembersList = [];
+  if (rawMembers && typeof rawMembers === "string") {
+    const parts = rawMembers.split(/[,;\n]+/).map((p) => p.trim()).filter(Boolean);
+    groupMembersList = parts.map((part) => {
+      const match = part.match(/^(.*?)(?:\s*\((.*?)\))?$/);
+      const name = match ? match[1].trim() : part;
+      const roll = match && match[2] ? match[2].trim() : "";
+      const isYou = fullName && name.toLowerCase().includes(fullName.toLowerCase());
+      return {
+        name,
+        roll: roll || (isYou ? rollNo : "Co-member"),
+        isYou: Boolean(isYou),
+      };
+    });
+  }
+  if (groupMembersList.length === 0) {
+    groupMembersList = [
+      { name: fullName, roll: rollNo, isYou: true }
+    ];
+  }
 
   const totalMilestones = milestones.length > 0 ? milestones.length : 6;
   const completedMilestones = milestones.filter((m) => m.status === "Completed").length;
@@ -673,7 +692,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="pt-3 border-t border-[#EEEEEA] text-[12px] text-[#5F6B66]">
-            Group 14 &bull; 3 members
+            {groupName} &bull; {groupMembersList.length} member{groupMembersList.length > 1 ? "s" : ""}
           </div>
         </div>
 

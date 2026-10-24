@@ -7,11 +7,11 @@ export default function Profile() {
   const user = getStoredUser();
   const student = user?.student || {};
 
-  const fullName = user?.full_name || "Ayesha Noor";
-  const email = user?.email || "ayesha.noor@university.edu";
-  const rollNo = student.roll_number || user?.roll_number || "FA20-BSE-042";
+  const fullName = user?.full_name || "Student";
+  const email = user?.email || "";
+  const rollNo = student.roll_number || user?.roll_number || "Not Assigned";
   const program = student.program || "BS Software Engineering";
-  const group = student.group_name || "Group 14 (Lead)";
+  const group = student.group_name || "Unassigned Group";
 
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",

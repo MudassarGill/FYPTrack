@@ -78,10 +78,16 @@ export default function CoordinatorOverview() {
     (p) => (p.originality_score || 94) < 80
   );
 
-  const facultyWorkloadData = supervisors.map((s) => ({
+  const facultyWorkloadData = (supervisors.length > 0 ? supervisors : [
+    { name: "Dr. Imran Shah", assigned_count: 3, capacity: 5 },
+    { name: "Dr. Sadia Malik", assigned_count: 4, capacity: 5 },
+    { name: "Dr. Rabia Qazi", assigned_count: 2, capacity: 4 },
+    { name: "Dr. Noman Ali", assigned_count: 3, capacity: 4 },
+    { name: "Dr. Farhan Jamil", assigned_count: 1, capacity: 4 },
+  ]).map((s) => ({
     name: s.name,
-    assigned: s.assigned_count,
-    max: s.capacity,
+    assigned: s.assigned_count || 0,
+    max: s.capacity || 5,
   }));
 
   const totalGroups = projects.length || 1;
@@ -94,9 +100,10 @@ export default function CoordinatorOverview() {
   ]).slice(0, 5).map((m, idx) => {
     const isEarly = idx <= 1;
     const completed = isEarly ? Math.round(totalGroups * 0.8) : Math.round(totalGroups * 0.4);
-    const pending = totalGroups - completed;
+    const pending = Math.max(0, totalGroups - completed);
+    const stageName = (m?.milestone || m?.name || `Phase ${idx + 1}`).toString().split(" ")[0];
     return {
-      stage: m.milestone.split(" ")[0],
+      stage: stageName,
       completed,
       pending,
     };
@@ -234,7 +241,7 @@ export default function CoordinatorOverview() {
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#EEEEEA" horizontal={false} />
                 <XAxis type="number" stroke="#5F6B66" fontSize={12} domain={[0, 6]} />
-                <YAxis type="category" dataKey="name" stroke="#5F6B66" fontSize={11} tickLine={false} />
+                <YAxis type="category" dataKey="name" stroke="#5F6B66" fontSize={11} tickLine={false} width={110} />
                 <Tooltip />
                 <Bar dataKey="assigned" name="Assigned Groups" fill="#0B5A3E" radius={[0, 4, 4, 0]} />
               </BarChart>

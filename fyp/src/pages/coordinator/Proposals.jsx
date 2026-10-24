@@ -30,10 +30,11 @@ export default function CoordinatorProposals() {
   }
 
   const filtered = proposals.filter((p) => {
+    const status = p.coordinator_status || "";
     if (filter === "All") return true;
-    if (filter === "Pending Decision") return p.coordinator_status === "Pending Decision";
-    if (filter === "Approved") return p.coordinator_status.includes("Approved");
-    if (filter === "Flagged") return p.coordinator_status.includes("Revision") || p.coordinator_status.includes("Rejected");
+    if (filter === "Pending Decision") return status === "Pending Decision" || p.status === "Submitted";
+    if (filter === "Approved") return status.includes("Approved") || p.status === "Approved";
+    if (filter === "Flagged") return status.includes("Revision") || status.includes("Rejected") || p.status === "Rejected";
     return true;
   });
 

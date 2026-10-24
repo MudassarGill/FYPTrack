@@ -98,7 +98,9 @@ export default function Navbar({ mode = "public" }) {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    if (isPortal) {
+    if (!isPortal) return;
+
+    function fetchUnread() {
       getUnreadNotificationsCount()
         .then((res) => {
           if (res && typeof res.unread_count === "number") {
@@ -107,7 +109,12 @@ export default function Navbar({ mode = "public" }) {
         })
         .catch(() => {});
     }
+
+    fetchUnread();
+    const intervalId = setInterval(fetchUnread, 8000);
+    return () => clearInterval(intervalId);
   }, [location.pathname, isPortal]);
+
 
   const currentNav = isCoordinatorPortal
 

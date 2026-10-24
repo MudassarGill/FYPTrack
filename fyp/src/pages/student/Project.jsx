@@ -6,7 +6,10 @@ import {
   getProjectDocuments,
 } from "../../services/api";
 
+import { getStoredUser } from "../../services/auth";
+
 export default function Project() {
+  const user = getStoredUser();
   const [project, setProject] = useState(null);
   const [feedbacks, setFeedbacks] = useState([]);
   const [docs, setDocs] = useState([]);
@@ -37,19 +40,43 @@ export default function Project() {
     }
   }
 
-  const p = project || {
-    title: "Crop Price Prediction and Market Advisory System",
-    domain: "Machine Learning & AI",
-    group_name: "Group 14",
-    abstract: "Machine learning system forecasting wholesale mandi commodity rates and advising smallholder farmers on optimal crop selling windows across seasonal cycles.",
-    status: "In Progress",
-    supervisor_name: "Dr. Imran Shah",
-    group_members: "Hamza Tariq (Lead), Ayesha Noor, Zainab Ali",
-  };
+  if (!loading && !project) {
+    return (
+      <div className="space-y-8 pb-12">
+        <div>
+          <h1 className="font-['Bricolage_Grotesque'] text-[30px] font-bold text-[#17302A] leading-tight">
+            My Project
+          </h1>
+          <p className="text-[14px] text-[#5F6B66] mt-1">
+            Comprehensive project profile, supervisor reviews, and team member management.
+          </p>
+        </div>
+        <div className="card-base text-center py-16">
+          <div className="w-16 h-16 rounded-full bg-[#F3F4F6] text-[#5F6B66] flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+            📁
+          </div>
+          <h2 className="font-['Bricolage_Grotesque'] text-[22px] font-bold text-[#17302A] mb-2">
+            No Active FYP Project Found
+          </h2>
+          <p className="text-[14px] text-[#5F6B66] max-w-md mx-auto mb-6">
+            You have not submitted a project proposal yet. Submit your FYP proposal to begin milestones and supervisor collaboration.
+          </p>
+          <Link
+            to="/student/proposal"
+            className="inline-flex items-center gap-2 rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-6 py-3 transition-colors"
+          >
+            Submit Proposal Now &rarr;
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
+  const p = project || {};
   const rawMembers = p.group_members
-    ? p.group_members.split(",").map((m) => m.trim()).filter(Boolean)
-    : [p.student_name || "Lead Student"];
+    ? p.group_members.split(/[,;\n]+/).map((m) => m.trim()).filter(Boolean)
+    : [p.student_name || user?.full_name || "Lead Student"];
+
 
   return (
     <div className="space-y-8 pb-12">
