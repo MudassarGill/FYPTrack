@@ -46,7 +46,7 @@ export default function DeadlinesMilestones() {
         status: newStatus || editingMilestone.status,
       });
       addToast(
-        `Deadline for ${editingMilestone.milestone} updated to ${newDate} and broadcasted to students!`
+        `Deadline for ${editingMilestone.milestone} updated to ${newDate} and broadcasted to all departmental candidates and faculty!`
       );
       setEditingMilestone(null);
       setNewDate("");
@@ -139,7 +139,7 @@ export default function DeadlinesMilestones() {
                   }}
                   className="rounded-[8px] bg-[#EEEEEA] hover:bg-[#E0E0DC] text-[#17302A] text-[12px] font-bold px-3.5 py-1.5 transition-colors cursor-pointer"
                 >
-                  Modify Deadline
+                  Edit Deadline
                 </button>
               </div>
             </Card>
@@ -211,7 +211,7 @@ export default function DeadlinesMilestones() {
                   disabled={saving}
                   className="px-4 py-2 rounded-[10px] bg-[#17302A] hover:bg-[#24493F] text-white text-[13px] font-bold transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  {saving ? "Saving to Database..." : "Publish & Broadcast"}
+                  {saving ? "Saving to Database..." : "Save & Broadcast Alert"}
                 </button>
               </div>
             </form>

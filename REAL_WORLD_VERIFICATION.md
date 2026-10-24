@@ -17,6 +17,7 @@ This master verification guide provides exhaustive, step-by-step instructions fo
    - Phase 6: Student Portal - Live Background Notification Verification
    - Phase 7: Student Portal - Official Deliverable Upload to Server Storage
    - Phase 8: Supervisor Portal - Document Inspection, Download, and Review
+   - Phase 8B: Supervisor Portal - Milestone Progress Certification & Inspection Log
    - Phase 9: Supervisor Portal - Continuous Assessment Rubric Evaluation (30 Marks)
    - Phase 10: Feedback & Discussion Channel Verification
    - Phase 11: Coordinator Portal - Academic Calendar & Milestone Management
@@ -247,6 +248,27 @@ For this complete testing walkthrough, we use an authentic Computer Science caps
    - Toast confirms deliverable approval.
    - Status badge updates to green `Approved`.
    - A notification is transmitted to the student group.
+
+---
+
+### Phase 8B: Supervisor Portal - Milestone Progress Certification & Inspection Log
+
+#### Actions
+1. In the Supervisor portal, navigate to **Milestone Reviews** (`/supervisor/milestones`).
+2. Locate **Group 14** (*Deep Learning for Mandi Agricultural Pricing and Yield Prediction*).
+3. Under **System Design Document & Architecture**, observe:
+   - Status: `In Progress`
+   - Milestone Progress: `70%`
+   - Deliverable: `Draft v1 uploaded for review`
+4. Click **Inspection Log**:
+   - Modal displays the audit checklist, deliverable artifact reference, and originality verification (`96.4% Unique`).
+   - Click **Close Log**.
+5. Click **Mark Completed**:
+   - Progress bar dynamically animates from `70%` to `100%`.
+   - Status badge transitions from amber `In Progress` to green `Completed`.
+   - Action updates from button to a verified `Certified Completed` badge.
+   - Deliverable notes update to `Certified and approved by supervisor`.
+   - Floating toast confirms certification.
 
 ---
 

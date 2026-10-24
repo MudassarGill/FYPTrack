@@ -1,3 +1,4 @@
+import re
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select, func
@@ -89,12 +90,22 @@ def create_project(
         domain=payload.domain or "",
         abstract=payload.abstract or "",
     )
-    computed_originality = sim_check.get("originality_score", 92)
+    computed_originality = int(round(float(sim_check.get("originality_score", 92))))
+
+    # Determine Lead Student name (first member specified in group_members, or fallback to current_user)
+    lead_author_name = current_user.full_name
+    if payload.group_members:
+        member_parts = [p.strip() for p in re.split(r"[,;\n]+", payload.group_members) if p.strip()]
+        if member_parts:
+            clean_first = re.sub(r"\(.*?\)", "", member_parts[0]).strip()
+            if clean_first:
+                lead_author_name = clean_first
 
     # Check if student already has a project
     existing = db.scalar(select(Project).where(Project.student_id == current_user.id))
     if existing:
         # Update existing
+        existing.student_name = lead_author_name
         existing.title = payload.title
         existing.domain = payload.domain
         existing.abstract = payload.abstract
@@ -111,7 +122,7 @@ def create_project(
             Notification(
                 role_target="coordinator",
                 title="Proposal Resubmitted",
-                message=f"{current_user.full_name} resubmitted '{payload.title}' ({existing.group_name}). Originality: {computed_originality}%.",
+                message=f"{lead_author_name} resubmitted '{payload.title}' ({existing.group_name}). Originality: {computed_originality}%.",
             )
         )
         if computed_originality < 80:
@@ -131,7 +142,7 @@ def create_project(
 
     project = Project(
         student_id=current_user.id,
-        student_name=current_user.full_name,
+        student_name=lead_author_name,
         student_email=current_user.email,
         group_name=group_name,
         title=payload.title,

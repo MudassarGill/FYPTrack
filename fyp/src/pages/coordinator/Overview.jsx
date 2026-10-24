@@ -151,6 +151,12 @@ export default function CoordinatorOverview() {
             >
               AI Supervisor Allocations
             </Link>
+            <Link
+              to="/coordinator/milestones"
+              className="rounded-[10px] border border-white/35 hover:bg-white/10 text-white font-bold text-[14px] px-[18px] py-[11px] transition-colors"
+            >
+              Milestones & Deadlines
+            </Link>
           </div>
         </div>
       </div>
@@ -193,9 +199,12 @@ export default function CoordinatorOverview() {
                 Progression across all 48 capstone groups by phase
               </p>
             </div>
-            <span className="text-[12px] font-bold text-[#0B5A3E] bg-[#E1F4EA] px-2.5 py-1 rounded-full">
-              Spring 2026
-            </span>
+            <Link
+              to="/coordinator/milestones"
+              className="text-[13px] font-bold text-[#17302A] hover:text-[#C2410C] flex items-center gap-1 transition-colors"
+            >
+              Manage Milestones &rarr;
+            </Link>
           </div>
 
           <div className="h-[260px] w-full">

@@ -92,6 +92,7 @@ export default function Navbar({ mode = "public" }) {
     { label: "Allocations", href: "/coordinator/supervisors" },
     { label: "Similarity", href: "/coordinator/similarity" },
     { label: "Projects", href: "/coordinator/projects" },
+    { label: "Milestones", href: "/coordinator/milestones" },
   ];
 
   const isPortal = isStudentPortal || isSupervisorPortal || isCoordinatorPortal;
@@ -251,7 +252,7 @@ export default function Navbar({ mode = "public" }) {
                           onClick={() => setMoreDropdownOpen(false)}
                           className="block px-3.5 py-2 text-[14px] font-medium text-[#17302A] rounded-lg hover:bg-[#F4F4F2] hover:text-[#C2410C] transition-colors"
                         >
-                          Deadlines & Calendar
+                          Milestones & Deadlines
                         </Link>
                         <Link
                           to="/coordinator/reports"
@@ -512,7 +513,7 @@ export default function Navbar({ mode = "public" }) {
                     onClick={() => setMobileMenuOpen(false)}
                     className="block px-3 py-2 text-[14px] font-medium text-[#CFE0D9] hover:text-white"
                   >
-                    Deadlines & Calendar
+                    Milestones & Deadlines
                   </Link>
                   <Link
                     to="/coordinator/reports"

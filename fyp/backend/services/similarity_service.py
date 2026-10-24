@@ -483,11 +483,11 @@ def scan_proposal_similarity(title: str, domain: str, abstract: str) -> Dict[str
     # Format percentages
     # Cosine similarity in real text usually tops around 0.35 - 0.70 for high similarity
     # Calibrate: 0.20+ is flagged as high similarity in academic NLP cross-checks
-    calibrated_overlap = round(min(85.0, highest_similarity * 100 * 1.35), 1)
-    if calibrated_overlap < 5.0:
-        calibrated_overlap = 5.8  # Minimal natural baseline
+    calibrated_overlap = int(round(min(85.0, highest_similarity * 100 * 1.35)))
+    if calibrated_overlap < 5:
+        calibrated_overlap = 6  # Minimal natural baseline
 
-    originality = round(max(15.0, 100.0 - calibrated_overlap), 1)
+    originality = int(round(max(15.0, 100.0 - calibrated_overlap)))
 
     if calibrated_overlap >= 20.0:
         risk_level = "High Risk"
@@ -508,17 +508,61 @@ def scan_proposal_similarity(title: str, domain: str, abstract: str) -> Dict[str
 
     return {
         "similarity_score": calibrated_overlap,
+        "highest_similarity_percent": calibrated_overlap,
         "originality_score": originality,
         "risk_level": risk_level,
+        "status": risk_level,
         "cleared": cleared,
         "action_note": action_note,
         "matched_project": best_match["title"],
+        "matched_title": best_match["title"],
+        "matched_project_id": best_match["id"],
         "matched_year": best_match["year"],
         "matched_lead": best_match["lead_author"],
+        "matched_lead_author": best_match["lead_author"],
         "matched_supervisor": best_match["supervisor"],
         "matched_snippet": snippet,
+        "matched_abstract": best_match["abstract"],
         "common_keywords": best_common_keywords or ["methodology", "model"],
+        "matched_overlap_keywords": best_common_keywords or ["methodology", "model"],
     }
+
+
+def audit_all_projects(projects: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Runs automated similarity checks for a list of project records against the archive pool.
+    """
+    audits = []
+    for p in projects:
+        scan_res = scan_proposal_similarity(
+            title=p.get("title", ""),
+            domain=p.get("domain", ""),
+            abstract=p.get("abstract", ""),
+        )
+        audit_entry = {
+            "project_id": p.get("id"),
+            "title": p.get("title", ""),
+            "domain": p.get("domain", ""),
+            "group_name": p.get("group_name", "Group"),
+            "lead_author": p.get("student_name", "Student"),
+            "supervisor_name": p.get("supervisor_name", "Not Assigned"),
+            "current_abstract": p.get("abstract", ""),
+            "originality_score": scan_res.get("originality_score", 90),
+            "highest_similarity_percent": scan_res.get("similarity_score", 10),
+            "similarity_score": scan_res.get("similarity_score", 10),
+            "risk_level": scan_res.get("risk_level", "Low Risk"),
+            "cleared": scan_res.get("cleared", True),
+            "matched_title": scan_res.get("matched_title", ""),
+            "matched_project": scan_res.get("matched_title", ""),
+            "matched_year": scan_res.get("matched_year", "2023"),
+            "matched_lead_author": scan_res.get("matched_lead_author", ""),
+            "matched_supervisor": scan_res.get("matched_supervisor", ""),
+            "matched_abstract": scan_res.get("matched_abstract", ""),
+            "matched_overlap_keywords": scan_res.get("matched_overlap_keywords", []),
+            "created_at": p.get("created_at", ""),
+        }
+        audits.append(audit_entry)
+    return audits
 
 
 # Institutional Faculty Supervisor Research Profiles & Expertise
