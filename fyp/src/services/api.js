@@ -208,3 +208,14 @@ export async function broadcastMilestonesReminder() {
   });
 }
 
+/* ============================================================
+   Department Students API
+   ============================================================ */
+export async function getAllStudents() {
+  return authFetch("/students/");
+}
+
+export async function getMyStudents() {
+  return authFetch("/students/my");
+}
+

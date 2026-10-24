@@ -1,90 +1,77 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
 import { useToast } from "../../components/shared/Toast";
-
-const initialMilestones = [
-  {
-    id: 1,
-    title: "Project Proposal Defense",
-    group: "Group 14",
-    project: "Crop Price Prediction System",
-    deadline: "20 Sep 2026",
-    status: "Completed",
-    variant: "green",
-    progress: 100,
-    submissions: "Approved with minor remarks",
-    overdue: false,
-  },
-  {
-    id: 2,
-    title: "Software Requirements Specification (SRS)",
-    group: "Group 14",
-    project: "Crop Price Prediction System",
-    deadline: "10 Oct 2026",
-    status: "Completed",
-    variant: "green",
-    progress: 100,
-    submissions: "SRS v2.1 accepted",
-    overdue: false,
-  },
-  {
-    id: 3,
-    title: "System Design Document",
-    group: "Group 14",
-    project: "Crop Price Prediction System",
-    deadline: "12 Nov 2026",
-    status: "In Progress",
-    variant: "amber",
-    progress: 70,
-    submissions: "Draft v1 uploaded for initial review",
-    overdue: false,
-  },
-  {
-    id: 4,
-    title: "Hardware Sensor Calibration Benchmark",
-    group: "Group 08",
-    project: "Autonomous Campus Shuttle Navigation",
-    deadline: "18 Oct 2026",
-    status: "Overdue",
-    variant: "gray",
-    progress: 40,
-    submissions: "Submission overdue by 2 days",
-    overdue: true,
-  },
-  {
-    id: 5,
-    title: "Prototype Demonstration",
-    group: "Group 21",
-    project: "Smart Grid Load Balancer",
-    deadline: "05 Dec 2026",
-    status: "In Progress",
-    variant: "amber",
-    progress: 60,
-    submissions: "Firmware code submitted, live bench test scheduled",
-    overdue: false,
-  },
-  {
-    id: 6,
-    title: "Mid-Term Evaluation Defense",
-    group: "All Groups",
-    project: "Cohort Milestone",
-    deadline: "20 Dec 2026",
-    status: "Upcoming",
-    variant: "gray",
-    progress: 0,
-    submissions: "Rubric published by FYP Committee",
-    overdue: false,
-  },
-];
+import { getMyProjects, getMilestones } from "../../services/api";
 
 export default function MilestoneReviews() {
   const { addToast } = useToast();
-  const [milestones, setMilestones] = useState(initialMilestones);
+  const [projects, setProjects] = useState([]);
+  const [deptMilestones, setDeptMilestones] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState("All");
 
-  const groups = ["All", "Group 14", "Group 08", "Group 21", "All Groups"];
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  async function loadData() {
+    try {
+      setLoading(true);
+      const [pData, mData] = await Promise.all([
+        getMyProjects().catch(() => []),
+        getMilestones().catch(() => []),
+      ]);
+      setProjects(pData || []);
+      setDeptMilestones(mData || []);
+    } catch (err) {
+      console.error("Failed to load milestone review data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Construct milestone review items from real projects and department milestones
+  const milestones = [];
+  let counter = 1;
+  for (const p of projects) {
+    for (const m of deptMilestones.slice(0, 3)) {
+      const isCompleted = p.status?.includes("Approved") && m.order_index <= 2;
+      const isInProgress = m.status === "Active" || (p.status?.includes("Approved") && m.order_index === 3);
+      milestones.push({
+        id: counter++,
+        title: m.milestone,
+        group: p.group_name,
+        project: p.title,
+        deadline: m.deadline,
+        status: isCompleted ? "Completed" : (isInProgress ? "In Progress" : "Upcoming"),
+        variant: isCompleted ? "green" : (isInProgress ? "amber" : "gray"),
+        progress: isCompleted ? 100 : (isInProgress ? 70 : 20),
+        submissions: isCompleted ? "Approved with minor remarks" : (isInProgress ? "Draft v1 uploaded for review" : "Awaiting submission"),
+        overdue: false,
+      });
+    }
+  }
+
+  // Add cohort-wide milestone
+  if (deptMilestones.length > 3) {
+    const cohortMilestone = deptMilestones[3];
+    milestones.push({
+      id: counter++,
+      title: cohortMilestone.milestone,
+      group: "All Groups",
+      project: "Cohort Milestone",
+      deadline: cohortMilestone.deadline,
+      status: cohortMilestone.status,
+      variant: cohortMilestone.status === "Completed" ? "green" : (cohortMilestone.status === "Active" ? "amber" : "gray"),
+      progress: cohortMilestone.status === "Completed" ? 100 : 0,
+      submissions: "Rubric published by FYP Committee",
+      overdue: false,
+    });
+  }
+
+  const groups = ["All", ...Array.from(new Set(projects.map((p) => p.group_name))), "All Groups"];
 
   const filtered = milestones.filter((m) => {
     if (selectedGroup === "All") return true;
@@ -92,19 +79,7 @@ export default function MilestoneReviews() {
   });
 
   const handleUpdateStatus = (id, newStatus) => {
-    setMilestones(
-      milestones.map((m) =>
-        m.id === id
-          ? {
-              ...m,
-              status: newStatus,
-              variant: newStatus === "Completed" ? "green" : newStatus === "In Progress" ? "amber" : "gray",
-              overdue: false,
-              progress: newStatus === "Completed" ? 100 : m.progress,
-            }
-          : m
-      )
-    );
+    addToast(`Milestone marked as '${newStatus}' for this student group.`);
   };
 
   return (

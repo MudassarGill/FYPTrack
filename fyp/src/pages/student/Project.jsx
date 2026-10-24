@@ -1,7 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import {
+  getMyProjects,
+  getProjectFeedback,
+  getProjectDocuments,
+} from "../../services/api";
 
 export default function Project() {
+  const [project, setProject] = useState(null);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [docs, setDocs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadProjectData();
+  }, []);
+
+  async function loadProjectData() {
+    try {
+      setLoading(true);
+      const projs = await getMyProjects();
+      if (projs && projs.length > 0) {
+        const p = projs[0];
+        setProject(p);
+        const [fbList, docList] = await Promise.all([
+          getProjectFeedback(p.id).catch(() => []),
+          getProjectDocuments(p.id).catch(() => []),
+        ]);
+        setFeedbacks(fbList || []);
+        setDocs(docList || []);
+      }
+    } catch (err) {
+      console.error("Failed to load project details:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const p = project || {
+    title: "Crop Price Prediction and Market Advisory System",
+    domain: "Machine Learning & AI",
+    group_name: "Group 14",
+    abstract: "Machine learning system forecasting wholesale mandi commodity rates and advising smallholder farmers on optimal crop selling windows across seasonal cycles.",
+    status: "In Progress",
+    supervisor_name: "Dr. Imran Shah",
+    group_members: "Hamza Tariq (Lead), Ayesha Noor, Zainab Ali",
+  };
+
+  const rawMembers = p.group_members
+    ? p.group_members.split(",").map((m) => m.trim()).filter(Boolean)
+    : [p.student_name || "Lead Student"];
+
   return (
     <div className="space-y-8 pb-12">
       {/* Header = H1 30px Bricolage + muted subtitle */}
@@ -18,37 +67,40 @@ export default function Project() {
       <div className="card-base">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
           <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E3EEF9] text-[#1E3A8A] w-fit">
-            In Progress
+            {p.status || "In Progress"}
           </span>
           <div className="text-[13px] text-[#5F6B66]">
-            Started: <span className="font-semibold text-[#17302A]">15 Sep 2026</span>
+            Group: <span className="font-semibold text-[#17302A]">{p.group_name || "Group 01"}</span>
           </div>
         </div>
 
         <h2 className="font-['Bricolage_Grotesque'] text-[24px] sm:text-[28px] font-bold text-[#17302A] mb-2 leading-snug">
-          Crop Price Prediction and Market Advisory System
+          {p.title}
         </h2>
 
         <div className="flex flex-wrap items-center gap-3 text-[13px] text-[#5F6B66] mb-5">
-          <span>Domain: <span className="font-semibold text-[#17302A]">Machine Learning &amp; AI</span></span>
+          <span>Domain: <span className="font-semibold text-[#17302A]">{p.domain}</span></span>
           <span>&bull;</span>
-          <span>Department: <span className="font-semibold text-[#17302A]">Computer Science</span></span>
+          <span>Supervisor: <span className="font-semibold text-[#17302A]">{p.supervisor_name || "Pending Allocation"}</span></span>
           <span>&bull;</span>
-          <span>Academic Year: <span className="font-semibold text-[#17302A]">2026-2027</span></span>
+          <span>Originality: <span className="font-semibold text-[#0B5A3E]">{p.originality_score || 94}% Unique</span></span>
         </div>
 
         <p className="text-[14px] text-[#5F6B66] leading-relaxed mb-6">
-          Machine learning system forecasting wholesale mandi commodity rates and advising smallholder farmers on optimal crop selling windows across seasonal cycles.
+          {p.abstract}
         </p>
 
-        {/* Overall progress 43% with 8px bar */}
+        {/* Overall progress */}
         <div>
           <div className="flex justify-between items-center text-[13px] mb-2">
             <span className="font-semibold text-[#17302A]">Overall Milestone Progress</span>
-            <span className="font-bold text-[#17302A]">43%</span>
+            <span className="font-bold text-[#17302A]">{p.status?.includes("Approved") ? "70%" : "43%"}</span>
           </div>
           <div className="w-full h-2 bg-[#E6E9E6] rounded-full overflow-hidden">
-            <div className="h-full bg-[#17302A] rounded-full" style={{ width: "43%" }} />
+            <div
+              className="h-full bg-[#17302A] rounded-full"
+              style={{ width: p.status?.includes("Approved") ? "70%" : "43%" }}
+            />
           </div>
         </div>
       </div>
@@ -73,29 +125,27 @@ export default function Project() {
               </div>
 
               <div className="space-y-4">
-                <div className="bg-[#F8F9F8] border border-[#E6E6E1] rounded-[12px] p-4">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="font-bold text-[14px] text-[#17302A]">
-                      SRS Document Review
-                    </span>
-                    <span className="text-[12px] text-[#5F6B66]">28 Oct 2026</span>
+                {feedbacks.length > 0 ? (
+                  feedbacks.slice(0, 3).map((fb) => (
+                    <div key={fb.id} className="bg-[#F8F9F8] border border-[#E6E6E1] rounded-[12px] p-4">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="font-bold text-[14px] text-[#17302A]">
+                          {fb.from_user_name || "Supervisor"} ({fb.from_role || "Review"})
+                        </span>
+                        <span className="text-[12px] text-[#5F6B66]">
+                          {fb.created_at ? new Date(fb.created_at).toLocaleDateString() : "Recent"}
+                        </span>
+                      </div>
+                      <p className="text-[13px] text-[#5F6B66] leading-relaxed mt-2">
+                        "{fb.message}"
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="bg-[#F8F9F8] border border-[#E6E6E1] rounded-[12px] p-4 text-[13px] text-[#5F6B66]">
+                    No feedback messages logged yet. Use the discussion page to message your supervisor.
                   </div>
-                  <p className="text-[13px] text-[#5F6B66] leading-relaxed mt-2">
-                    "The requirements specification is clear. Ensure the latency constraints for batch model inference are formally specified in Section 4.5."
-                  </p>
-                </div>
-
-                <div className="bg-[#F8F9F8] border border-[#E6E6E1] rounded-[12px] p-4">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="font-bold text-[14px] text-[#17302A]">
-                      Proposal Defense Notes
-                    </span>
-                    <span className="text-[12px] text-[#5F6B66]">15 Oct 2026</span>
-                  </div>
-                  <p className="text-[13px] text-[#5F6B66] leading-relaxed mt-2">
-                    "Solid defense presentation. The committee approved the topic with recommendations to validate against agricultural baseline prices from 2020-2025."
-                  </p>
-                </div>
+                )}
               </div>
             </div>
 
@@ -125,29 +175,29 @@ export default function Project() {
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between py-2.5 border-b border-[#EEEEEA]">
-                  <div>
-                    <div className="font-semibold text-[14px] text-[#17302A]">
-                      SRS_Crop_Prediction_v1.pdf
+                {docs.length > 0 ? (
+                  docs.slice(0, 3).map((d) => (
+                    <div key={d.id} className="flex items-center justify-between py-2.5 border-b border-[#EEEEEA]">
+                      <div>
+                        <div className="font-semibold text-[14px] text-[#17302A]">
+                          {d.file_name}
+                        </div>
+                        <div className="text-[12px] text-[#5F6B66]">
+                          {d.doc_type} &bull; {d.file_size || "1.5 MB"}
+                        </div>
+                      </div>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${
+                        d.status === "Approved" ? "bg-[#E1F4EA] text-[#0B5A3E]" : "bg-[#FEF3D6] text-[#8F5B10]"
+                      }`}>
+                        {d.status || "Pending"}
+                      </span>
                     </div>
-                    <div className="text-[12px] text-[#5F6B66]">Uploaded 28 Oct 2026 &bull; 4.1 MB</div>
+                  ))
+                ) : (
+                  <div className="text-[13px] text-[#5F6B66] py-2">
+                    No deliverables uploaded yet. Upload your first document to initiate review.
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E1F4EA] text-[#0B5A3E]">
-                    Approved
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between py-2.5 border-b border-[#EEEEEA]">
-                  <div>
-                    <div className="font-semibold text-[14px] text-[#17302A]">
-                      Proposal_Document_Final.pdf
-                    </div>
-                    <div className="text-[12px] text-[#5F6B66]">Uploaded 15 Oct 2026 &bull; 2.4 MB</div>
-                  </div>
-                  <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E1F4EA] text-[#0B5A3E]">
-                    Approved
-                  </span>
-                </div>
+                )}
               </div>
             </div>
 
@@ -172,24 +222,31 @@ export default function Project() {
               </h3>
               <div className="flex items-center gap-3.5 mb-3">
                 <div className="w-[48px] h-[48px] rounded-full bg-[#EBB44B] text-[#17302A] font-['Bricolage_Grotesque'] font-bold text-[18px] flex items-center justify-center shrink-0">
-                  IS
+                  {(p.supervisor_name || "Fac")
+                    .split(" ")
+                    .map((n) => n[0])
+                    .slice(0, 2)
+                    .join("")}
                 </div>
                 <div>
                   <div className="font-['Bricolage_Grotesque'] font-bold text-[16px] text-[#17302A]">
-                    Dr. Imran Shah
+                    {p.supervisor_name || "Pending Faculty Allocation"}
                   </div>
-                  <div className="text-[12px] text-[#5F6B66]">Associate Professor</div>
+                  <div className="text-[12px] text-[#5F6B66]">
+                    {p.supervisor_name ? "Department Supervisor" : "Coordinator Reviewing"}
+                  </div>
                 </div>
               </div>
               <p className="text-[13px] text-[#5F6B66] leading-relaxed mb-4">
-                Email: <span className="font-medium text-[#17302A]">imran.shah@university.edu</span><br />
-                Office: CS Building, Room 304<br />
-                Office hours: Mon &amp; Wed 14:00 - 16:00
+                Domain: <span className="font-medium text-[#17302A]">{p.domain}</span><br />
+                Status: <span className="font-medium text-[#17302A]">{p.status || "In Review"}</span>
               </p>
             </div>
             <div className="pt-3 border-t border-[#EEEEEA]">
-              <span className="text-[12px] font-semibold text-[#0B5A3E] bg-[#E1F4EA] px-2.5 py-1 rounded-full">
-                Active Assignment
+              <span className={`text-[12px] font-semibold px-2.5 py-1 rounded-full ${
+                p.supervisor_name ? "text-[#0B5A3E] bg-[#E1F4EA]" : "text-amber-800 bg-amber-100"
+              }`}>
+                {p.supervisor_name ? "Allocated Faculty" : "Awaiting Allocation"}
               </span>
             </div>
           </div>
@@ -201,33 +258,23 @@ export default function Project() {
                 Group Members
               </h3>
               <div className="space-y-3.5">
-                <div className="flex items-center justify-between py-1.5 border-b border-[#EEEEEA]">
-                  <div>
-                    <div className="text-[14px] font-semibold text-[#17302A]">Ayesha Noor</div>
-                    <div className="text-[12px] text-[#5F6B66]">FA20-BSE-042 (Lead)</div>
+                {rawMembers.map((m, idx) => (
+                  <div key={idx} className="flex items-center justify-between py-1.5 border-b border-[#EEEEEA] last:border-0">
+                    <div>
+                      <div className="text-[14px] font-semibold text-[#17302A]">{m}</div>
+                      <div className="text-[12px] text-[#5F6B66]">{idx === 0 ? "Project Lead" : "Team Member"}</div>
+                    </div>
+                    {idx === 0 && (
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#ECECE8] text-[#4A5651]">
+                        Lead
+                      </span>
+                    )}
                   </div>
-                  <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#ECECE8] text-[#4A5651]">
-                    You
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between py-1.5 border-b border-[#EEEEEA]">
-                  <div>
-                    <div className="text-[14px] font-semibold text-[#17302A]">Hamza Tariq</div>
-                    <div className="text-[12px] text-[#5F6B66]">FA20-BSE-058</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between py-1.5">
-                  <div>
-                    <div className="text-[14px] font-semibold text-[#17302A]">Zainab Ali</div>
-                    <div className="text-[12px] text-[#5F6B66]">FA20-BSE-019</div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
             <div className="pt-3 border-t border-[#EEEEEA] text-[12px] text-[#5F6B66]">
-              Group 14 &bull; 3 members
+              {p.group_name || "Group"} &bull; {rawMembers.length} member{rawMembers.length > 1 ? "s" : ""}
             </div>
           </div>
         </div>

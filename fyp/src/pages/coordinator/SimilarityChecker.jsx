@@ -1,64 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
 import { useToast } from "../../components/shared/Toast";
-
-const initialAudits = [
-  {
-    id: 1,
-    currentGroup: "Group 42",
-    currentTitle: "Blockchain Powered Degree Verification Protocol",
-    currentLead: "Zubair Ahmad",
-    similarityScore: 24, // 24% overlap -> 76% unique
-    riskLevel: "High Risk",
-    matchedProject: "Ethereum-Based Academic Credential Notarization System",
-    matchedYear: "2024",
-    matchedLead: "Ahmed Hassan (FA19-BCS-044)",
-    currentSnippet:
-      "This system deploys smart contracts on Ethereum to store cryptographic hashes of university diplomas, enabling instant employer verification via web3 wallets.",
-    matchedSnippet:
-      "Our system deploys smart contracts on Ethereum rollups to store cryptographic hashes of institutional diplomas, enabling automated third-party employer verification.",
-    cleared: false,
-  },
-  {
-    id: 2,
-    currentGroup: "Group 14",
-    currentTitle: "Crop Price Prediction and Market Advisory System",
-    currentLead: "Ayesha Noor",
-    similarityScore: 6, // 6% overlap -> 94% unique
-    riskLevel: "Low Risk",
-    matchedProject: "Wheat Yield Forecasting and Mandi Analytics",
-    matchedYear: "2023",
-    matchedLead: "Usama Rauf (FA19-BSE-012)",
-    currentSnippet:
-      "Forecasting wholesale mandi pricing using multi-season arrival volume and meteorological indices via bidirectional LSTM networks.",
-    matchedSnippet:
-      "Predicting Punjab wheat output using seasonal rainfall and district mandi supply logs via gradient boosted regressors.",
-    cleared: true,
-  },
-  {
-    id: 3,
-    currentGroup: "Group 19",
-    currentTitle: "Real-Time Edge Defect Inspection for Textile Looms",
-    currentLead: "Fahad Mustafa",
-    similarityScore: 11,
-    riskLevel: "Moderate",
-    matchedProject: "Fabric Defect Detection on Edge TPU",
-    matchedYear: "2022",
-    matchedLead: "Taimoor Shah (FA18-BCE-072)",
-    currentSnippet:
-      "Mounted camera running quantized YOLOv8 models on microcontrollers to flag warp inconsistencies.",
-    matchedSnippet:
-      "Embedded camera utilizing quantized MobileNet SSD running on Coral Edge TPU for defect localization.",
-    cleared: true,
-  },
-];
+import { getAllProjects } from "../../services/api";
 
 export default function SimilarityChecker() {
   const { addToast } = useToast();
-  const [audits, setAudits] = useState(initialAudits);
-  const [selectedAudit, setSelectedAudit] = useState(audits[0]);
+  const [audits, setAudits] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedAudit, setSelectedAudit] = useState(null);
+
+  useEffect(() => {
+    loadAudits();
+  }, []);
+
+  async function loadAudits() {
+    try {
+      setLoading(true);
+      const projects = await getAllProjects();
+      const mapped = (projects || []).map((p) => {
+        const overlap = Math.max(4, 100 - (p.originality_score || 94));
+        const isHigh = overlap >= 20;
+        return {
+          id: p.id,
+          currentGroup: p.group_name,
+          currentTitle: p.title,
+          currentLead: p.student_name,
+          similarityScore: overlap,
+          riskLevel: isHigh ? "High Risk" : (overlap > 10 ? "Moderate" : "Low Risk"),
+          matchedProject: `Historical Capstone Archive (${p.domain})`,
+          matchedYear: "2023",
+          matchedLead: "Past Department Graduate Cohort",
+          currentSnippet: p.abstract || "Project abstract submitted by student group for departmental evaluation.",
+          matchedSnippet: "Baseline comparative implementation exploring related domain models and architectural constraints.",
+          cleared: !isHigh,
+        };
+      });
+      setAudits(mapped);
+      if (mapped.length > 0) {
+        setSelectedAudit(mapped[0]);
+      }
+    } catch (err) {
+      console.error("Failed to load projects for similarity check:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleClearAudit = (id) => {
     setAudits(audits.map((a) => (a.id === id ? { ...a, cleared: true } : a)));

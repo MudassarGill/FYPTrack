@@ -1,143 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
-
-const initialStudents = [
-  {
-    id: 1,
-    name: "Ayesha Noor",
-    rollNumber: "FA20-BSE-042",
-    program: "BS Software Engineering",
-    group: "Group 14",
-    projectTitle: "Crop Price Prediction and Market Advisory System",
-    currentMilestone: "System Design Document",
-    progress: 70,
-    status: "On Track",
-    variant: "green",
-    email: "ayesha.noor@university.edu",
-    phone: "+92 301 5551234",
-    lastActive: "Today, 11:20 AM",
-  },
-  {
-    id: 2,
-    name: "Hamza Tariq",
-    rollNumber: "FA20-BSE-058",
-    program: "BS Software Engineering",
-    group: "Group 14",
-    projectTitle: "Crop Price Prediction and Market Advisory System",
-    currentMilestone: "System Design Document",
-    progress: 70,
-    status: "On Track",
-    variant: "green",
-    email: "hamza.tariq@university.edu",
-    phone: "+92 302 5552345",
-    lastActive: "Yesterday",
-  },
-  {
-    id: 3,
-    name: "Zainab Ali",
-    rollNumber: "FA20-BSE-019",
-    program: "BS Software Engineering",
-    group: "Group 14",
-    projectTitle: "Crop Price Prediction and Market Advisory System",
-    currentMilestone: "System Design Document",
-    progress: 70,
-    status: "On Track",
-    variant: "green",
-    email: "zainab.ali@university.edu",
-    phone: "+92 303 5553456",
-    lastActive: "2 days ago",
-  },
-  {
-    id: 4,
-    name: "Bilal Farooq",
-    rollNumber: "FA20-BCS-089",
-    program: "BS Computer Science",
-    group: "Group 08",
-    projectTitle: "Autonomous Campus Shuttle Navigation",
-    currentMilestone: "Prototype Sensor Integration",
-    progress: 45,
-    status: "Needs Attention",
-    variant: "amber",
-    email: "bilal.farooq@university.edu",
-    phone: "+92 304 5554567",
-    lastActive: "3 days ago",
-  },
-  {
-    id: 5,
-    name: "Sara Ahmed",
-    rollNumber: "FA20-BCS-112",
-    program: "BS Computer Science",
-    group: "Group 08",
-    projectTitle: "Autonomous Campus Shuttle Navigation",
-    currentMilestone: "Prototype Sensor Integration",
-    progress: 45,
-    status: "Needs Attention",
-    variant: "amber",
-    email: "sara.ahmed@university.edu",
-    phone: "+92 305 5555678",
-    lastActive: "Yesterday",
-  },
-  {
-    id: 6,
-    name: "Hassan Raza",
-    rollNumber: "FA20-BSE-103",
-    program: "BS Software Engineering",
-    group: "Group 21",
-    projectTitle: "Smart Grid Load Balancer & Anomaly Detection",
-    currentMilestone: "Mid-Term Evaluation Prep",
-    progress: 85,
-    status: "On Track",
-    variant: "green",
-    email: "hassan.raza@university.edu",
-    phone: "+92 306 5556789",
-    lastActive: "Today, 9:00 AM",
-  },
-  {
-    id: 7,
-    name: "Mariam Khan",
-    rollNumber: "FA20-BSE-077",
-    program: "BS Software Engineering",
-    group: "Group 21",
-    projectTitle: "Smart Grid Load Balancer & Anomaly Detection",
-    currentMilestone: "Mid-Term Evaluation Prep",
-    progress: 85,
-    status: "On Track",
-    variant: "green",
-    email: "mariam.khan@university.edu",
-    phone: "+92 307 5557890",
-    lastActive: "4 days ago",
-  },
-  {
-    id: 8,
-    name: "Usman Tariq",
-    rollNumber: "FA20-BCS-034",
-    program: "BS Computer Science",
-    group: "Group 33",
-    projectTitle: "Federated Learning for Medical Imaging Privacy",
-    currentMilestone: "Literature Survey & SRS",
-    progress: 30,
-    status: "Under Review",
-    variant: "blue",
-    email: "usman.tariq@university.edu",
-    phone: "+92 308 5558901",
-    lastActive: "Yesterday",
-  },
-];
+import { getMyStudents } from "../../services/api";
 
 export default function MyStudents() {
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [selectedStudent, setSelectedStudent] = useState(null);
 
-  const filtered = initialStudents.filter((s) => {
+  useEffect(() => {
+    loadStudents();
+  }, []);
+
+  async function loadStudents() {
+    try {
+      setLoading(true);
+      const data = await getMyStudents();
+      setStudents(data || []);
+    } catch (err) {
+      console.error("Failed to load students:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const filtered = students.map((s) => ({
+    ...s,
+    rollNumber: s.roll || s.rollNumber || "FA20-BSE-001",
+    projectTitle: s.projectTitle || "Capstone Project",
+    currentMilestone: s.currentMilestone || "System Design Document",
+    status: s.status === "Approved" || s.status === "Approved by Supervisor" || s.status === "Approved by Coordinator" ? "On Track" : (s.status === "Changes Requested" ? "Needs Attention" : "Under Review"),
+    variant: s.variant || "green",
+    phone: s.phone || "+92 301 5550000",
+    lastActive: s.lastActive || "Today",
+  })).filter((s) => {
     const matchSearch =
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.rollNumber.toLowerCase().includes(search.toLowerCase()) ||
-      s.group.toLowerCase().includes(search.toLowerCase()) ||
-      s.projectTitle.toLowerCase().includes(search.toLowerCase());
+      (s.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (s.rollNumber || "").toLowerCase().includes(search.toLowerCase()) ||
+      (s.group || "").toLowerCase().includes(search.toLowerCase()) ||
+      (s.projectTitle || "").toLowerCase().includes(search.toLowerCase());
     const matchFilter =
       filterStatus === "All" ? true : s.status.toLowerCase() === filterStatus.toLowerCase();
     return matchSearch && matchFilter;

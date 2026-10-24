@@ -1,28 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
-
-const initialStudents = [
-  { id: 1, name: "Ayesha Noor", roll: "FA20-BSE-042", program: "BS Software Engineering", group: "Group 14", cgpa: "3.78", credits: "128/136", eligible: true, email: "ayesha.noor@university.edu" },
-  { id: 2, name: "Hamza Tariq", roll: "FA20-BSE-058", program: "BS Software Engineering", group: "Group 14", cgpa: "3.45", credits: "128/136", eligible: true, email: "hamza.tariq@university.edu" },
-  { id: 3, name: "Zainab Ali", roll: "FA20-BSE-019", program: "BS Software Engineering", group: "Group 14", cgpa: "3.88", credits: "132/136", eligible: true, email: "zainab.ali@university.edu" },
-  { id: 4, name: "Bilal Farooq", roll: "FA20-BCS-089", program: "BS Computer Science", group: "Group 08", cgpa: "3.12", credits: "124/136", eligible: true, email: "bilal.farooq@university.edu" },
-  { id: 5, name: "Sara Ahmed", roll: "FA20-BCS-112", program: "BS Computer Science", group: "Group 08", cgpa: "3.61", credits: "128/136", eligible: true, email: "sara.ahmed@university.edu" },
-  { id: 6, name: "Hassan Raza", roll: "FA20-BSE-103", program: "BS Software Engineering", group: "Group 21", cgpa: "3.92", credits: "134/136", eligible: true, email: "hassan.raza@university.edu" },
-  { id: 7, name: "Mariam Khan", roll: "FA20-BSE-077", program: "BS Software Engineering", group: "Group 21", cgpa: "3.54", credits: "128/136", eligible: true, email: "mariam.khan@university.edu" },
-  { id: 8, name: "Usman Tariq", roll: "FA20-BCS-034", program: "BS Computer Science", group: "Group 33", cgpa: "3.25", credits: "120/136", eligible: false, email: "usman.tariq@university.edu" },
-];
+import { getAllStudents } from "../../services/api";
 
 export default function CoordinatorStudents() {
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [programFilter, setProgramFilter] = useState("All");
 
-  const filtered = initialStudents.filter((s) => {
+  useEffect(() => {
+    loadStudents();
+  }, []);
+
+  async function loadStudents() {
+    try {
+      setLoading(true);
+      const data = await getAllStudents();
+      setStudents(data || []);
+    } catch (err) {
+      console.error("Failed to load students:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const filtered = students.filter((s) => {
     const matchSearch =
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.roll.toLowerCase().includes(search.toLowerCase()) ||
-      s.group.toLowerCase().includes(search.toLowerCase());
+      (s.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (s.roll || "").toLowerCase().includes(search.toLowerCase()) ||
+      (s.group || "").toLowerCase().includes(search.toLowerCase());
     const matchProgram = programFilter === "All" || s.program === programFilter;
     return matchSearch && matchProgram;
   });
@@ -34,7 +42,7 @@ export default function CoordinatorStudents() {
         description="Official academic registry for final year students. Verify prerequisite credit hours, CGPA standing, and defense eligibility."
         action={
           <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#17302A] text-white">
-            142 Registered Candidates
+            {students.length} Registered Candidates
           </span>
         }
       />

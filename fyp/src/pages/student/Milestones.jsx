@@ -11,16 +11,7 @@ import {
   Cell,
   Tooltip,
 } from "recharts";
-import { getMilestones } from "../../services/api";
-
-const evalMarksData = [
-  { name: "Proposal", marks: 78, evaluated: true, fill: "#17302A" },
-  { name: "SRS", marks: 85, evaluated: true, fill: "#EBB44B" },
-  { name: "Design", marks: 0, evaluated: false },
-  { name: "Prototype", marks: 0, evaluated: false },
-  { name: "Mid", marks: 0, evaluated: false },
-  { name: "Final", marks: 0, evaluated: false },
-];
+import { getMilestones, getMyProjects, getProjectEvaluations } from "../../services/api";
 
 function CustomBar(props) {
   const { x, y, width, height, payload } = props;
@@ -82,17 +73,48 @@ function DonutTooltip({ active, payload }) {
 
 export default function Milestones() {
   const [milestones, setMilestones] = useState([]);
+  const [evalMarks, setEvalMarks] = useState([
+    { name: "Proposal", marks: 78, evaluated: true, fill: "#17302A" },
+    { name: "SRS", marks: 85, evaluated: true, fill: "#EBB44B" },
+    { name: "Design", marks: 0, evaluated: false },
+    { name: "Prototype", marks: 0, evaluated: false },
+    { name: "Mid", marks: 0, evaluated: false },
+    { name: "Final", marks: 0, evaluated: false },
+  ]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getMilestones()
-      .then((data) => {
-        if (data && data.length > 0) {
-          setMilestones(data);
+    async function loadData() {
+      try {
+        setLoading(true);
+        const [msData, projData] = await Promise.all([
+          getMilestones().catch(() => []),
+          getMyProjects().catch(() => []),
+        ]);
+        if (msData && msData.length > 0) setMilestones(msData);
+
+        if (projData && projData.length > 0) {
+          const evals = await getProjectEvaluations(projData[0].id).catch(() => []);
+          if (evals && evals.length > 0) {
+            const ev = evals[0];
+            const pct = Math.round(((ev.total_marks || 25) / 30) * 100);
+            setEvalMarks([
+              { name: "Proposal", marks: pct, evaluated: true, fill: "#17302A" },
+              { name: "SRS", marks: 85, evaluated: true, fill: "#EBB44B" },
+              { name: "Design", marks: 0, evaluated: false },
+              { name: "Prototype", marks: 0, evaluated: false },
+              { name: "Mid", marks: 0, evaluated: false },
+              { name: "Final", marks: 0, evaluated: false },
+            ]);
+          }
         }
-      })
-      .catch((err) => console.error("Failed to load milestones:", err))
-      .finally(() => setLoading(false));
+      } catch (err) {
+        console.error("Failed to load milestones & evaluations:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
   }, []);
 
   const totalCount = milestones.length > 0 ? milestones.length : 6;
@@ -153,7 +175,7 @@ export default function Milestones() {
             </div>
             <div className="h-[220px] w-full pt-4">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={evalMarksData} margin={{ top: 20, right: 10, left: -25, bottom: 0 }}>
+                <BarChart data={evalMarks} margin={{ top: 20, right: 10, left: -25, bottom: 0 }}>
                   <CartesianGrid stroke="#EEEEEA" vertical={false} />
                   <XAxis
                     dataKey="name"

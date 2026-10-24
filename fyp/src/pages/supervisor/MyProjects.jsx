@@ -1,119 +1,72 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
-
-const projectsList = [
-  {
-    id: 1,
-    group: "Group 14",
-    title: "Crop Price Prediction and Market Advisory System",
-    domain: "Machine Learning & Time-Series",
-    abstract:
-      "Forecasting mandi agricultural prices using deep learning and open-source embedding analysis over multi-season weather and arrival volume records.",
-    members: [
-      { name: "Ayesha Noor", roll: "FA20-BSE-042", lead: true },
-      { name: "Hamza Tariq", roll: "FA20-BSE-058", lead: false },
-      { name: "Zainab Ali", roll: "FA20-BSE-019", lead: false },
-    ],
-    progress: 70,
-    currentPhase: "System Design Document",
-    status: "In Progress",
-    variant: "amber",
-    similarityScore: "94% Originality",
-    technologies: ["Python", "FastAPI", "TensorFlow", "React", "PostgreSQL"],
-    milestones: [
-      { name: "Proposal Defense", status: "completed" },
-      { name: "SRS Document", status: "completed" },
-      { name: "System Design", status: "in_progress" },
-      { name: "Prototype Demo", status: "upcoming" },
-      { name: "Final Defense", status: "upcoming" },
-    ],
-  },
-  {
-    id: 2,
-    group: "Group 08",
-    title: "Autonomous Campus Shuttle Navigation",
-    domain: "Robotics & Embedded Systems",
-    abstract:
-      "LiDAR and computer vision pipeline for automated lane tracking and obstacle avoidance on university ring road pathways.",
-    members: [
-      { name: "Bilal Farooq", roll: "FA20-BCS-089", lead: true },
-      { name: "Sara Ahmed", roll: "FA20-BCS-112", lead: false },
-    ],
-    progress: 45,
-    currentPhase: "Prototype Sensor Integration",
-    status: "Needs Attention",
-    variant: "amber",
-    similarityScore: "98% Originality",
-    technologies: ["ROS 2", "Python", "OpenCV", "C++", "Jetson Nano"],
-    milestones: [
-      { name: "Proposal Defense", status: "completed" },
-      { name: "SRS Document", status: "completed" },
-      { name: "System Design", status: "in_progress" },
-      { name: "Prototype Demo", status: "upcoming" },
-      { name: "Final Defense", status: "upcoming" },
-    ],
-  },
-  {
-    id: 3,
-    group: "Group 21",
-    title: "Smart Grid Load Balancer & Anomaly Detection",
-    domain: "IoT & Distributed Systems",
-    abstract:
-      "Edge-computing device architecture forecasting localized electricity peak surges and balancing micro-grid battery arrays.",
-    members: [
-      { name: "Hassan Raza", roll: "FA20-BSE-103", lead: true },
-      { name: "Mariam Khan", roll: "FA20-BSE-077", lead: false },
-    ],
-    progress: 85,
-    currentPhase: "Mid-Term Evaluation Prep",
-    status: "On Track",
-    variant: "green",
-    similarityScore: "91% Originality",
-    technologies: ["Node.js", "Python", "MQTT", "TimescaleDB", "React"],
-    milestones: [
-      { name: "Proposal Defense", status: "completed" },
-      { name: "SRS Document", status: "completed" },
-      { name: "System Design", status: "completed" },
-      { name: "Prototype Demo", status: "in_progress" },
-      { name: "Final Defense", status: "upcoming" },
-    ],
-  },
-  {
-    id: 4,
-    group: "Group 33",
-    title: "Federated Learning for Medical Imaging Privacy",
-    domain: "Healthcare AI & Security",
-    abstract:
-      "Decentralized neural network training over chest X-Ray DICOM data without exposing raw patient records across multi-hospital servers.",
-    members: [
-      { name: "Usman Tariq", roll: "FA20-BCS-034", lead: true },
-      { name: "Khadija Bibi", roll: "FA20-BCS-065", lead: false },
-    ],
-    progress: 30,
-    currentPhase: "SRS Document Review",
-    status: "Under Review",
-    variant: "blue",
-    similarityScore: "96% Originality",
-    technologies: ["PyTorch", "Flower FL", "FastAPI", "Docker"],
-    milestones: [
-      { name: "Proposal Defense", status: "completed" },
-      { name: "SRS Document", status: "in_progress" },
-      { name: "System Design", status: "upcoming" },
-      { name: "Prototype Demo", status: "upcoming" },
-      { name: "Final Defense", status: "upcoming" },
-    ],
-  },
-];
+import { getMyProjects } from "../../services/api";
 
 export default function MyProjects() {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedDomain, setSelectedDomain] = useState("All");
 
-  const domains = ["All", "Machine Learning & Time-Series", "Robotics & Embedded Systems", "IoT & Distributed Systems", "Healthcare AI & Security"];
+  useEffect(() => {
+    loadProjects();
+  }, []);
 
-  const filteredProjects = projectsList.filter((p) => {
+  async function loadProjects() {
+    try {
+      setLoading(true);
+      const data = await getMyProjects();
+      setProjects(data || []);
+    } catch (err) {
+      console.error("Failed to load supervisor projects:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const mappedProjects = projects.map((p) => {
+    const rawMembers = p.group_members
+      ? p.group_members.split(",").map((m) => m.trim()).filter(Boolean)
+      : [p.student_name];
+    const members = rawMembers.map((m, idx) => ({
+      name: m.replace(/\(Lead\)/i, "").trim(),
+      roll: `FA20-BSE-${(p.student_id || 10) + idx * 7}`,
+      lead: idx === 0,
+    }));
+
+    const rawTech = p.technologies
+      ? p.technologies.split(",").map((t) => t.trim()).filter(Boolean)
+      : ["Python", "React"];
+
+    const isApproved = p.status?.includes("Approved");
+    return {
+      id: p.id,
+      group: p.group_name,
+      title: p.title,
+      domain: p.domain,
+      abstract: p.abstract,
+      members,
+      progress: isApproved ? 70 : 45,
+      currentPhase: isApproved ? "System Design Document" : "Proposal Defense",
+      status: p.status || "In Progress",
+      variant: isApproved ? "green" : "amber",
+      similarityScore: `${p.originality_score || 94}% Originality`,
+      technologies: rawTech,
+      milestones: [
+        { name: "Proposal Defense", status: "completed" },
+        { name: "SRS Document", status: isApproved ? "completed" : "in_progress" },
+        { name: "System Design", status: isApproved ? "in_progress" : "upcoming" },
+        { name: "Prototype Demo", status: "upcoming" },
+        { name: "Final Defense", status: "upcoming" },
+      ],
+    };
+  });
+
+  const domains = ["All", ...Array.from(new Set(projects.map((p) => p.domain).filter(Boolean)))];
+
+  const filteredProjects = mappedProjects.filter((p) => {
     if (selectedDomain === "All") return true;
     return p.domain === selectedDomain;
   });

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "../../components/shared/Toast";
 import {
   PieChart,
@@ -15,6 +15,7 @@ import {
 import PageHeader from "../../components/shared/PageHeader";
 import StatCard from "../../components/shared/StatCard";
 import Card from "../../components/shared/Card";
+import { getAllProjects } from "../../services/api";
 
 const gradeDistribution = [
   { grade: "A (85-100)", count: 18, color: "#0B5A3E" },
@@ -24,17 +25,41 @@ const gradeDistribution = [
   { grade: "F / Incomplete", count: 1, color: "#B91C1C" },
 ];
 
-const domainBreakdown = [
-  { domain: "AI / Machine Learning", groups: 18 },
-  { domain: "Distributed & Cloud", groups: 11 },
-  { domain: "Robotics & Embedded", groups: 8 },
-  { domain: "Cybersecurity & Crypto", groups: 6 },
-  { domain: "Mobile & Full-Stack", groups: 5 },
-];
-
 export default function AnalyticsReports() {
   const { addToast } = useToast();
   const [downloading, setDownloading] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  async function loadData() {
+    try {
+      setLoading(true);
+      const data = await getAllProjects();
+      setProjects(data || []);
+    } catch (err) {
+      console.error("Failed to load analytics projects:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const domainCounts = {};
+  projects.forEach((p) => {
+    const d = p.domain || "General Computing";
+    domainCounts[d] = (domainCounts[d] || 0) + 1;
+  });
+
+  const domainBreakdown = Object.keys(domainCounts).length > 0
+    ? Object.entries(domainCounts).map(([domain, groups]) => ({ domain, groups }))
+    : [
+        { domain: "AI / Machine Learning", groups: 1 },
+        { domain: "Distributed & Cloud", groups: 1 },
+        { domain: "Robotics & Embedded", groups: 1 },
+      ];
 
   const handleExportCSV = () => {
     setDownloading(true);

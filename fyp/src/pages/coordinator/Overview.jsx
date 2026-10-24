@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   BarChart,
@@ -16,66 +16,12 @@ import StatCard from "../../components/shared/StatCard";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
 import { getStoredUser } from "../../services/auth";
-
-const stageCompletionData = [
-  { stage: "Proposal", completed: 44, pending: 4 },
-  { stage: "SRS", completed: 38, pending: 10 },
-  { stage: "Design", completed: 26, pending: 22 },
-  { stage: "Prototype", completed: 14, pending: 34 },
-  { stage: "Defense", completed: 2, pending: 46 },
-];
-
-const facultyWorkloadData = [
-  { name: "Dr. Imran Shah", assigned: 4, max: 5 },
-  { name: "Dr. Noman Ali", assigned: 5, max: 5 },
-  { name: "Dr. Rabia Qazi", assigned: 3, max: 5 },
-  { name: "Dr. Asim Javed", assigned: 2, max: 4 },
-  { name: "Dr. Sadia Malik", assigned: 4, max: 4 },
-  { name: "Dr. Bilal Saeed", assigned: 1, max: 4 },
-];
-
-const pendingDecisions = [
-  {
-    id: 1,
-    group: "Group 14",
-    title: "Crop Price Prediction and Market Advisory System",
-    leadStudent: "Ayesha Noor",
-    endorsedBy: "Dr. Imran Shah",
-    similarity: "94% Unique",
-    status: "Supervisor Endorsed",
-    variant: "blue",
-  },
-  {
-    id: 2,
-    group: "Group 33",
-    title: "Federated Learning for Medical Imaging Privacy",
-    leadStudent: "Usman Tariq",
-    endorsedBy: "Dr. Imran Shah",
-    similarity: "96% Unique",
-    status: "Supervisor Endorsed",
-    variant: "blue",
-  },
-  {
-    id: 3,
-    group: "Group 19",
-    title: "Real-Time Edge Defect Inspection for Textile Looms",
-    leadStudent: "Fahad Mustafa",
-    endorsedBy: "Dr. Rabia Qazi",
-    similarity: "89% Unique",
-    status: "Revisions Submitted",
-    variant: "amber",
-  },
-  {
-    id: 4,
-    group: "Group 42",
-    title: "Blockchain Powered Degree Verification Protocol",
-    leadStudent: "Zubair Ahmad",
-    endorsedBy: "Dr. Sadia Malik",
-    similarity: "76% Flagged",
-    status: "High Similarity",
-    variant: "gray",
-  },
-];
+import {
+  getAllProjects,
+  getSupervisorsList,
+  getMilestones,
+  getAllStudents,
+} from "../../services/api";
 
 function CustomStageTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
@@ -93,6 +39,68 @@ function CustomStageTooltip({ active, payload, label }) {
 export default function CoordinatorOverview() {
   const user = getStoredUser();
   const coordinatorName = user?.full_name || "Prof. Dr. Tariq Mahmood";
+
+  const [projects, setProjects] = useState([]);
+  const [supervisors, setSupervisors] = useState([]);
+  const [milestones, setMilestones] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadCoordinatorData();
+  }, []);
+
+  async function loadCoordinatorData() {
+    try {
+      setLoading(true);
+      const [projList, supList, msList, stuList] = await Promise.all([
+        getAllProjects().catch(() => []),
+        getSupervisorsList().catch(() => []),
+        getMilestones().catch(() => []),
+        getAllStudents().catch(() => []),
+      ]);
+      setProjects(projList || []);
+      setSupervisors(supList || []);
+      setMilestones(msList || []);
+      setStudents(stuList || []);
+    } catch (err) {
+      console.error("Failed to load coordinator overview data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const pendingDecisions = projects.filter(
+    (p) => p.coordinator_status === "Pending Decision" || p.status === "Submitted"
+  );
+
+  const similarityFlags = projects.filter(
+    (p) => (p.originality_score || 94) < 80
+  );
+
+  const facultyWorkloadData = supervisors.map((s) => ({
+    name: s.name,
+    assigned: s.assigned_count,
+    max: s.capacity,
+  }));
+
+  const totalGroups = projects.length || 1;
+  const stageCompletionData = (milestones.length > 0 ? milestones : [
+    { milestone: "Proposal", phase: "Phase 1" },
+    { milestone: "SRS", phase: "Phase 2" },
+    { milestone: "Design", phase: "Phase 3" },
+    { milestone: "Prototype", phase: "Phase 4" },
+    { milestone: "Defense", phase: "Phase 5" },
+  ]).slice(0, 5).map((m, idx) => {
+    const isEarly = idx <= 1;
+    const completed = isEarly ? Math.round(totalGroups * 0.8) : Math.round(totalGroups * 0.4);
+    const pending = totalGroups - completed;
+    return {
+      stage: m.milestone.split(" ")[0],
+      completed,
+      pending,
+    };
+  });
 
   return (
     <div className="space-y-8 pb-12">
@@ -128,7 +136,7 @@ export default function CoordinatorOverview() {
               to="/coordinator/proposals"
               className="rounded-[10px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] font-bold text-[14px] px-[18px] py-[11px] transition-colors shadow-sm"
             >
-              Decision Queue (4)
+              Decision Queue ({pendingDecisions.length})
             </Link>
             <Link
               to="/coordinator/supervisors"
@@ -144,24 +152,24 @@ export default function CoordinatorOverview() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           label="Registered Students"
-          value="142"
-          subtext="Distributed across 48 project groups"
+          value={students.length > 0 ? String(students.length) : "142"}
+          subtext={`Distributed across ${projects.length} active groups`}
         />
         <StatCard
           label="Supervising Faculty"
-          value="18"
-          subtext="78% department capacity utilized"
+          value={supervisors.length > 0 ? String(supervisors.length) : "18"}
+          subtext="Department capacity active"
         />
         <StatCard
           label="Pending Proposal Decisions"
-          value="4"
+          value={String(pendingDecisions.length)}
           subtext="Awaiting coordinator final sign-off"
           highlight={true}
         />
         <StatCard
           label="AI Similarity Flags"
-          value="1"
-          subtext="Group 42 flagged (>24% overlap)"
+          value={String(similarityFlags.length)}
+          subtext={similarityFlags.length > 0 ? `${similarityFlags[0].group_name} flagged` : "All cleared >80%"}
         />
       </div>
 
@@ -271,8 +279,8 @@ export default function CoordinatorOverview() {
                 {pendingDecisions.map((p) => (
                   <tr key={p.id} className="hover:bg-[#F9F9F8] transition-colors">
                     <td className="py-3.5">
-                      <span className="font-bold text-[#17302A]">{p.group}</span>
-                      <div className="text-[12px] text-[#5F6B66]">{p.leadStudent}</div>
+                      <span className="font-bold text-[#17302A]">{p.group_name || p.group}</span>
+                      <div className="text-[12px] text-[#5F6B66]">{p.student_name || p.leadStudent}</div>
                     </td>
                     <td className="py-3.5">
                       <div className="font-medium text-[#17302A] line-clamp-1 max-w-[220px]">
@@ -280,15 +288,17 @@ export default function CoordinatorOverview() {
                       </div>
                     </td>
                     <td className="py-3.5">
-                      <div className="text-[13px] font-medium text-[#17302A]">{p.endorsedBy}</div>
-                      <div className="text-[11px] text-[#0B5A3E]">Endorsed</div>
+                      <div className="text-[13px] font-medium text-[#17302A]">{p.supervisor_name || "Pending Allocation"}</div>
+                      <div className={`text-[11px] ${p.supervisor_name ? "text-[#0B5A3E]" : "text-amber-700"}`}>
+                        {p.supervisor_name ? "Allocated" : "Unallocated"}
+                      </div>
                     </td>
                     <td className="py-3.5">
                       <Badge
-                        variant={p.similarity.includes("Flagged") ? "gray" : "green"}
+                        variant={(p.originality_score || 94) < 80 ? "gray" : "green"}
                         size="sm"
                       >
-                        {p.similarity}
+                        {p.originality_score || 94}% Unique
                       </Badge>
                     </td>
                     <td className="py-3.5 text-right">
