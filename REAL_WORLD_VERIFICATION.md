@@ -170,19 +170,23 @@ For this complete testing walkthrough, we use an authentic Computer Science caps
 
 ---
 
-### Phase 5: Coordinator Portal - Formal Committee Proposal Ratification
+### Phase 5: Supervisor Portal - Technical Proposal Review & Approval
 
 #### Actions
-1. In the Coordinator portal, click **Proposals** (`/coordinator/proposals`).
-2. Locate Group 14 under the **Pending Decision** filter.
-3. Notice that the allocated supervisor is now displayed as `Dr. Imran Shah`.
-4. Enter formal committee remarks: `Approved by Department FYP Committee. Proceed with SRS formulation under Dr. Imran Shah.`
-5. Click **Approve Proposal**.
+1. Open a browser window or tab at `http://localhost:5173/login`.
+2. Sign in with Supervisor credentials:
+   - Email: `supervisor@university.edu`
+   - Password: `super123`
+3. Click **Proposals** (`/supervisor/proposals`).
+4. Locate Group 14 (*Deep Learning for Mandi Agricultural Pricing and Yield Prediction*).
+5. Review the abstract, technical domain, and originality score (`98% Novelty`).
+6. Enter faculty review remarks: `Solid methodology using LSTM and agricultural pricing. Approved to formulate SRS specifications.`
+7. Click **Approve Proposal**.
 
 #### Expected Visual Results on Screen
-- Floating toast confirms approval.
-- Proposal status updates to `Approved` in the database.
-- An institutional approval notification is dispatched to all Group 14 members.
+- Floating toast confirms: *"Proposal endorsed and decision recorded in database."*
+- Proposal status updates to `Approved by Supervisor` in the database.
+- An institutional approval notification is dispatched to all Group 14 student members.
 
 ---
 
@@ -196,8 +200,11 @@ For this complete testing walkthrough, we use an authentic Computer Science caps
 - Within **8 seconds**, the notification badge counter on the bell icon automatically increments from `0` to `2` (via the periodic polling engine).
 - Click on the bell icon:
   - Notification 1: *"Dr. Imran Shah has been assigned as your project supervisor."*
-  - Notification 2: *"Coordinator Decision Announced: Project proposal Approved."*
+  - Notification 2: *"Supervisor Feedback Received: Supervisor marked proposal as 'Approved by Supervisor'."*
 - Click **Mark all as read**: Badge counter resets to zero cleanly.
+- Student Dashboard (`/student/dashboard`) displays:
+  - Proposal Status: `Approved` (with green badge `Approved by Supervisor`).
+  - Supervisor Allocation: `Dr. Imran Shah` (with blue badge `Allocated by Coordinator`).
 
 ---
 

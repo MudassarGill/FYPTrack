@@ -281,23 +281,41 @@ export default function Proposal() {
 
               <div className="flex items-center justify-between py-2 border-b border-[#EEEEEA]">
                 <div>
-                  <div className="text-[14px] font-semibold text-[#17302A]">Supervisor Endorsement</div>
-                  <div className="text-[12px] text-[#5F6B66]">
-                    {project?.supervisor_name ? `Reviewed by ${project.supervisor_name}` : "Awaiting supervisor review"}
-                  </div>
+                  <div className="text-[14px] font-semibold text-[#17302A]">Supervisor Allocation</div>
+                  <div className="text-[12px] text-[#5F6B66]">Allocated by FYP Coordinator</div>
                 </div>
-                <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${statusBadgeColor(project?.status)}`}>
-                  {project?.status || "Pending"}
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${
+                    project?.supervisor_name
+                      ? "bg-[#E3EEF9] text-[#1E3A8A]"
+                      : "bg-[#FEF3D6] text-[#6B4700]"
+                  }`}
+                >
+                  {project?.supervisor_name ? `Allocated (${project.supervisor_name})` : "Awaiting Allocation"}
                 </span>
               </div>
 
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <div className="text-[14px] font-semibold text-[#17302A]">Coordinator Approval</div>
-                  <div className="text-[12px] text-[#5F6B66]">Final programme ratification</div>
+                  <div className="text-[14px] font-semibold text-[#17302A]">Proposal Decision</div>
+                  <div className="text-[12px] text-[#5F6B66]">
+                    {project?.supervisor_name
+                      ? `Evaluated by supervisor ${project.supervisor_name}`
+                      : "Pending supervisor assignment"}
+                  </div>
                 </div>
-                <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${statusBadgeColor(project?.coordinator_status)}`}>
-                  {project?.coordinator_status || "Pending"}
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${
+                    project?.status === "Approved" || project?.status === "Approved by Supervisor"
+                      ? "bg-[#E1F4EA] text-[#0B5A3E]"
+                      : project?.status === "Changes Requested"
+                      ? "bg-[#FBEAE5] text-[#9A3412]"
+                      : "bg-[#FEF3D6] text-[#6B4700]"
+                  }`}
+                >
+                  {project?.status === "Approved" || project?.status === "Approved by Supervisor"
+                    ? "Approved by Supervisor"
+                    : project?.status || "Pending Review"}
                 </span>
               </div>
             </div>

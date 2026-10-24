@@ -237,6 +237,9 @@ def assign_supervisor(
 
     project.supervisor_id = payload.supervisor_id
     project.supervisor_name = payload.supervisor_name
+    project.coordinator_status = "Supervisor Allocated"
+    if project.status in ["Submitted", "Draft"]:
+        project.status = "Under Review"
     db.commit()
     db.refresh(project)
 
@@ -302,7 +305,7 @@ def supervisor_decision(
     return project
 
 
-@router.post("/{project_id}/coordinator-decision", response_model=ProjectResponse, summary="Coordinator ratifies decision")
+@router.post("/{project_id}/coordinator-decision", response_model=ProjectResponse, summary="Coordinator records note")
 def coordinator_decision(
     project_id: int,
     payload: CoordinatorDecisionRequest,
@@ -310,39 +313,29 @@ def coordinator_decision(
     db: Annotated[Session, Depends(get_db)],
 ):
     if current_user.role != "coordinator":
-        raise HTTPException(status_code=403, detail="Only Coordinator can make final decisions.")
+        raise HTTPException(status_code=403, detail="Only Coordinator can make notes.")
 
     project = db.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found.")
 
-    project.coordinator_status = payload.coordinator_status
-    project.coordinator_notes = payload.coordinator_notes
-    if payload.coordinator_status == "Approved by Coordinator":
-        project.status = "Approved"
-    elif payload.coordinator_status == "Rejected":
-        project.status = "Rejected"
+    if payload.coordinator_notes:
+        project.coordinator_notes = payload.coordinator_notes
+    if payload.coordinator_status and "Approved" not in payload.coordinator_status:
+        project.coordinator_status = payload.coordinator_status
 
     db.commit()
     db.refresh(project)
 
     # Notify student
-    db.add(
-        Notification(
-            user_id=project.student_id,
-            title="Coordinator Decision Announced",
-            message=f"Project proposal {payload.coordinator_status}. Notes: {payload.coordinator_notes or 'Official decision recorded.'}",
-        )
-    )
-    # Notify supervisor if assigned
-    if project.supervisor_id:
+    if payload.coordinator_notes:
         db.add(
             Notification(
-                user_id=project.supervisor_id,
-                title="Coordinator Decision Announced",
-                message=f"Coordinator decided '{payload.coordinator_status}' for {project.group_name} ({project.title}).",
+                user_id=project.student_id,
+                title="Coordinator Remarks Recorded",
+                message=f"Coordinator added notes on {project.group_name}: {payload.coordinator_notes}",
             )
         )
-    db.commit()
+        db.commit()
 
     return project

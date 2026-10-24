@@ -289,7 +289,10 @@ export default function MilestoneReviews() {
                   )}
                   <button
                     type="button"
-                    onClick={() => setInspectionTarget(m)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setInspectionTarget(m);
+                    }}
                     className="rounded-[8px] bg-[#EEEEEA] hover:bg-[#E0E0DC] text-[#17302A] text-[12px] font-bold px-3 py-1.5 transition-colors cursor-pointer"
                   >
                     Inspection Log
@@ -303,8 +306,15 @@ export default function MilestoneReviews() {
 
       {/* Inspection Log Modal */}
       {inspectionTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-[20px] p-6 max-w-lg w-full shadow-2xl space-y-4 border border-[#E6E6E1]">
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
+          onClick={() => setInspectionTarget(null)}
+        >
+          <div
+            className="bg-white rounded-[20px] p-6 max-w-lg w-full shadow-2xl space-y-4 border border-[#E6E6E1]"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-start justify-between pb-3 border-b border-[#EEEEEA]">
               <div>
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#17302A] text-white">

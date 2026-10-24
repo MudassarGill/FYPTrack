@@ -20,13 +20,14 @@ class Project(Base):
     technologies: Mapped[str] = mapped_column(String(255), nullable=True, default="")
     group_members: Mapped[str] = mapped_column(String(255), nullable=True, default="")
     
-    # Statuses: "Submitted", "Under Review", "Changes Requested", "Approved by Supervisor", "Approved by Coordinator", "Rejected"
+    # Proposal Status (Supervisor Review): "Submitted", "Under Review", "Approved by Supervisor", "Changes Requested", "Rejected"
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="Submitted")
     
     supervisor_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
     supervisor_name: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
     
-    coordinator_status: Mapped[str] = mapped_column(String(50), nullable=False, default="Pending Decision")
+    # Coordinator Allocation Status: "Awaiting Supervisor Allocation", "Supervisor Allocated"
+    coordinator_status: Mapped[str] = mapped_column(String(50), nullable=False, default="Awaiting Supervisor Allocation")
     coordinator_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     originality_score: Mapped[int] = mapped_column(Integer, nullable=False, default=94)

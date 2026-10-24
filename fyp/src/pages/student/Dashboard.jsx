@@ -281,24 +281,44 @@ export default function Dashboard() {
         <div className="card-base card-hover flex flex-col justify-between">
           <div className="text-[13px] text-[#5F6B66] font-semibold">Proposal Status</div>
           <div className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] my-1 truncate">
-            {project?.status || "Draft"}
+            {project?.status === "Approved" || project?.status === "Approved by Supervisor"
+              ? "Approved"
+              : project?.status || "Draft"}
           </div>
           <div>
-            <span className="inline-block px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E1F4EA] text-[#0B5A3E]">
-              {project?.coordinator_status || "Institutional Track"}
+            <span
+              className={`inline-block px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${
+                project?.status === "Approved" || project?.status === "Approved by Supervisor"
+                  ? "bg-[#E1F4EA] text-[#0B5A3E]"
+                  : project?.supervisor_name
+                  ? "bg-[#FEF3D6] text-[#6B4700]"
+                  : "bg-gray-100 text-[#5F6B66]"
+              }`}
+            >
+              {project?.status === "Approved" || project?.status === "Approved by Supervisor"
+                ? "Approved by Supervisor"
+                : project?.supervisor_name
+                ? "Under Review by Supervisor"
+                : "Awaiting Allocation"}
             </span>
           </div>
         </div>
 
         {/* Card 2: Supervisor */}
         <div className="card-base card-hover flex flex-col justify-between">
-          <div className="text-[13px] text-[#5F6B66] font-semibold">Supervisor</div>
+          <div className="text-[13px] text-[#5F6B66] font-semibold">Supervisor Allocation</div>
           <div className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] my-1 truncate">
             {project?.supervisor_name || "Pending Allocation"}
           </div>
           <div>
-            <span className="inline-block px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E3EEF9] text-[#1E3A8A]">
-              {project?.supervisor_name ? "Allocated" : "Awaiting"}
+            <span
+              className={`inline-block px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${
+                project?.supervisor_name
+                  ? "bg-[#E3EEF9] text-[#1E3A8A]"
+                  : "bg-[#FEF3D6] text-[#6B4700]"
+              }`}
+            >
+              {project?.supervisor_name ? "Allocated by Coordinator" : "Awaiting Coordinator Allocation"}
             </span>
           </div>
         </div>
