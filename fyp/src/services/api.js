@@ -188,6 +188,10 @@ export async function getSupervisorsList() {
   return authFetch("/supervisors/list");
 }
 
+export async function getSupervisorRecommendations(projectId) {
+  return authFetch(`/supervisors/recommendations/${projectId}`);
+}
+
 /* ============================================================
    Milestones & Academic Calendar API
    ============================================================ */
