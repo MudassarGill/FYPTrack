@@ -1,6 +1,5 @@
 import { useState } from "react";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+import { getApiBaseUrl } from "../../services/auth";
 
 function ResetPasswordForm({ token, onBackToLogin }) {
   const [newPassword, setNewPassword] = useState("");
@@ -34,7 +33,8 @@ function ResetPasswordForm({ token, onBackToLogin }) {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/auth/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

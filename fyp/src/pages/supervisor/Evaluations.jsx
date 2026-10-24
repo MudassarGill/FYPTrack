@@ -28,9 +28,19 @@ export default function Evaluations() {
       setLoading(true);
       const myProjs = await getMyProjects();
       setProjects(myProjs || []);
-      if (myProjs && myProjs.length > 0) {
-        const p = myProjs[0];
-        const existing = await getProjectEvaluations(p.id);
+    } catch (err) {
+      console.error("Failed to load evaluation data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const activeProject = projects[selectedProjectIndex];
+
+  useEffect(() => {
+    if (!activeProject) return;
+    getProjectEvaluations(activeProject.id)
+      .then((existing) => {
         if (existing && existing.length > 0) {
           const ev = existing[0];
           setMarks({
@@ -40,16 +50,18 @@ export default function Evaluations() {
             criteria4: ev.criteria4,
           });
           setRemarks(ev.remarks || "");
+        } else {
+          setMarks({
+            criteria1: 0,
+            criteria2: 0,
+            criteria3: 0,
+            criteria4: 0,
+          });
+          setRemarks("");
         }
-      }
-    } catch (err) {
-      console.error("Failed to load evaluation data:", err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const activeProject = projects[selectedProjectIndex];
+      })
+      .catch((err) => console.error("Failed to load project marks:", err));
+  }, [activeProject?.id]);
 
   const totalScore = (marks.criteria1 || 0) + (marks.criteria2 || 0) + (marks.criteria3 || 0) + (marks.criteria4 || 0);
 

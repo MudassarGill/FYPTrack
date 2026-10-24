@@ -276,41 +276,49 @@ export default function CoordinatorOverview() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#EEEEEA]">
-                {pendingDecisions.map((p) => (
-                  <tr key={p.id} className="hover:bg-[#F9F9F8] transition-colors">
-                    <td className="py-3.5">
-                      <span className="font-bold text-[#17302A]">{p.group_name || p.group}</span>
-                      <div className="text-[12px] text-[#5F6B66]">{p.student_name || p.leadStudent}</div>
-                    </td>
-                    <td className="py-3.5">
-                      <div className="font-medium text-[#17302A] line-clamp-1 max-w-[220px]">
-                        {p.title}
-                      </div>
-                    </td>
-                    <td className="py-3.5">
-                      <div className="text-[13px] font-medium text-[#17302A]">{p.supervisor_name || "Pending Allocation"}</div>
-                      <div className={`text-[11px] ${p.supervisor_name ? "text-[#0B5A3E]" : "text-amber-700"}`}>
-                        {p.supervisor_name ? "Allocated" : "Unallocated"}
-                      </div>
-                    </td>
-                    <td className="py-3.5">
-                      <Badge
-                        variant={(p.originality_score || 94) < 80 ? "gray" : "green"}
-                        size="sm"
-                      >
-                        {p.originality_score || 94}% Unique
-                      </Badge>
-                    </td>
-                    <td className="py-3.5 text-right">
-                      <Link
-                        to="/coordinator/proposals"
-                        className="inline-block rounded-[8px] bg-[#17302A] hover:bg-[#24493F] text-white text-[12px] font-bold px-3 py-1.5 transition-colors cursor-pointer"
-                      >
-                        Review
-                      </Link>
+                {pendingDecisions.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-[13px] text-[#5F6B66]">
+                      All departmental proposals have been ratified. No pending decisions in queue.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  pendingDecisions.map((p) => (
+                    <tr key={p.id} className="hover:bg-[#F9F9F8] transition-colors">
+                      <td className="py-3.5">
+                        <span className="font-bold text-[#17302A]">{p.group_name || p.group}</span>
+                        <div className="text-[12px] text-[#5F6B66]">{p.student_name || p.leadStudent}</div>
+                      </td>
+                      <td className="py-3.5">
+                        <div className="font-medium text-[#17302A] line-clamp-1 max-w-[220px]">
+                          {p.title}
+                        </div>
+                      </td>
+                      <td className="py-3.5">
+                        <div className="text-[13px] font-medium text-[#17302A]">{p.supervisor_name || "Pending Allocation"}</div>
+                        <div className={`text-[11px] ${p.supervisor_name ? "text-[#0B5A3E]" : "text-amber-700"}`}>
+                          {p.supervisor_name ? "Allocated" : "Unallocated"}
+                        </div>
+                      </td>
+                      <td className="py-3.5">
+                        <Badge
+                          variant={(p.originality_score || 94) < 80 ? "gray" : "green"}
+                          size="sm"
+                        >
+                          {p.originality_score || 94}% Unique
+                        </Badge>
+                      </td>
+                      <td className="py-3.5 text-right">
+                        <Link
+                          to="/coordinator/proposals"
+                          className="inline-block rounded-[8px] bg-[#17302A] hover:bg-[#24493F] text-white text-[12px] font-bold px-3 py-1.5 transition-colors cursor-pointer"
+                        >
+                          Review
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

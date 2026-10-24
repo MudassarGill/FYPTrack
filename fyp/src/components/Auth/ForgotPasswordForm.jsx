@@ -1,6 +1,5 @@
 import { useState } from "react";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+import { getApiBaseUrl } from "../../services/auth";
 
 function ForgotPasswordForm({ onBackToLogin }) {
   const [email, setEmail] = useState("");
@@ -14,7 +13,8 @@ function ForgotPasswordForm({ onBackToLogin }) {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/auth/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
