@@ -1,7 +1,14 @@
+import os
 import re
 import math
+import requests
 from collections import Counter
 from typing import List, Dict, Any, Tuple
+
+# Hugging Face Inference API Configuration
+HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY", os.getenv("HF_TOKEN", ""))
+HUGGINGFACE_MODEL = os.getenv("HUGGINGFACE_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+HF_API_URL = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{HUGGINGFACE_MODEL}"
 
 # Institutional Archive Pool (Benchmark past FYP projects from 2021-2025)
 ARCHIVED_PROJECTS_POOL = [
