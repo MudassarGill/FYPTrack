@@ -5,6 +5,7 @@ import {
   getProjectDocuments,
   uploadDocumentFile,
   getDocumentDownloadUrl,
+  deleteDocument,
 } from "../../services/api";
 
 export default function Documents() {
@@ -68,6 +69,17 @@ export default function Documents() {
   const handleDownload = (doc) => {
     addToast(`Downloading ${doc.file_name}...`, "info");
     window.open(getDocumentDownloadUrl(doc.id), "_blank");
+  };
+
+  const handleDelete = async (doc) => {
+    if (!window.confirm(`Are you sure you want to delete ${doc.file_name}?`)) return;
+    try {
+      await deleteDocument(doc.id);
+      setFiles((prev) => prev.filter((item) => item.id !== doc.id));
+      addToast(`Document '${doc.file_name}' removed successfully.`, "success");
+    } catch (err) {
+      addToast(err.message || "Failed to delete document.", "error");
+    }
   };
 
   return (
@@ -160,7 +172,7 @@ export default function Documents() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${badgeColor}`}>
                       {f.status}
                     </span>
@@ -170,6 +182,14 @@ export default function Documents() {
                       className="rounded-[8px] bg-[#EEEEEA] hover:bg-[#E0E0DC] text-[#17302A] text-[12px] font-bold px-3 py-1.5 transition-colors cursor-pointer"
                     >
                       Download
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(f)}
+                      className="rounded-[8px] bg-red-50 hover:bg-red-100 text-red-700 text-[12px] font-bold px-2.5 py-1.5 transition-colors cursor-pointer border border-red-200"
+                      title="Delete uploaded file"
+                    >
+                      Delete
                     </button>
                   </div>
                 </div>

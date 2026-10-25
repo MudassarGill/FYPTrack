@@ -153,3 +153,28 @@ def review_document(
     db.commit()
 
     return doc
+
+
+@router.delete("/{document_id}", summary="Delete uploaded deliverable document")
+def delete_document(
+    document_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    doc = db.get(Document, document_id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found.")
+
+    # Remove physical file from disk if present
+    if doc.file_path and os.path.exists(doc.file_path):
+        try:
+            os.remove(doc.file_path)
+        except Exception:
+            pass
+
+    file_name = doc.file_name
+    db.delete(doc)
+    db.commit()
+
+    return {"message": f"Document '{file_name}' deleted successfully.", "deleted_id": document_id}
+

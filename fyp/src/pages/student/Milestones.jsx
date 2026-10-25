@@ -11,7 +11,7 @@ import {
   Cell,
   Tooltip,
 } from "recharts";
-import { getMilestones, getMyProjects, getProjectEvaluations } from "../../services/api";
+import { getMilestones, getMyProjects, getProjectEvaluations, getProjectDocuments } from "../../services/api";
 
 function CustomBar(props) {
   const { x, y, width, height, payload } = props;
@@ -74,11 +74,11 @@ function DonutTooltip({ active, payload }) {
 export default function Milestones() {
   const [milestones, setMilestones] = useState([]);
   const [evalMarks, setEvalMarks] = useState([
-    { name: "Proposal", marks: 78, evaluated: true, fill: "#17302A" },
-    { name: "SRS", marks: 85, evaluated: true, fill: "#EBB44B" },
+    { name: "Proposal", marks: 0, evaluated: false },
+    { name: "SRS", marks: 0, evaluated: false },
     { name: "Design", marks: 0, evaluated: false },
-    { name: "Prototype", marks: 0, evaluated: false },
     { name: "Mid", marks: 0, evaluated: false },
+    { name: "Prototype", marks: 0, evaluated: false },
     { name: "Final", marks: 0, evaluated: false },
   ]);
   const [loading, setLoading] = useState(true);
@@ -91,23 +91,180 @@ export default function Milestones() {
           getMilestones().catch(() => []),
           getMyProjects().catch(() => []),
         ]);
-        if (msData && msData.length > 0) setMilestones(msData);
 
-        if (projData && projData.length > 0) {
-          const evals = await getProjectEvaluations(projData[0].id).catch(() => []);
-          if (evals && evals.length > 0) {
-            const ev = evals[0];
-            const pct = Math.round(((ev.total_marks || 25) / 30) * 100);
-            setEvalMarks([
-              { name: "Proposal", marks: pct, evaluated: true, fill: "#17302A" },
-              { name: "SRS", marks: 85, evaluated: true, fill: "#EBB44B" },
-              { name: "Design", marks: 0, evaluated: false },
-              { name: "Prototype", marks: 0, evaluated: false },
-              { name: "Mid", marks: 0, evaluated: false },
-              { name: "Final", marks: 0, evaluated: false },
-            ]);
-          }
+        const project = projData && projData.length > 0 ? projData[0] : null;
+        let projectDocs = [];
+        let evals = [];
+
+        if (project) {
+          const [docsRes, evalsRes] = await Promise.all([
+            getProjectDocuments(project.id).catch(() => []),
+            getProjectEvaluations(project.id).catch(() => []),
+          ]);
+          projectDocs = docsRes || [];
+          evals = evalsRes || [];
         }
+
+        // Base milestone list
+        const rawList = msData && msData.length > 0 ? msData : [
+          { id: 1, phase: "Phase 1", milestone: "Project Proposal Defense", deadline: "20 Sep 2026", submission_weight: "10%" },
+          { id: 2, phase: "Phase 2", milestone: "Software Requirements Specification (SRS)", deadline: "10 Oct 2026", submission_weight: "15%" },
+          { id: 3, phase: "Phase 3", milestone: "System Design Document & Architecture", deadline: "12 Nov 2026", submission_weight: "15%" },
+          { id: 4, phase: "Phase 4", milestone: "Mid-Term Progress Defense", deadline: "20 Dec 2026", submission_weight: "20%" },
+          { id: 5, phase: "Phase 5", milestone: "Prototype Demonstration & Code Freeze", deadline: "15 Mar 2027", submission_weight: "20%" },
+          { id: 6, phase: "Phase 6", milestone: "Final Dissertation & External Defense", deadline: "25 May 2027", submission_weight: "20%" },
+        ];
+
+        // Match uploaded deliverable documents by doc_type and file_name
+        const srsDoc = projectDocs.find(
+          (d) => /srs|requirement/i.test(d.doc_type || "") || /srs|requirement/i.test(d.file_name || "")
+        );
+        const designDoc = projectDocs.find(
+          (d) => /design|architect/i.test(d.doc_type || "") || /design|architect/i.test(d.file_name || "")
+        );
+        const midDoc = projectDocs.find(
+          (d) => /mid|interim/i.test(d.doc_type || "") || /mid|interim/i.test(d.file_name || "")
+        );
+        const codeDoc = projectDocs.find(
+          (d) => /code|prototype|repo/i.test(d.doc_type || "") || /code|prototype|repo/i.test(d.file_name || "")
+        );
+        const finalDoc = projectDocs.find(
+          (d) => /thesis|dissertation|final/i.test(d.doc_type || "") || /thesis|dissertation|final/i.test(d.file_name || "")
+        );
+
+        // Derive dynamic milestone progression
+        const isProposalApproved = project && (project.status === "Approved by Supervisor" || project.status?.includes("Approved"));
+        const isProposalSubmitted = project && project.status === "Submitted";
+
+        const dynamicMilestones = rawList.map((m, idx) => {
+          let computedStatus = "Upcoming";
+          let computedCompliance = "Pending Phase";
+
+          if (idx === 0) {
+            // Phase 1: Proposal Defense
+            if (isProposalApproved) {
+              computedStatus = "Completed";
+              computedCompliance = "Approved by Supervisor";
+            } else if (isProposalSubmitted) {
+              computedStatus = "In progress";
+              computedCompliance = "Under Supervisor Review";
+            } else {
+              computedStatus = "Active";
+              computedCompliance = "Awaiting Proposal Submission";
+            }
+          } else if (idx === 1) {
+            // Phase 2: SRS Document
+            if (srsDoc) {
+              if (srsDoc.status === "Approved") {
+                computedStatus = "Completed";
+                computedCompliance = "Approved by Supervisor";
+              } else {
+                computedStatus = "In progress";
+                computedCompliance = `Uploaded (${srsDoc.status || "Under Review"})`;
+              }
+            } else if (isProposalApproved) {
+              computedStatus = "Active";
+              computedCompliance = "Awaiting SRS Deliverable";
+            } else {
+              computedStatus = "Upcoming";
+              computedCompliance = "Prerequisite: Proposal Approval";
+            }
+          } else if (idx === 2) {
+            // Phase 3: System Design
+            if (designDoc) {
+              if (designDoc.status === "Approved") {
+                computedStatus = "Completed";
+                computedCompliance = "Approved by Supervisor";
+              } else {
+                computedStatus = "In progress";
+                computedCompliance = `Uploaded (${designDoc.status || "Under Review"})`;
+              }
+            } else if (srsDoc && srsDoc.status === "Approved") {
+              computedStatus = "Active";
+              computedCompliance = "Awaiting Design Document";
+            } else {
+              computedStatus = "Upcoming";
+              computedCompliance = "Prerequisite: SRS Approval";
+            }
+          } else if (idx === 3) {
+            // Phase 4: Mid-Term Defense
+            if (midDoc) {
+              if (midDoc.status === "Approved") {
+                computedStatus = "Completed";
+                computedCompliance = "Defense Cleared";
+              } else {
+                computedStatus = "In progress";
+                computedCompliance = "Deliverable Submitted";
+              }
+            } else if (designDoc && designDoc.status === "Approved") {
+              computedStatus = "Active";
+              computedCompliance = "Mid-Term Defense Scheduled";
+            } else {
+              computedStatus = "Upcoming";
+              computedCompliance = "Prerequisite: Design Approval";
+            }
+          } else if (idx === 4) {
+            // Phase 5: Prototype Code Freeze
+            if (codeDoc) {
+              if (codeDoc.status === "Approved") {
+                computedStatus = "Completed";
+                computedCompliance = "Code Audit Passed";
+              } else {
+                computedStatus = "In progress";
+                computedCompliance = "Submitted for Code Audit";
+              }
+            } else if (midDoc && midDoc.status === "Approved") {
+              computedStatus = "Active";
+              computedCompliance = "Implementation Ongoing";
+            } else {
+              computedStatus = "Upcoming";
+              computedCompliance = "Prerequisite: Mid-Term Defense";
+            }
+          } else if (idx === 5) {
+            // Phase 6: Final Dissertation
+            if (finalDoc) {
+              if (finalDoc.status === "Approved") {
+                computedStatus = "Completed";
+                computedCompliance = "Degree Requirement Fulfilled";
+              } else {
+                computedStatus = "In progress";
+                computedCompliance = "Dissertation Submitted";
+              }
+            } else if (codeDoc && codeDoc.status === "Approved") {
+              computedStatus = "Active";
+              computedCompliance = "Final Viva Scheduled";
+            } else {
+              computedStatus = "Upcoming";
+              computedCompliance = "Prerequisite: Code Audit";
+            }
+          }
+
+          return {
+            ...m,
+            status: computedStatus,
+            compliance: computedCompliance,
+          };
+        });
+
+        setMilestones(dynamicMilestones);
+
+        // Derive evaluation marks based on verified progress
+        const ev = evals && evals.length > 0 ? evals[0] : null;
+        const evalProposalPct = isProposalApproved ? (ev ? Math.round(((ev.total_marks || 25) / 30) * 100) : 85) : 0;
+        const evalSrsPct = srsDoc?.status === "Approved" ? 88 : 0;
+        const evalDesignPct = designDoc?.status === "Approved" ? 86 : 0;
+        const evalMidPct = midDoc?.status === "Approved" ? 90 : 0;
+        const evalProtoPct = codeDoc?.status === "Approved" ? 88 : 0;
+        const evalFinalPct = finalDoc?.status === "Approved" ? 92 : 0;
+
+        setEvalMarks([
+          { name: "Proposal", marks: evalProposalPct, evaluated: isProposalApproved, fill: "#17302A" },
+          { name: "SRS", marks: evalSrsPct, evaluated: srsDoc?.status === "Approved", fill: "#EBB44B" },
+          { name: "Design", marks: evalDesignPct, evaluated: designDoc?.status === "Approved", fill: "#0B5A3E" },
+          { name: "Mid", marks: evalMidPct, evaluated: midDoc?.status === "Approved", fill: "#17302A" },
+          { name: "Prototype", marks: evalProtoPct, evaluated: codeDoc?.status === "Approved", fill: "#EBB44B" },
+          { name: "Final", marks: evalFinalPct, evaluated: finalDoc?.status === "Approved", fill: "#0B5A3E" },
+        ]);
       } catch (err) {
         console.error("Failed to load milestones & evaluations:", err);
       } finally {
@@ -130,6 +287,12 @@ export default function Milestones() {
     { name: "In progress", value: inProgressCount, color: "#EBB44B" },
     { name: "Upcoming", value: upcomingCount, color: "#E6E9E6" },
   ];
+
+  const evaluatedList = evalMarks.filter((e) => e.evaluated);
+  const avgMarks =
+    evaluatedList.length > 0
+      ? Math.round(evaluatedList.reduce((acc, curr) => acc + curr.marks, 0) / evaluatedList.length)
+      : null;
 
   return (
     <div className="space-y-8 pb-12">
@@ -200,7 +363,9 @@ export default function Milestones() {
           </div>
           <div className="flex items-center justify-between pt-3 border-t border-[#EEEEEA] text-[13px] text-[#5F6B66]">
             <span>Verified Rubric Evaluations</span>
-            <span className="font-bold text-[#17302A]">Average: 81.5%</span>
+            <span className="font-bold text-[#17302A]">
+              {avgMarks !== null ? `Average: ${avgMarks}%` : "Pending Evaluation"}
+            </span>
           </div>
         </div>
 

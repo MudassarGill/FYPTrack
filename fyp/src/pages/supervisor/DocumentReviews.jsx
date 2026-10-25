@@ -9,6 +9,7 @@ import {
   getDocumentsForReview,
   reviewDocumentFile,
   getDocumentDownloadUrl,
+  deleteDocument,
 } from "../../services/api";
 
 export default function DocumentReviews() {
@@ -51,6 +52,17 @@ export default function DocumentReviews() {
   const handleDownload = (doc) => {
     addToast(`Downloading ${doc.file_name}...`, "info");
     window.open(getDocumentDownloadUrl(doc.id), "_blank");
+  };
+
+  const handleDeleteDoc = async (doc) => {
+    if (!window.confirm(`Are you sure you want to remove deliverable file '${doc.file_name}'?`)) return;
+    try {
+      await deleteDocument(doc.id);
+      setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
+      addToast(`Document '${doc.file_name}' removed from records.`, "success");
+    } catch (err) {
+      addToast(err.message || "Failed to remove document.", "error");
+    }
   };
 
   return (
@@ -125,6 +137,14 @@ export default function DocumentReviews() {
                     className="rounded-[8px] bg-[#17302A] hover:bg-[#23483F] text-white text-[12px] font-bold px-3 py-1.5 transition-colors cursor-pointer"
                   >
                     Review Deliverable
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteDoc(doc)}
+                    className="rounded-[8px] bg-red-50 hover:bg-red-100 text-red-700 text-[12px] font-bold px-2.5 py-1.5 transition-colors cursor-pointer border border-red-200"
+                    title="Delete deliverable"
+                  >
+                    Delete
                   </button>
                 </div>
               </div>

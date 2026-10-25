@@ -1,3 +1,4 @@
+import re
 from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
@@ -9,6 +10,9 @@ from models.user import User
 from models.project import Project
 
 router = APIRouter(prefix="/students", tags=["Students"])
+
+CGPA_PRESETS = ["3.84", "3.62", "3.45", "3.71", "3.28", "3.55", "3.91", "3.18", "3.76", "3.50"]
+CREDITS_PRESETS = ["132/136", "128/136", "124/136", "130/136", "126/136", "122/136", "134/136", "120/136", "128/136", "130/136"]
 
 
 @router.get("/", summary="Get all departmental students with project and supervisor status")
@@ -25,8 +29,18 @@ def get_all_students(
     result = []
     for u in student_users:
         proj = project_by_student.get(u.id)
-        # Generate clean academic roll #
-        roll = f"FA20-BSE-{u.id:03d}" if u.id % 2 == 0 else f"FA20-BCS-{u.id:03d}"
+        
+        # Extract roll number from group members if available
+        roll = None
+        if proj and proj.group_members:
+            match = re.search(r"((?:FA|SP)\d{2}-[A-Z]{2,4}-\d{3,4})", proj.group_members, re.IGNORECASE)
+            if match:
+                roll = match.group(1).upper()
+        if not roll:
+            roll = f"FA20-BSE-{u.id:03d}" if u.id % 2 == 0 else f"FA20-BCS-{u.id:03d}"
+        
+        cgpa = CGPA_PRESETS[u.id % len(CGPA_PRESETS)]
+        credits = CREDITS_PRESETS[u.id % len(CREDITS_PRESETS)]
         
         result.append({
             "id": u.id,
@@ -41,12 +55,12 @@ def get_all_students(
             "supervisorName": proj.supervisor_name if proj else None,
             "supervisorId": proj.supervisor_id if proj else None,
             "status": proj.status if proj else "Pending Submission",
-            "coordinatorStatus": proj.coordinator_status if proj else "Pending Decision",
+            "coordinatorStatus": proj.coordinator_status if proj else "Awaiting Supervisor Allocation",
             "currentMilestone": "System Design Document" if proj and proj.status != "Submitted" else "Project Proposal",
-            "progress": 70 if (proj and proj.status in ["Approved", "Approved by Coordinator", "Approved by Supervisor"]) else (45 if proj else 0),
-            "cgpa": "3.65",
-            "credits": "128/136",
-            "eligible": True,
+            "progress": 70 if (proj and proj.status in ["Approved", "Approved by Supervisor"]) else (45 if proj else 0),
+            "cgpa": cgpa,
+            "credits": credits,
+            "eligible": float(cgpa) >= 2.5,
             "variant": "green" if proj and proj.supervisor_name else "amber",
         })
     return result
@@ -73,7 +87,17 @@ def get_my_students(
         name = student.full_name if student else proj.student_name
         email = student.email if student else proj.student_email
         s_id = student.id if student else proj.id
-        roll = f"FA20-BSE-{s_id:03d}" if s_id % 2 == 0 else f"FA20-BCS-{s_id:03d}"
+        
+        roll = None
+        if proj.group_members:
+            match = re.search(r"((?:FA|SP)\d{2}-[A-Z]{2,4}-\d{3,4})", proj.group_members, re.IGNORECASE)
+            if match:
+                roll = match.group(1).upper()
+        if not roll:
+            roll = f"FA20-BSE-{s_id:03d}" if s_id % 2 == 0 else f"FA20-BCS-{s_id:03d}"
+
+        cgpa = CGPA_PRESETS[s_id % len(CGPA_PRESETS)]
+        credits = CREDITS_PRESETS[s_id % len(CREDITS_PRESETS)]
 
         result.append({
             "id": s_id,
@@ -90,12 +114,12 @@ def get_my_students(
             "status": proj.status,
             "coordinatorStatus": proj.coordinator_status,
             "currentMilestone": "System Design Document" if proj.status != "Submitted" else "Project Proposal",
-            "progress": 70 if proj.status in ["Approved", "Approved by Supervisor", "Approved by Coordinator"] else 45,
-            "cgpa": "3.72",
-            "credits": "128/136",
-            "eligible": True,
+            "progress": 70 if proj.status in ["Approved", "Approved by Supervisor"] else 45,
+            "cgpa": cgpa,
+            "credits": credits,
+            "eligible": float(cgpa) >= 2.5,
             "variant": "green",
-            "phone": "+92 301 5550000",
+            "phone": f"+92 30{s_id % 9} {5550000 + s_id * 111}",
             "lastActive": "Today",
         })
 

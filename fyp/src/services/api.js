@@ -143,6 +143,12 @@ export function getDocumentDownloadUrl(documentId) {
   return `${getApiBaseUrl()}/documents/download/${documentId}`;
 }
 
+export async function deleteDocument(documentId) {
+  return authFetch(`/documents/${documentId}`, {
+    method: "DELETE",
+  });
+}
+
 /* ============================================================
    Evaluations API
    ============================================================ */

@@ -273,8 +273,8 @@ def seed_database():
                     phase="Phase 2",
                     deadline="10 Oct 2026",
                     submission_weight="15%",
-                    status="Completed",
-                    compliance="48 / 48 Groups (100%)",
+                    status="Active",
+                    compliance="Awaiting Submissions",
                     order_index=2,
                 ),
                 Milestone(
@@ -282,8 +282,8 @@ def seed_database():
                     phase="Phase 3",
                     deadline="12 Nov 2026",
                     submission_weight="15%",
-                    status="Active",
-                    compliance="26 / 48 Groups Submitted",
+                    status="Upcoming",
+                    compliance="Pending Phase",
                     order_index=3,
                 ),
                 Milestone(

@@ -381,9 +381,7 @@ export default function Home() {
                 <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
                   Without FYPTrack
                 </h3>
-                <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-red-100 text-red-700">
-                  Manual Hassle
-                </span>
+                
               </div>
               <ul className="space-y-3.5">
                 {without.map((i) => (
@@ -405,9 +403,7 @@ export default function Home() {
                 <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-white">
                   With FYPTrack
                 </h3>
-                <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#EBB44B]/20 text-[#F6D88E] border border-[#EBB44B]/30">
-                  Modern FYP Platform
-                </span>
+                
               </div>
               <ul className="space-y-3.5">
                 {withUs.map((i) => (
