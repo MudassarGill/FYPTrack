@@ -100,8 +100,10 @@ export default function CoordinatorProjects() {
             <tbody className="divide-y divide-[#EEEEEA]">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-[#5F6B66]">
-                    No projects found.
+                  <td colSpan={6} className="py-12 text-center text-[#5F6B66]">
+                    {projects.length === 0
+                      ? "No departmental projects registered yet. As student groups submit proposals to your department, they will be cataloged here."
+                      : "No projects match the selected domain or filter."}
                   </td>
                 </tr>
               ) : (

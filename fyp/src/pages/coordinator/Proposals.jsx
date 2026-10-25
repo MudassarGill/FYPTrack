@@ -131,7 +131,9 @@ export default function CoordinatorProposals() {
       <div className="space-y-6">
         {filtered.length === 0 ? (
           <div className="card-base text-center py-12 text-[#5F6B66]">
-            No proposals found matching this filter.
+            {proposals.length === 0
+              ? "No student proposals have been submitted yet. When student groups submit their capstone proposals, they will appear here for verification and supervisor allocation."
+              : "No proposals found matching this filter."}
           </div>
         ) : (
           filtered.map((p) => (

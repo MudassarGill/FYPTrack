@@ -272,7 +272,7 @@ export default function CoordinatorOverview() {
               to="/coordinator/proposals"
               className="text-[13px] font-bold text-[#17302A] hover:text-[#C2410C] transition-colors"
             >
-              View all 48 &rarr;
+              View all {projects.length} &rarr;
             </Link>
           </div>
 

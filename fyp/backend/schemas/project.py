@@ -11,6 +11,7 @@ class ProjectCreateRequest(BaseModel):
     group_members: Optional[str] = ""
     group_name: Optional[str] = "Group 01"
     department: Optional[str] = "BS Software Engineering"
+    coordinator_id: Optional[int] = None
 
 
 class ProjectUpdateRequest(BaseModel):
@@ -77,6 +78,7 @@ class ProjectResponse(BaseModel):
     status: str
     supervisor_id: Optional[int] = None
     supervisor_name: Optional[str] = None
+    coordinator_id: Optional[int] = None
     coordinator_status: str
     coordinator_notes: Optional[str] = None
     originality_score: int

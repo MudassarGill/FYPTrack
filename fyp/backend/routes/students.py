@@ -20,11 +20,17 @@ def get_all_students(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ):
-    student_users = db.scalars(select(User).where(User.role == "student")).all()
-    all_projects = db.scalars(select(Project)).all()
-    
-    # Map by student_id
-    project_by_student = {p.student_id: p for p in all_projects}
+    if current_user.role == "coordinator":
+        coord_projects = db.scalars(select(Project).where(Project.coordinator_id == current_user.id)).all()
+        if not coord_projects:
+            return []
+        coord_student_ids = {p.student_id for p in coord_projects}
+        student_users = db.scalars(select(User).where((User.role == "student") & (User.id.in_(coord_student_ids)))).all()
+        project_by_student = {p.student_id: p for p in coord_projects}
+    else:
+        student_users = db.scalars(select(User).where(User.role == "student")).all()
+        all_projects = db.scalars(select(Project)).all()
+        project_by_student = {p.student_id: p for p in all_projects}
 
     result = []
     for u in student_users:

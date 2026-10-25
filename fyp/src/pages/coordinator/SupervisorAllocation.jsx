@@ -124,10 +124,14 @@ export default function SupervisorAllocation() {
         ) : unassigned.length === 0 ? (
           <Card className="text-center py-10 text-[#5F6B66]">
             <div className="font-bold text-[16px] text-[#17302A] mb-1">
-              All Submitted Projects Currently Have an Allocated Supervisor
+              {projects.length === 0
+                ? "No Student Projects Submitted Yet"
+                : "All Submitted Projects Currently Have an Allocated Supervisor"}
             </div>
             <p className="text-[13px]">
-              New student proposal submissions will automatically appear here for AI-assisted mentor assignment.
+              {projects.length === 0
+                ? "When student groups submit proposals to your department, they will appear here for AI-ranked faculty matching and supervisor allocation."
+                : "New student proposal submissions will automatically appear here for AI-assisted mentor assignment."}
             </p>
           </Card>
         ) : (

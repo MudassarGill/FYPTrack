@@ -23,9 +23,17 @@ def get_supervisors_list(
     supervisors = db.scalars(select(User).where(User.role == "supervisor")).all()
     result = []
     for s in supervisors:
-        assigned_projects = db.scalars(
-            select(Project).where((Project.supervisor_id == s.id) | (Project.supervisor_name == s.full_name))
-        ).all()
+        if current_user.role == "coordinator":
+            assigned_projects = db.scalars(
+                select(Project).where(
+                    (Project.coordinator_id == current_user.id)
+                    & ((Project.supervisor_id == s.id) | (Project.supervisor_name == s.full_name))
+                )
+            ).all()
+        else:
+            assigned_projects = db.scalars(
+                select(Project).where((Project.supervisor_id == s.id) | (Project.supervisor_name == s.full_name))
+            ).all()
         capacity = 5
         free_slots = max(0, capacity - len(assigned_projects))
         profile = FACULTY_EXPERTISE_PROFILES.get(s.full_name, {})

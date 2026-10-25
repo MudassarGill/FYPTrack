@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useToast } from "../../components/shared/Toast";
-import { getMyProjects, submitProposal, getDepartmentSettings } from "../../services/api";
+import { getMyProjects, submitProposal, getDepartmentSettings, getCoordinatorsList } from "../../services/api";
 
 export default function Proposal() {
   const { addToast } = useToast();
@@ -8,6 +8,8 @@ export default function Proposal() {
   const [submitting, setSubmitting] = useState(false);
   const [project, setProject] = useState(null);
   const [deptSettings, setDeptSettings] = useState({ max_group_size: 3, allow_student_self_proposal: true });
+  const [coordinators, setCoordinators] = useState([]);
+  const [selectedCoordinatorId, setSelectedCoordinatorId] = useState("");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -26,16 +28,24 @@ export default function Proposal() {
   async function loadProjectAndSettings() {
     try {
       setLoading(true);
-      const [data, settings] = await Promise.all([
+      const [data, settings, coords] = await Promise.all([
         getMyProjects().catch(() => []),
         getDepartmentSettings().catch(() => null),
+        getCoordinatorsList().catch(() => []),
       ]);
       if (settings) {
         setDeptSettings(settings);
       }
+      if (coords && coords.length > 0) {
+        setCoordinators(coords);
+        setSelectedCoordinatorId(coords[0].id);
+      }
       if (data && data.length > 0) {
         const p = data[0];
         setProject(p);
+        if (p.coordinator_id) {
+          setSelectedCoordinatorId(p.coordinator_id);
+        }
         setFormData({
           title: p.title || "",
           domain: p.domain || "Machine Learning",
@@ -72,6 +82,7 @@ export default function Proposal() {
         abstract: formData.abstract,
         technologies: formData.technologies,
         group_members: formData.group_members,
+        coordinator_id: selectedCoordinatorId ? Number(selectedCoordinatorId) : undefined,
       });
       setProject(saved);
       addToast(
@@ -99,6 +110,7 @@ export default function Proposal() {
         abstract: formData.abstract,
         technologies: formData.technologies,
         group_members: formData.group_members,
+        coordinator_id: selectedCoordinatorId ? Number(selectedCoordinatorId) : undefined,
       });
       setProject(saved);
       addToast("Draft proposal saved to database.", "info");
@@ -216,6 +228,28 @@ export default function Proposal() {
                 />
               </div>
             </div>
+
+            {coordinators.length > 0 && (
+              <div>
+                <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
+                  FYP Programme Coordinator
+                </label>
+                <select
+                  value={selectedCoordinatorId}
+                  onChange={(e) => setSelectedCoordinatorId(e.target.value)}
+                  className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[11px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6]"
+                >
+                  {coordinators.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.email})
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-[#5F6B66] mt-1">
+                  Your capstone proposal and novelty screening will be submitted directly to this coordinator.
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">

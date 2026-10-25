@@ -62,6 +62,10 @@ export async function getProjectById(id) {
   return authFetch(`/projects/${id}`);
 }
 
+export async function getCoordinatorsList() {
+  return authFetch("/projects/coordinators");
+}
+
 export async function submitProposal(data) {
   return authFetch("/projects/", {
     method: "POST",

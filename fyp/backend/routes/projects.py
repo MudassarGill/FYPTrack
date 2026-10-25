@@ -39,8 +39,12 @@ def get_my_projects(
             ).order_by(Project.created_at.desc())
         ).all()
         return projects
-    else:  # Coordinator sees all
-        projects = db.scalars(select(Project).order_by(Project.created_at.desc())).all()
+    else:  # Coordinator sees their projects
+        projects = db.scalars(
+            select(Project)
+            .where(Project.coordinator_id == current_user.id)
+            .order_by(Project.created_at.desc())
+        ).all()
         return projects
 
 
@@ -49,6 +53,13 @@ def get_all_projects(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ):
+    if current_user.role == "coordinator":
+        projects = db.scalars(
+            select(Project)
+            .where(Project.coordinator_id == current_user.id)
+            .order_by(Project.created_at.desc())
+        ).all()
+        return projects
     projects = db.scalars(select(Project).order_by(Project.created_at.desc())).all()
     return projects
 
@@ -63,6 +74,12 @@ def get_project(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found.")
     return project
+
+
+@router.get("/coordinators", summary="List all departmental coordinators")
+def get_coordinators_list(db: Annotated[Session, Depends(get_db)]):
+    coords = db.scalars(select(User).where(User.role == "coordinator").order_by(User.id.desc())).all()
+    return [{"id": c.id, "name": c.full_name, "email": c.email} for c in coords]
 
 
 @router.post("/", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED, summary="Submit project proposal")
@@ -99,6 +116,12 @@ def create_project(
             if clean_first:
                 lead_author_name = clean_first
 
+    target_coord_id = payload.coordinator_id
+    if not target_coord_id:
+        target_coord_id = db.scalar(
+            select(User.id).where(User.role == "coordinator").order_by(User.id.desc())
+        )
+
     # Check if student already has a project
     existing = db.scalar(select(Project).where(Project.student_id == current_user.id))
     if existing:
@@ -111,6 +134,10 @@ def create_project(
         existing.group_members = payload.group_members or existing.group_members
         if payload.department:
             existing.department = payload.department
+        if target_coord_id and not existing.coordinator_id:
+            existing.coordinator_id = target_coord_id
+        elif payload.coordinator_id:
+            existing.coordinator_id = payload.coordinator_id
         existing.originality_score = computed_originality
         existing.status = "Submitted"
         existing.version += 1
@@ -151,6 +178,7 @@ def create_project(
         technologies=payload.technologies or "",
         group_members=payload.group_members or current_user.full_name,
         department=payload.department or "BS Software Engineering",
+        coordinator_id=target_coord_id,
         status="Submitted",
         originality_score=computed_originality,
         version=1,
@@ -240,6 +268,7 @@ def assign_supervisor(
 
     project.supervisor_id = payload.supervisor_id
     project.supervisor_name = payload.supervisor_name
+    project.coordinator_id = current_user.id
     project.coordinator_status = "Supervisor Allocated"
     if project.status in ["Submitted", "Draft"]:
         project.status = "Under Review"

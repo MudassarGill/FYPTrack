@@ -27,7 +27,7 @@ class Project(Base):
     supervisor_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
     supervisor_name: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
     
-    # Coordinator Allocation Status: "Awaiting Supervisor Allocation", "Supervisor Allocated"
+    coordinator_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
     coordinator_status: Mapped[str] = mapped_column(String(50), nullable=False, default="Awaiting Supervisor Allocation")
     coordinator_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
