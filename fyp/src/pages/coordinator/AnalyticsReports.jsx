@@ -103,7 +103,7 @@ export default function AnalyticsReports() {
               <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
                 Project Domain Distribution
               </h3>
-              <p className="text-[13px] text-[#5F6B66]">48 groups categorized by specialization</p>
+              <p className="text-[13px] text-[#5F6B66]">{projects.length} groups categorized by specialization</p>
             </div>
           </div>
 

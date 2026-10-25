@@ -25,7 +25,22 @@ def get_documents_for_review(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ):
-    docs = db.scalars(select(Document).order_by(Document.created_at.desc())).all()
+    if current_user.role == "supervisor":
+        docs = db.scalars(
+            select(Document)
+            .join(Project, Document.project_id == Project.id)
+            .where(
+                (Project.supervisor_id == current_user.id) | (Project.supervisor_name == current_user.full_name)
+            )
+            .order_by(Document.created_at.desc())
+        ).all()
+    elif current_user.role == "student":
+        docs = db.scalars(
+            select(Document).where(Document.student_id == current_user.id).order_by(Document.created_at.desc())
+        ).all()
+    else:  # Coordinator sees all
+        docs = db.scalars(select(Document).order_by(Document.created_at.desc())).all()
+
     result = []
     for d in docs:
         p = db.get(Project, d.project_id)

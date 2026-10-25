@@ -19,6 +19,7 @@ class Project(Base):
     abstract: Mapped[str] = mapped_column(Text, nullable=False)
     technologies: Mapped[str] = mapped_column(String(255), nullable=True, default="")
     group_members: Mapped[str] = mapped_column(String(255), nullable=True, default="")
+    department: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, default="BS Software Engineering")
     
     # Proposal Status (Supervisor Review): "Submitted", "Under Review", "Approved by Supervisor", "Changes Requested", "Rejected"
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="Submitted")

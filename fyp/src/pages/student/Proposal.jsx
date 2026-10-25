@@ -12,6 +12,7 @@ export default function Proposal() {
   const [formData, setFormData] = useState({
     title: "",
     domain: "Machine Learning",
+    department: "BS Software Engineering",
     abstract: "",
     technologies: "",
     group_members: "",
@@ -38,6 +39,7 @@ export default function Proposal() {
         setFormData({
           title: p.title || "",
           domain: p.domain || "Machine Learning",
+          department: p.department || "BS Software Engineering",
           abstract: p.abstract || "",
           technologies: p.technologies || "",
           group_members: p.group_members || "",
@@ -66,6 +68,7 @@ export default function Proposal() {
       const saved = await submitProposal({
         title: formData.title,
         domain: formData.domain,
+        department: formData.department,
         abstract: formData.abstract,
         technologies: formData.technologies,
         group_members: formData.group_members,
@@ -74,7 +77,7 @@ export default function Proposal() {
       addToast(
         project?.status === "Changes Requested"
           ? "Revised proposal submitted for supervisor review!"
-          : "Proposal submitted to coordinator successfully!"
+          : "Proposal submitted successfully! Awaiting supervisor allocation."
       );
     } catch (err) {
       addToast(err.message || "Failed to submit proposal.", "error");
@@ -92,6 +95,7 @@ export default function Proposal() {
       const saved = await submitProposal({
         title: formData.title,
         domain: formData.domain,
+        department: formData.department,
         abstract: formData.abstract,
         technologies: formData.technologies,
         group_members: formData.group_members,
@@ -161,10 +165,28 @@ export default function Proposal() {
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
-                  Domain
+                  Academic Department / Degree
+                </label>
+                <select
+                  value={formData.department}
+                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[11px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6]"
+                >
+                  <option value="BS Software Engineering">BS Software Engineering</option>
+                  <option value="BS Computer Science">BS Computer Science</option>
+                  <option value="BS Artificial Intelligence">BS Artificial Intelligence</option>
+                  <option value="BS Data Science">BS Data Science</option>
+                  <option value="BS Cyber Security">BS Cyber Security</option>
+                  <option value="BS Information Technology">BS Information Technology</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
+                  Project Domain
                 </label>
                 <select
                   value={formData.domain}
@@ -197,17 +219,17 @@ export default function Proposal() {
 
             <div>
               <label className="block text-[13px] font-semibold text-[#17302A] mb-1.5">
-                Group Members (Names &amp; Roll Numbers)
+                Group Members (Lead Author Listed First with Roll No.)
               </label>
               <input
                 type="text"
-                placeholder="e.g. Hamza Tariq (FA20-BSE-042), Ayesha Noor"
+                placeholder="e.g. Hassan Ali (FA20-BSE-026), Ayesha Noor (FA20-BSE-058)"
                 value={formData.group_members}
                 onChange={(e) => setFormData({ ...formData, group_members: e.target.value })}
                 className="w-full rounded-[10px] border border-[#D3D8D4] bg-white px-3 py-[11px] text-[14px] outline-none focus:border-[#EBB44B] focus:ring-2 focus:ring-[#FEF3D6]"
               />
               <p className="text-[11px] text-[#5F6B66] mt-1">
-                Department Policy: Maximum {deptSettings.max_group_size || 3} members per group. Separate multiple members with commas.
+                Note: Lead student should be entered first with roll number. Maximum {deptSettings.max_group_size || 3} members per group.
               </p>
             </div>
 
@@ -274,8 +296,8 @@ export default function Proposal() {
                   <div className="text-[14px] font-semibold text-[#17302A]">Originality Verification</div>
                   <div className="text-[12px] text-[#5F6B66]">Institutional database check</div>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#E1F4EA] text-[#0B5A3E]">
-                  {project ? `${project.originality_score}% Novelty` : "94% Clean"}
+                <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-semibold ${project ? "bg-[#E1F4EA] text-[#0B5A3E]" : "bg-gray-100 text-[#5F6B66]"}`}>
+                  {project ? `${project.originality_score}% Novelty` : "Pending Submission"}
                 </span>
               </div>
 

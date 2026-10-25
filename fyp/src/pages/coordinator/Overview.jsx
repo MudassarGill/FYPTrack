@@ -78,29 +78,25 @@ export default function CoordinatorOverview() {
     (p) => (p.originality_score || 94) < 80
   );
 
-  const facultyWorkloadData = (supervisors.length > 0 ? supervisors : [
-    { name: "Dr. Imran Shah", assigned_count: 3, capacity: 5 },
-    { name: "Dr. Sadia Malik", assigned_count: 4, capacity: 5 },
-    { name: "Dr. Rabia Qazi", assigned_count: 2, capacity: 4 },
-    { name: "Dr. Noman Ali", assigned_count: 3, capacity: 4 },
-    { name: "Dr. Farhan Jamil", assigned_count: 1, capacity: 4 },
-  ]).map((s) => ({
+  const facultyWorkloadData = supervisors.map((s) => ({
     name: s.name,
     assigned: s.assigned_count || 0,
     max: s.capacity || 5,
   }));
 
-  const totalGroups = projects.length || 1;
-  const stageCompletionData = (milestones.length > 0 ? milestones : [
-    { milestone: "Proposal", phase: "Phase 1" },
-    { milestone: "SRS", phase: "Phase 2" },
-    { milestone: "Design", phase: "Phase 3" },
-    { milestone: "Prototype", phase: "Phase 4" },
-    { milestone: "Defense", phase: "Phase 5" },
-  ]).slice(0, 5).map((m, idx) => {
-    const isEarly = idx <= 1;
-    const completed = isEarly ? Math.round(totalGroups * 0.8) : Math.round(totalGroups * 0.4);
-    const pending = Math.max(0, totalGroups - completed);
+  const totalGroups = projects.length;
+  const stageCompletionData = milestones.slice(0, 5).map((m, idx) => {
+    let completed = 0;
+    let pending = 0;
+    if (totalGroups > 0) {
+      if (idx === 0) {
+        completed = projects.filter((p) => p.status?.includes("Approved")).length;
+        pending = totalGroups - completed;
+      } else {
+        completed = 0;
+        pending = projects.filter((p) => p.status?.includes("Approved")).length;
+      }
+    }
     const stageName = (m?.milestone || m?.name || `Phase ${idx + 1}`).toString().split(" ")[0];
     return {
       stage: stageName,
@@ -165,12 +161,12 @@ export default function CoordinatorOverview() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           label="Registered Students"
-          value={students.length > 0 ? String(students.length) : "142"}
-          subtext={`Distributed across ${projects.length} active groups`}
+          value={String(students.length)}
+          subtext={`Enrolled across ${projects.length} capstone groups`}
         />
         <StatCard
           label="Supervising Faculty"
-          value={supervisors.length > 0 ? String(supervisors.length) : "18"}
+          value={String(supervisors.length)}
           subtext="Department capacity active"
         />
         <StatCard
@@ -196,7 +192,7 @@ export default function CoordinatorOverview() {
                 Department Project Pipeline
               </h2>
               <p className="text-[13px] text-[#5F6B66]">
-                Progression across all 48 capstone groups by phase
+                Progression across enrolled capstone groups by phase
               </p>
             </div>
             <Link

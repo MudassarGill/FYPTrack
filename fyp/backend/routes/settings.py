@@ -43,6 +43,9 @@ class SettingUpdateRequest(BaseModel):
 
 def get_or_create_settings(db: Session) -> DepartmentSetting:
     setting = db.scalar(select(DepartmentSetting).where(DepartmentSetting.id == 1))
+    coord_user = db.scalar(select(User).where(User.role == "coordinator").order_by(User.id.desc()))
+    coord_name = coord_user.full_name if coord_user else "Prof. Dr. Tariq Mahmood"
+
     if not setting:
         setting = DepartmentSetting(
             id=1,
@@ -50,13 +53,17 @@ def get_or_create_settings(db: Session) -> DepartmentSetting:
             max_supervisor_quota=5,
             similarity_threshold_pct=20,
             allow_student_self_proposal=True,
-            coordinator_name="Prof. Dr. Tariq Mahmood",
+            coordinator_name=coord_name,
             academic_session="Fall 2025 - Spring 2026",
             department_name="Department of Computer Science & Software Engineering",
             contact_ext="Ext. 4102 / Room 302",
             office_location="CS Block, 3rd Floor",
         )
         db.add(setting)
+        db.commit()
+        db.refresh(setting)
+    elif coord_user and setting.coordinator_name != coord_user.full_name:
+        setting.coordinator_name = coord_user.full_name
         db.commit()
         db.refresh(setting)
     return setting
@@ -94,6 +101,7 @@ def update_settings(
         setting.allow_student_self_proposal = payload.allow_student_self_proposal
     if payload.coordinator_name is not None:
         setting.coordinator_name = payload.coordinator_name.strip()
+        current_user.full_name = payload.coordinator_name.strip()
     if payload.academic_session is not None:
         setting.academic_session = payload.academic_session.strip()
     if payload.department_name is not None:

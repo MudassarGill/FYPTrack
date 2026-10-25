@@ -112,18 +112,28 @@ export default function SupervisorOverview() {
     approvedDocs.length + pendingDocs.length + changesDocs.length + milestones.length;
 
   const cohortVelocity =
-    totalDeliverablesCount > 0
+    projects.length > 0 && totalDeliverablesCount > 0
       ? Math.round((approvedDocs.length / Math.max(1, approvedDocs.length + pendingDocs.length)) * 100)
-      : 80;
+      : 0;
 
-  const cohortProgressData = [
-    { week: "W1", progress: 15 },
-    { week: "W2", progress: 30 },
-    { week: "W3", progress: 45 },
-    { week: "W4", progress: 60 },
-    { week: "W5", progress: Math.min(cohortVelocity, 70) },
-    { week: "Current", progress: cohortVelocity },
-  ];
+  const cohortProgressData =
+    projects.length === 0
+      ? [
+          { week: "W1", progress: 0 },
+          { week: "W2", progress: 0 },
+          { week: "W3", progress: 0 },
+          { week: "W4", progress: 0 },
+          { week: "W5", progress: 0 },
+          { week: "Current", progress: 0 },
+        ]
+      : [
+          { week: "W1", progress: 15 },
+          { week: "W2", progress: 30 },
+          { week: "W3", progress: 45 },
+          { week: "W4", progress: 60 },
+          { week: "W5", progress: Math.min(cohortVelocity, 70) },
+          { week: "Current", progress: cohortVelocity },
+        ];
 
   return (
     <div className="space-y-8 pb-12">

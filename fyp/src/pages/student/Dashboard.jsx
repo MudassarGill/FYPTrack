@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useToast } from "../../components/shared/Toast";
-import { getMyProjects, getMilestones, getNotifications } from "../../services/api";
+import { getMyProjects, getMilestones, getNotifications, getProjectFeedback } from "../../services/api";
 import {
   AreaChart,
   Area,
@@ -127,33 +127,53 @@ function getDaysRemaining(dateStr) {
 
 export default function Dashboard() {
   const user = getStoredUser();
-  const student = user?.student || {};
-
-  let rollNo = student.roll_number || user?.roll_number;
-  if (!rollNo && project?.group_members) {
-    const match = project.group_members.match(/(?:FA|SP)\d{2}-[A-Z]{2,4}-\d{3,4}/i) || project.group_members.match(/\(([^)]+)\)/);
-    if (match) rollNo = (match[1] || match[0]).toUpperCase();
-  }
-  if (!rollNo) {
-    rollNo = `FA20-BSE-${((user?.id || 1) * 7 % 90 + 10).toString().padStart(3, "0")}`;
-  }
-  const fullName = user?.full_name || "Student";
-  const email = user?.email || "";
-  const program = student.program || "BS Software Engineering";
-
+  const [project, setProject] = useState(null);
+  const [milestones, setMilestones] = useState([]);
+  const [liveNotifications, setLiveNotifications] = useState([]);
+  const [latestFeedback, setLatestFeedback] = useState(null);
   const [coordForm, setCoordForm] = useState({
     subject: "milestone",
     message: "",
   });
-  const [project, setProject] = useState(null);
-  const [milestones, setMilestones] = useState([]);
-  const [liveNotifications, setLiveNotifications] = useState([]);
+
+  const student = user?.student || {};
+
+  // Extract Lead Roll number ONLY if proposal has been submitted with roll numbers
+  let leadRollNo = null;
+  if (project?.group_members) {
+    const firstMember = project.group_members.split(/[,;\n]+/)[0]?.trim();
+    if (firstMember) {
+      const match = firstMember.match(/(?:FA|SP|F|S)\d{2}-[A-Z]{2,4}-\d{3,4}/i) || firstMember.match(/\(([^)]+)\)/);
+      if (match) {
+        const candidate = (match[1] || match[0]).trim().toUpperCase();
+        if (/\d/.test(candidate)) {
+          leadRollNo = candidate;
+        }
+      }
+    }
+    if (!leadRollNo) {
+      const anyMatch = project.group_members.match(/(?:FA|SP|F|S)\d{2}-[A-Z]{2,4}-\d{3,4}/i);
+      if (anyMatch) leadRollNo = anyMatch[0].trim().toUpperCase();
+    }
+  }
+  const rollNo = leadRollNo || student.roll_number || user?.roll_number || null;
+  const fullName = user?.full_name || "Student";
+  const email = user?.email || "";
+  const program = project?.department || student.program || "BS Software Engineering";
 
   useEffect(() => {
     getMyProjects()
       .then((data) => {
         if (data && data.length > 0) {
-          setProject(data[0]);
+          const p = data[0];
+          setProject(p);
+          getProjectFeedback(p.id)
+            .then((fbs) => {
+              if (fbs && fbs.length > 0) {
+                setLatestFeedback(fbs[fbs.length - 1]);
+              }
+            })
+            .catch(() => {});
         }
       })
       .catch((err) => console.error(err));
@@ -177,27 +197,22 @@ export default function Dashboard() {
 
   const groupName = project?.group_name || student.group_name || "Unassigned Group";
 
-  // Dynamic group members parsing from user and submitted proposal
+  // Dynamic group members parsing ONLY from submitted proposal
   const rawMembers = project?.group_members;
   let groupMembersList = [];
   if (rawMembers && typeof rawMembers === "string") {
     const parts = rawMembers.split(/[,;\n]+/).map((p) => p.trim()).filter(Boolean);
-    groupMembersList = parts.map((part) => {
+    groupMembersList = parts.map((part, idx) => {
       const match = part.match(/^(.*?)(?:\s*\((.*?)\))?$/);
       const name = match ? match[1].trim() : part;
       const roll = match && match[2] ? match[2].trim() : "";
       const isYou = fullName && name.toLowerCase().includes(fullName.toLowerCase());
       return {
         name,
-        roll: roll || (isYou ? rollNo : "Co-member"),
+        roll: roll || (idx === 0 ? (rollNo || "Project Lead") : "Team Member"),
         isYou: Boolean(isYou),
       };
     });
-  }
-  if (groupMembersList.length === 0) {
-    groupMembersList = [
-      { name: fullName, roll: rollNo, isYou: true }
-    ];
   }
 
   const totalMilestones = milestones.length > 0 ? milestones.length : 6;
@@ -271,13 +286,13 @@ export default function Dashboard() {
         {/* Three pills (white at 14%) */}
         <div className="flex flex-wrap items-center gap-2.5">
           <span className="px-3 py-1 rounded-full text-[12px] font-semibold bg-white/14 text-white">
-            Roll No: {rollNo}
+            Roll No: {project && rollNo ? rollNo : "Not Assigned"}
           </span>
           <span className="px-3 py-1 rounded-full text-[12px] font-semibold bg-white/14 text-white">
-            {project?.group_name || groupName}
+            {project?.group_name || "Unassigned Group"}
           </span>
           <span className="px-3 py-1 rounded-full text-[12px] font-semibold bg-white/14 text-white">
-            {project?.domain || program}
+            {project?.department || program}
           </span>
         </div>
       </div>
@@ -290,7 +305,7 @@ export default function Dashboard() {
           <div className="font-['Bricolage_Grotesque'] text-[24px] font-bold text-[#17302A] my-1 truncate">
             {project?.status === "Approved" || project?.status === "Approved by Supervisor"
               ? "Approved"
-              : project?.status || "Draft"}
+              : project?.status || "Not Submitted"}
           </div>
           <div>
             <span
@@ -306,7 +321,9 @@ export default function Dashboard() {
                 ? "Approved by Supervisor"
                 : project?.supervisor_name
                 ? "Under Review by Supervisor"
-                : "Awaiting Allocation"}
+                : project
+                ? "Awaiting Allocation"
+                : "Draft - Action Required"}
             </span>
           </div>
         </div>
@@ -325,7 +342,7 @@ export default function Dashboard() {
                   : "bg-[#FEF3D6] text-[#6B4700]"
               }`}
             >
-              {project?.supervisor_name ? "Allocated by Coordinator" : "Awaiting Coordinator Allocation"}
+              {project?.supervisor_name ? "Allocated by Coordinator" : "Awaiting Proposal & Allocation"}
             </span>
           </div>
         </div>
@@ -338,7 +355,7 @@ export default function Dashboard() {
           </div>
           <div>
             <span className="inline-block px-2.5 py-0.5 rounded-full text-[12px] font-semibold bg-[#FEF3D6] text-[#6B4700]">
-              {completedMilestones === totalMilestones
+              {completedMilestones === totalMilestones && totalMilestones > 0
                 ? "Completed"
                 : completedMilestones > 0
                 ? "On track"
@@ -548,19 +565,25 @@ export default function Dashboard() {
                 </h3>
               </div>
               <div className="space-y-3">
-                {(liveNotifications.length > 0 ? liveNotifications.slice(0, 3) : notifications).map((n, idx) => (
-                  <div
-                    key={n.id || idx}
-                    className="flex items-center justify-between gap-2 py-2 border-b border-[#EEEEEA] last:border-0"
-                  >
-                    <span className="text-[13px] text-[#17302A] leading-snug">{n.title}</span>
-                    <span
-                      className="px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 bg-[#E3EEF9] text-[#1E3A8A]"
-                    >
-                      {n.badge || "New"}
-                    </span>
+                {liveNotifications.length === 0 ? (
+                  <div className="text-[13px] text-[#5F6B66] py-4 text-center">
+                    No notifications yet. Department updates will appear here.
                   </div>
-                ))}
+                ) : (
+                  liveNotifications.slice(0, 3).map((n, idx) => (
+                    <div
+                      key={n.id || idx}
+                      className="flex items-center justify-between gap-2 py-2 border-b border-[#EEEEEA] last:border-0"
+                    >
+                      <span className="text-[13px] text-[#17302A] leading-snug">{n.title}</span>
+                      <span
+                        className="px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 bg-[#E3EEF9] text-[#1E3A8A]"
+                      >
+                        {n.is_read ? "Read" : "New"}
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
             <div className="mt-4 pt-3 border-t border-[#EEEEEA]">
@@ -580,13 +603,19 @@ export default function Dashboard() {
               <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-3">
                 Latest Feedback
               </h3>
-              <div className="bg-[#F8F9F8] border border-[#E6E6E1] rounded-[12px] p-3.5 mb-3">
-                <div className="text-[12px] font-bold text-[#17302A]">Dr. Imran Shah</div>
-                <div className="text-[11px] text-[#5F6B66] mb-2">SRS Document Review</div>
-                <p className="text-[13px] text-[#5F6B66] leading-relaxed line-clamp-3">
-                  "Good functional requirements coverage for price forecasting. Ensure the dataset provenance and data validation pipelines are clearly documented in section 3.2."
-                </p>
-              </div>
+              {latestFeedback ? (
+                <div className="bg-[#F8F9F8] border border-[#E6E6E1] rounded-[12px] p-3.5 mb-3">
+                  <div className="text-[12px] font-bold text-[#17302A]">{latestFeedback.from_user_name || "Supervisor"}</div>
+                  <div className="text-[11px] text-[#5F6B66] mb-2">{latestFeedback.action_type || "Milestone Review"}</div>
+                  <p className="text-[13px] text-[#5F6B66] leading-relaxed line-clamp-3">
+                    "{latestFeedback.message}"
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-[#F8F9F8] border border-[#E6E6E1] rounded-[12px] p-4 mb-3 text-center text-[#5F6B66] text-[13px]">
+                  No feedback received yet. Supervisor remarks will be posted here as deliverables are reviewed.
+                </div>
+              )}
             </div>
             <div>
               <Link
@@ -702,24 +731,41 @@ export default function Dashboard() {
             <h3 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A] mb-4">
               Group Members
             </h3>
-            <div className="space-y-3">
-              {groupMembersList.map((m) => (
-                <div key={m.roll} className="flex items-center justify-between py-1.5 border-b border-[#EEEEEA] last:border-0">
-                  <div>
-                    <div className="text-[14px] font-semibold text-[#17302A]">{m.name}</div>
-                    <div className="text-[12px] text-[#5F6B66]">{m.roll}</div>
+            {groupMembersList.length > 0 ? (
+              <div className="space-y-3">
+                {groupMembersList.map((m, idx) => (
+                  <div key={idx} className="flex items-center justify-between py-1.5 border-b border-[#EEEEEA] last:border-0">
+                    <div>
+                      <div className="text-[14px] font-semibold text-[#17302A]">{m.name}</div>
+                      <div className="text-[12px] text-[#5F6B66]">{m.roll}</div>
+                    </div>
+                    {m.isYou ? (
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#ECECE8] text-[#4A5651]">
+                        You
+                      </span>
+                    ) : idx === 0 ? (
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#E1F4EA] text-[#0B5A3E]">
+                        Lead
+                      </span>
+                    ) : null}
                   </div>
-                  {m.isYou && (
-                    <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#ECECE8] text-[#4A5651]">
-                      You
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-5 text-center text-[#8A948F]">
+                <p className="text-[13px] font-medium text-[#5F6B66]">No group members defined yet.</p>
+                <p className="text-[12px] text-[#8A948F] mt-1">Submit your project proposal with team member names and roll numbers.</p>
+                <Link
+                  to="/student/proposal"
+                  className="inline-block mt-3 text-[12px] font-bold text-[#0B5A3E] hover:underline"
+                >
+                  Define in Proposal &rarr;
+                </Link>
+              </div>
+            )}
           </div>
           <div className="pt-3 border-t border-[#EEEEEA] text-[12px] text-[#5F6B66]">
-            {groupName} &bull; {groupMembersList.length} member{groupMembersList.length > 1 ? "s" : ""}
+            {project?.group_name || "Unassigned Group"} &bull; {groupMembersList.length} member{groupMembersList.length === 1 ? "" : "s"}
           </div>
         </div>
 

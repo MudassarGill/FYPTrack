@@ -205,6 +205,13 @@ export default function MilestoneReviews() {
         <div className="card-base text-center py-12 text-[#5F6B66]">
           Loading milestone reviews...
         </div>
+      ) : filtered.length === 0 ? (
+        <div className="card-base text-center py-12 text-[#5F6B66]">
+          <div className="text-[16px] font-semibold text-[#17302A]">No assigned groups currently active</div>
+          <p className="text-[13px] mt-1">
+            Student groups assigned to you by the coordinator will appear here for milestone certifications.
+          </p>
+        </div>
       ) : (
         <div className="space-y-4">
           {filtered.map((m) => (

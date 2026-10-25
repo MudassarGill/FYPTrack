@@ -79,7 +79,7 @@ export default function MyProjects() {
         action={
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#17302A] text-white">
-              4 Active Groups
+              {filteredProjects.length} Active Groups
             </span>
           </div>
         }
@@ -103,8 +103,16 @@ export default function MyProjects() {
       </div>
 
       {/* Projects Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredProjects.map((p) => (
+      {filteredProjects.length === 0 ? (
+        <div className="card-base text-center py-12 text-[#5F6B66]">
+          <div className="text-[16px] font-semibold text-[#17302A]">No assigned projects currently</div>
+          <p className="text-[13px] mt-1">
+            Student projects allocated to you by the coordinator will be cataloged here for ongoing milestone mentorship.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {filteredProjects.map((p) => (
           <Card key={p.id} className="p-6 flex flex-col justify-between space-y-5">
             <div>
               {/* Header Badges */}
@@ -218,7 +226,8 @@ export default function MyProjects() {
             </div>
           </Card>
         ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

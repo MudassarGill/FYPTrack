@@ -33,21 +33,25 @@ def get_all_students(
         # Extract roll number from group members if available
         roll = None
         if proj and proj.group_members:
-            match = re.search(r"((?:FA|SP)\d{2}-[A-Z]{2,4}-\d{3,4})", proj.group_members, re.IGNORECASE)
+            match = re.search(r"((?:FA|SP|F|S)\d{2}-[A-Z]{2,4}-\d{3,4})", proj.group_members, re.IGNORECASE) or re.search(r"\(([^)]+)\)", proj.group_members)
             if match:
-                roll = match.group(1).upper()
+                candidate = (match.group(1) or match.group(0)).strip().upper()
+                if any(char.isdigit() for char in candidate):
+                    roll = candidate
         if not roll:
-            roll = f"FA20-BSE-{u.id:03d}" if u.id % 2 == 0 else f"FA20-BCS-{u.id:03d}"
+            roll = "Not Assigned"
         
         cgpa = CGPA_PRESETS[u.id % len(CGPA_PRESETS)]
         credits = CREDITS_PRESETS[u.id % len(CREDITS_PRESETS)]
+        
+        program = (proj.department if proj and proj.department else ("BS Software Engineering" if "BSE" in roll else "BS Computer Science")) if roll != "Not Assigned" else "BS Software Engineering"
         
         result.append({
             "id": u.id,
             "name": u.full_name,
             "email": u.email,
             "roll": roll,
-            "program": "BS Software Engineering" if "BSE" in roll else "BS Computer Science",
+            "program": program,
             "group": proj.group_name if proj else "Unassigned Group",
             "projectTitle": proj.title if proj else "Proposal Pending",
             "projectId": proj.id if proj else None,
@@ -90,21 +94,25 @@ def get_my_students(
         
         roll = None
         if proj.group_members:
-            match = re.search(r"((?:FA|SP)\d{2}-[A-Z]{2,4}-\d{3,4})", proj.group_members, re.IGNORECASE)
+            match = re.search(r"((?:FA|SP|F|S)\d{2}-[A-Z]{2,4}-\d{3,4})", proj.group_members, re.IGNORECASE) or re.search(r"\(([^)]+)\)", proj.group_members)
             if match:
-                roll = match.group(1).upper()
+                candidate = (match.group(1) or match.group(0)).strip().upper()
+                if any(char.isdigit() for char in candidate):
+                    roll = candidate
         if not roll:
-            roll = f"FA20-BSE-{s_id:03d}" if s_id % 2 == 0 else f"FA20-BCS-{s_id:03d}"
+            roll = "Not Assigned"
 
         cgpa = CGPA_PRESETS[s_id % len(CGPA_PRESETS)]
         credits = CREDITS_PRESETS[s_id % len(CREDITS_PRESETS)]
+
+        program = (proj.department if proj and proj.department else ("BS Software Engineering" if "BSE" in roll else "BS Computer Science")) if roll != "Not Assigned" else "BS Software Engineering"
 
         result.append({
             "id": s_id,
             "name": name,
             "email": email,
             "roll": roll,
-            "program": "BS Software Engineering" if "BSE" in roll else "BS Computer Science",
+            "program": program,
             "group": proj.group_name,
             "projectTitle": proj.title,
             "projectId": proj.id,
@@ -122,10 +130,5 @@ def get_my_students(
             "phone": f"+92 30{s_id % 9} {5550000 + s_id * 111}",
             "lastActive": "Today",
         })
-
-    # If supervisor has no assigned projects yet, return all students as previewable with a note
-    if not result:
-        all_students = get_all_students(current_user, db)
-        return all_students
 
     return result

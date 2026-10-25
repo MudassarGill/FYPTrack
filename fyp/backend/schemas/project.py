@@ -10,6 +10,7 @@ class ProjectCreateRequest(BaseModel):
     technologies: Optional[str] = ""
     group_members: Optional[str] = ""
     group_name: Optional[str] = "Group 01"
+    department: Optional[str] = "BS Software Engineering"
 
 
 class ProjectUpdateRequest(BaseModel):
@@ -18,6 +19,7 @@ class ProjectUpdateRequest(BaseModel):
     abstract: Optional[str] = None
     technologies: Optional[str] = None
     group_members: Optional[str] = None
+    department: Optional[str] = None
     status: Optional[str] = None
 
 
@@ -71,6 +73,7 @@ class ProjectResponse(BaseModel):
     abstract: str
     technologies: Optional[str] = ""
     group_members: Optional[str] = ""
+    department: Optional[str] = "BS Software Engineering"
     status: str
     supervisor_id: Optional[int] = None
     supervisor_name: Optional[str] = None

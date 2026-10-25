@@ -36,10 +36,8 @@ def get_my_projects(
         projects = db.scalars(
             select(Project).where(
                 (Project.supervisor_id == current_user.id) | (Project.supervisor_name == current_user.full_name)
-            )
+            ).order_by(Project.created_at.desc())
         ).all()
-        if not projects:
-            projects = db.scalars(select(Project).order_by(Project.created_at.desc())).all()
         return projects
     else:  # Coordinator sees all
         projects = db.scalars(select(Project).order_by(Project.created_at.desc())).all()
@@ -111,6 +109,8 @@ def create_project(
         existing.abstract = payload.abstract
         existing.technologies = payload.technologies or existing.technologies
         existing.group_members = payload.group_members or existing.group_members
+        if payload.department:
+            existing.department = payload.department
         existing.originality_score = computed_originality
         existing.status = "Submitted"
         existing.version += 1
@@ -150,6 +150,7 @@ def create_project(
         abstract=payload.abstract,
         technologies=payload.technologies or "",
         group_members=payload.group_members or current_user.full_name,
+        department=payload.department or "BS Software Engineering",
         status="Submitted",
         originality_score=computed_originality,
         version=1,
@@ -204,6 +205,8 @@ def update_project(
         project.technologies = payload.technologies
     if payload.group_members:
         project.group_members = payload.group_members
+    if payload.department:
+        project.department = payload.department
     if payload.status:
         project.status = payload.status
     else:

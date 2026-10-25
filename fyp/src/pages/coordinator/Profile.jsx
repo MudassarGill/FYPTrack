@@ -66,11 +66,21 @@ export default function CoordinatorProfile() {
         office_location: settings.officeLocation,
       });
       addToast(`Department policy settings updated! Max members per group set to ${settings.maxGroupSize}.`);
+      if (user) {
+        const updatedUser = { ...user, full_name: settings.coordinatorName };
+        localStorage.setItem("fypTrack_auth_user", JSON.stringify(updatedUser));
+      }
     } catch (err) {
       addToast(err.message || "Failed to update department settings.", "error");
     } finally {
       setSaving(false);
     }
+  };
+
+  const getInitials = (name) => {
+    if (!name) return "TC";
+    const parts = name.replace(/^(?:Prof\.|Dr\.|Mr\.|Ms\.|Mrs\.)\s*/gi, "").trim().split(/\s+/);
+    return parts.map((p) => p[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "TC";
   };
 
   return (
@@ -86,7 +96,7 @@ export default function CoordinatorProfile() {
           <div className="space-y-6">
             <Card className="p-6 text-center space-y-4">
               <div className="w-24 h-24 rounded-full bg-[#17302A] text-white font-['Bricolage_Grotesque'] text-[32px] font-extrabold flex items-center justify-center mx-auto shadow-md">
-                TM
+                {getInitials(settings.coordinatorName)}
               </div>
 
               <div>

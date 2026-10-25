@@ -76,10 +76,9 @@ export default function Milestones() {
   const [evalMarks, setEvalMarks] = useState([
     { name: "Proposal", marks: 0, evaluated: false },
     { name: "SRS", marks: 0, evaluated: false },
-    { name: "Design", marks: 0, evaluated: false },
-    { name: "Mid", marks: 0, evaluated: false },
-    { name: "Prototype", marks: 0, evaluated: false },
-    { name: "Final", marks: 0, evaluated: false },
+    { name: "Mid-Term", marks: 0, evaluated: false },
+    { name: "Final Code", marks: 0, evaluated: false },
+    { name: "Viva", marks: 0, evaluated: false },
   ]);
   const [loading, setLoading] = useState(true);
 
@@ -109,10 +108,9 @@ export default function Milestones() {
         const rawList = msData && msData.length > 0 ? msData : [
           { id: 1, phase: "Phase 1", milestone: "Project Proposal Defense", deadline: "20 Sep 2026", submission_weight: "10%" },
           { id: 2, phase: "Phase 2", milestone: "Software Requirements Specification (SRS)", deadline: "10 Oct 2026", submission_weight: "15%" },
-          { id: 3, phase: "Phase 3", milestone: "System Design Document & Architecture", deadline: "12 Nov 2026", submission_weight: "15%" },
-          { id: 4, phase: "Phase 4", milestone: "Mid-Term Progress Defense", deadline: "20 Dec 2026", submission_weight: "20%" },
-          { id: 5, phase: "Phase 5", milestone: "Prototype Demonstration & Code Freeze", deadline: "15 Mar 2027", submission_weight: "20%" },
-          { id: 6, phase: "Phase 6", milestone: "Final Dissertation & External Defense", deadline: "25 May 2027", submission_weight: "20%" },
+          { id: 3, phase: "Phase 3", milestone: "Mid-Term Architecture Defense", deadline: "20 Nov 2026", submission_weight: "25%" },
+          { id: 4, phase: "Phase 4", milestone: "Final Implementation & Code Audit", deadline: "15 Mar 2027", submission_weight: "30%" },
+          { id: 5, phase: "Phase 5", milestone: "External Viva & Thesis Defense", deadline: "25 May 2027", submission_weight: "20%" },
         ];
 
         // Match uploaded deliverable documents by doc_type and file_name

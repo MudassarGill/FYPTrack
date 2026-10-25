@@ -108,7 +108,17 @@ export default function MyStudents() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#EEEEEA]">
-              {filtered.map((s) => (
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-12 text-[#5F6B66]">
+                    <div className="text-[16px] font-semibold text-[#17302A]">No assigned students found</div>
+                    <p className="text-[13px] mt-1">
+                      Students in groups allocated to you by the coordinator will be cataloged here.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((s) => (
                 <tr key={s.id} className="hover:bg-[#F9F9F8] transition-colors">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
@@ -175,7 +185,7 @@ export default function MyStudents() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>
