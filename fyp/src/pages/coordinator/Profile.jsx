@@ -34,7 +34,8 @@ export default function CoordinatorProfile() {
       if (data) {
         setSettings((prev) => ({
           ...prev,
-          coordinatorName: data.coordinator_name || prev.coordinatorName,
+          coordinatorName: user?.full_name || data.coordinator_name || prev.coordinatorName,
+          email: user?.email || data.coordinator_email || prev.email,
           academicSession: data.academic_session || prev.academicSession,
           department: data.department_name || prev.department,
           contactExt: data.contact_ext || prev.contactExt,
@@ -79,7 +80,8 @@ export default function CoordinatorProfile() {
 
   const getInitials = (name) => {
     if (!name) return "TC";
-    const parts = name.replace(/^(?:Prof\.|Dr\.|Mr\.|Ms\.|Mrs\.)\s*/gi, "").trim().split(/\s+/);
+    const cleaned = name.replace(/^(?:Prof\.|Dr\.|Mr\.|Ms\.|Mrs\.|Pro\b|Prof\b|Eng\b|Engr\b)\s*/gi, "").trim();
+    const parts = cleaned.split(/\s+/);
     return parts.map((p) => p[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "TC";
   };
 

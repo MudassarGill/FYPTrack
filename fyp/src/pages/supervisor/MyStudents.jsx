@@ -30,12 +30,11 @@ export default function MyStudents() {
 
   const filtered = students.map((s) => ({
     ...s,
-    rollNumber: s.roll || s.rollNumber || "FA20-BSE-001",
+    rollNumber: s.roll && s.roll !== "Not Assigned" ? s.roll : (s.rollNumber || ""),
     projectTitle: s.projectTitle || "Capstone Project",
-    currentMilestone: s.currentMilestone || "System Design Document",
+    currentMilestone: s.currentMilestone || "Project Proposal",
     status: s.status === "Approved" || s.status === "Approved by Supervisor" || s.status === "Approved by Coordinator" ? "On Track" : (s.status === "Changes Requested" ? "Needs Attention" : "Under Review"),
     variant: s.variant || "green",
-    phone: s.phone || "+92 301 5550000",
     lastActive: s.lastActive || "Today",
   })).filter((s) => {
     const matchSearch =

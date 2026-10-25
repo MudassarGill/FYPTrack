@@ -10,9 +10,10 @@ from services.auth_service import hash_password
 def seed_database():
     db: Session = SessionLocal()
     try:
-        # 1. Seed Coordinator
-        coordinator = db.scalar(select(User).where(User.email == "coordinator@university.edu"))
-        if not coordinator:
+        # Check if users already exist (e.g. freshly created user accounts)
+        user_count = db.scalar(select(User.id))
+        if not user_count:
+            # 1. Seed Coordinator only on empty initial DB
             coordinator = User(
                 full_name="Prof. Dr. Tariq Mahmood",
                 email="coordinator@university.edu",
@@ -21,16 +22,14 @@ def seed_database():
             )
             db.add(coordinator)
 
-        # 2. Seed Faculty Supervisors
-        supervisors_data = [
-            ("Dr. Imran Shah", "supervisor@university.edu"),
-            ("Dr. Noman Ali", "noman.ali@university.edu"),
-            ("Dr. Rabia Qazi", "rabia.qazi@university.edu"),
-            ("Dr. Farhan Jamil", "farhan.jamil@university.edu"),
-        ]
-        for name, email in supervisors_data:
-            s = db.scalar(select(User).where(User.email == email))
-            if not s:
+            # 2. Seed Faculty Supervisors only on empty initial DB
+            supervisors_data = [
+                ("Dr. Imran Shah", "supervisor@university.edu"),
+                ("Dr. Noman Ali", "noman.ali@university.edu"),
+                ("Dr. Rabia Qazi", "rabia.qazi@university.edu"),
+                ("Dr. Farhan Jamil", "farhan.jamil@university.edu"),
+            ]
+            for name, email in supervisors_data:
                 s = User(
                     full_name=name,
                     email=email,
@@ -38,6 +37,7 @@ def seed_database():
                     role="supervisor",
                 )
                 db.add(s)
+            db.commit()
 
         # 3. Seed Department Settings
         setting = db.scalar(select(DepartmentSetting).where(DepartmentSetting.id == 1))
@@ -45,11 +45,11 @@ def seed_database():
             setting = DepartmentSetting(
                 id=1,
                 department_name="Department of Computer Science & Software Engineering",
-                academic_year="2026-2027",
+                academic_session="Fall 2025 - Spring 2026",
                 max_group_size=3,
                 max_supervisor_quota=5,
                 allow_student_self_proposal=True,
-                similarity_threshold=20,
+                similarity_threshold_pct=20,
             )
             db.add(setting)
 

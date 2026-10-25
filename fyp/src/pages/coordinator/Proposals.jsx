@@ -4,14 +4,24 @@ import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
 import { useToast } from "../../components/shared/Toast";
-import { getAllProjects, submitCoordinatorDecision } from "../../services/api";
+import {
+  getAllProjects,
+  submitCoordinatorDecision,
+  getSupervisorsList,
+  assignSupervisorToProject,
+  getSupervisorRecommendations,
+} from "../../services/api";
 
 export default function CoordinatorProposals() {
   const [proposals, setProposals] = useState([]);
+  const [faculty, setFaculty] = useState([]);
+  const [recommendationsByProject, setRecommendationsByProject] = useState({});
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
   const [activeProposal, setActiveProposal] = useState(null);
   const [decisionNotes, setDecisionNotes] = useState("");
+  const [allocatingPropId, setAllocatingPropId] = useState(null);
+  const [selectedSupervisors, setSelectedSupervisors] = useState({});
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -21,14 +31,49 @@ export default function CoordinatorProposals() {
   async function loadProposals() {
     try {
       setLoading(true);
-      const data = await getAllProjects();
-      setProposals(data || []);
+      const [projData, facData] = await Promise.all([
+        getAllProjects().catch(() => []),
+        getSupervisorsList().catch(() => []),
+      ]);
+      setProposals(projData || []);
+      setFaculty(facData || []);
+
+      const recMap = {};
+      await Promise.all(
+        (projData || []).map(async (p) => {
+          try {
+            const res = await getSupervisorRecommendations(p.id);
+            if (res && res.recommendations) {
+              recMap[p.id] = res.recommendations;
+            }
+          } catch {
+            // Fallback
+          }
+        })
+      );
+      setRecommendationsByProject(recMap);
     } catch (err) {
       console.error("Failed to load coordinator proposals:", err);
     } finally {
       setLoading(false);
     }
   }
+
+  const handleAssignSupervisor = async (p, facultyId) => {
+    const fac = faculty.find((f) => f.id === parseInt(facultyId));
+    if (!fac) {
+      addToast("Please select a supervisor.", "error");
+      return;
+    }
+    try {
+      await assignSupervisorToProject(p.id, fac.id, fac.name);
+      addToast(`${p.group_name} assigned to ${fac.name}!`);
+      setAllocatingPropId(null);
+      await loadProposals();
+    } catch (err) {
+      addToast(err.message || "Failed to assign supervisor.", "error");
+    }
+  };
 
   const filtered = proposals.filter((p) => {
     if (filter === "All") return true;
@@ -170,21 +215,13 @@ export default function CoordinatorProposals() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {!p.supervisor_name ? (
-                    <Link
-                      to="/coordinator/supervisors"
-                      className="rounded-[8px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] text-[12px] font-bold px-3.5 py-1.5 transition-colors cursor-pointer shadow-sm"
-                    >
-                      Allocate Supervisor &rarr;
-                    </Link>
-                  ) : (
-                    <Link
-                      to="/coordinator/supervisors"
-                      className="rounded-[8px] bg-[#EEEEEA] hover:bg-[#E0E0DC] text-[#17302A] text-[12px] font-bold px-3 py-1.5 transition-colors cursor-pointer"
-                    >
-                      Reallocate Supervisor
-                    </Link>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setAllocatingPropId(allocatingPropId === p.id ? null : p.id)}
+                    className="rounded-[8px] bg-[#EBB44B] hover:bg-[#DDA53A] text-[#17302A] text-[12px] font-bold px-3.5 py-1.5 transition-colors cursor-pointer shadow-sm"
+                  >
+                    {allocatingPropId === p.id ? "Cancel" : p.supervisor_name ? "Change Supervisor" : "Allocate Supervisor"}
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -197,6 +234,50 @@ export default function CoordinatorProposals() {
                   </button>
                 </div>
               </div>
+
+              {/* Inline Supervisor Allocation Form */}
+              {allocatingPropId === p.id && (
+                <div className="mt-3 p-4 rounded-xl bg-[#FFFDF8] border border-[#F3DFAE] space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="font-bold text-[14px] text-[#17302A]">
+                      {p.supervisor_name ? "Reassign Supervisor" : "Assign Supervisor"} for {p.group_name}
+                    </div>
+                    {recommendationsByProject[p.id]?.[0] && (
+                      <span className="text-[11px] font-bold text-[#0B5A3E] bg-[#E1F4EA] border border-[#B5E2CE] px-2.5 py-0.5 rounded-full">
+                        AI Recommended: {recommendationsByProject[p.id][0].name} ({recommendationsByProject[p.id][0].ai_match_score}% Match)
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-center gap-2">
+                    <select
+                      value={selectedSupervisors[p.id] || p.supervisor_id || (faculty[0] ? faculty[0].id : "")}
+                      onChange={(e) =>
+                        setSelectedSupervisors({
+                          ...selectedSupervisors,
+                          [p.id]: e.target.value,
+                        })
+                      }
+                      className="w-full sm:w-auto flex-1 rounded-[8px] border border-[#D3D8D4] bg-white px-3 py-2 text-[13px] outline-none font-medium text-[#17302A]"
+                    >
+                      {faculty.map((f) => {
+                        const rec = (recommendationsByProject[p.id] || []).find((r) => r.id === f.id);
+                        return (
+                          <option key={f.id} value={f.id}>
+                            {f.name} ({f.email}) &bull; {rec ? `${rec.ai_match_score}% AI Match` : "Available"} ({f.assigned_count}/5 assigned)
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => handleAssignSupervisor(p, selectedSupervisors[p.id] || p.supervisor_id || faculty[0]?.id)}
+                      className="w-full sm:w-auto px-4 py-2 rounded-[8px] bg-[#0B5A3E] hover:bg-[#094731] text-white text-[12px] font-bold cursor-pointer whitespace-nowrap"
+                    >
+                      Confirm Allocation
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Inline Note Form */}
               {activeProposal?.id === p.id && (

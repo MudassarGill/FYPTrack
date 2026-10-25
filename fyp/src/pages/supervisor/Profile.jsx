@@ -9,11 +9,11 @@ export default function SupervisorProfile() {
   const { addToast } = useToast();
 
   const [profile, setProfile] = useState({
-    fullName: user?.full_name || "Dr. Imran Shah",
+    fullName: user?.full_name || "Faculty Supervisor",
     designation: "Associate Professor",
-    department: "Department of Computer Science",
-    facultyId: "FAC-CS-1042",
-    email: user?.email || "imran.shah@university.edu",
+    department: "Department of Computer Science & Software Engineering",
+    facultyId: `FAC-${user?.id || "01"}`,
+    email: user?.email || "supervisor@university.edu",
     phone: "+92 51 9260001",
     officeRoom: "Block C, Faculty Suite 304",
     officeHours: "Monday & Wednesday, 11:00 AM – 01:00 PM",

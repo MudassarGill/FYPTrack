@@ -5,8 +5,10 @@ import requests
 from collections import Counter
 from typing import List, Dict, Any, Tuple
 
+from core.config import settings
+
 # Hugging Face Inference API Configuration
-HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY", os.getenv("HF_TOKEN", ""))
+HUGGINGFACE_API_KEY = settings.huggingface_api_key or os.getenv("HUGGINGFACE_API_KEY", os.getenv("HF_TOKEN", ""))
 HUGGINGFACE_MODEL = os.getenv("HUGGINGFACE_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 HF_API_URL = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{HUGGINGFACE_MODEL}"
 
@@ -597,6 +599,12 @@ FACULTY_EXPERTISE_PROFILES = {
         "keywords": ["distributed", "cloud", "microservices", "kubernetes", "docker", "kafka", "mqtt", "telemetry", "prometheus", "smart grid", "solar", "energy", "graph neural", "code review"],
         "max_quota": 5,
     },
+    "DR.ALLAH DITTA": {
+        "designation": "Associate Professor & Senior Research Supervisor",
+        "domains": ["Artificial Intelligence", "Machine Learning & Computer Vision", "Software Engineering", "Intelligent Systems"],
+        "keywords": ["ai", "machine", "learning", "detection", "traffic", "vision", "deep", "smart", "automation", "yolo", "neural", "python", "system", "image", "opencv", "violation"],
+        "max_quota": 5,
+    },
 }
 
 
@@ -618,8 +626,8 @@ def recommend_supervisors_for_project(
             name,
             {
                 "designation": "Faculty Supervisor",
-                "domains": ["General Computing"],
-                "keywords": ["computing", "software"],
+                "domains": ["Artificial Intelligence & Machine Learning", "Software Engineering & Architecture", "Intelligent Systems", "Computer Science"],
+                "keywords": ["ai", "machine", "learning", "model", "detection", "system", "smart", "software", "data", "web", "deep", "python", "application", "algorithm", "traffic", "vision"],
                 "max_quota": 5,
             },
         )
@@ -630,16 +638,16 @@ def recommend_supervisors_for_project(
         matched_domains = []
         for d in profile["domains"]:
             d_lower = d.lower()
-            if d_lower in project_domain_lower or project_domain_lower in d_lower:
+            if d_lower in project_domain_lower or project_domain_lower in d_lower or any(part in project_domain_lower for part in d_lower.split("&")):
                 domain_overlap = True
                 matched_domains.append(d)
 
-        domain_score = 45.0 if domain_overlap else (20.0 if any(tok in project_tokens for tok in tokenize(domain)) else 5.0)
+        domain_score = 45.0 if domain_overlap else (35.0 if any(tok in project_tokens for tok in tokenize(domain)) else 25.0)
 
         # 2. Research keyword intersection (weight 35%)
         kw_set = set(profile["keywords"])
         intersecting_kw = project_tokens & kw_set
-        kw_ratio = min(1.0, len(intersecting_kw) / 4.0)
+        kw_ratio = min(1.0, max(0.5, len(intersecting_kw) / 3.0) if intersecting_kw else 0.4)
         keyword_score = kw_ratio * 35.0
 
         # 3. Workload quota balancing (weight 20%)
@@ -650,8 +658,11 @@ def recommend_supervisors_for_project(
         if free_slots <= 0:
             quota_score = 0.0
             quota_status = "Quota Full (0 slots)"
-        elif free_slots >= 3:
+        elif assigned_count == 0:
             quota_score = 20.0
+            quota_status = f"Zero Supervision Load (5 slots available)"
+        elif free_slots >= 3:
+            quota_score = 18.0
             quota_status = f"High Availability ({free_slots} slots)"
         else:
             quota_score = 12.0

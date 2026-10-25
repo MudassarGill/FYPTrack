@@ -54,7 +54,7 @@ function CustomizedDot(props) {
 
 export default function SupervisorOverview() {
   const user = getStoredUser();
-  const supervisorName = user?.full_name || "Dr. Imran Shah";
+  const supervisorName = user?.full_name || "Faculty Supervisor";
 
   const [projects, setProjects] = useState([]);
   const [documents, setDocuments] = useState([]);

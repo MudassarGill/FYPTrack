@@ -11,10 +11,14 @@ from services.seed_service import seed_database
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Auto-create SQLite database tables on startup
-    Base.metadata.create_all(bind=engine)
-    print("Database tables verified/created successfully.")
-    seed_database()
+    # Auto-create database tables on startup
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("Database tables verified/created successfully in active database.")
+        seed_database()
+    except Exception as e:
+        print(f"\n[PostgreSQL Notice]: {e}")
+        print("[Action Required]: Please create database 'fyptrack' in pgAdmin and replace 'YOUR_POSTGRES_PASSWORD' in backend/.env with your actual PostgreSQL password.\n")
     yield
 
 

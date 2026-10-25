@@ -130,7 +130,7 @@ export default function CoordinatorOverview() {
               Welcome, {coordinatorName}
             </h1>
             <p className="text-[15px] text-[#D5E3DD] max-w-2xl leading-relaxed">
-              Program-wide oversight for 48 active FYP groups. Ratify proposals, manage AI-assisted supervisor allocations, inspect similarity vectors, and track milestone health.
+              Program-wide oversight for {projects.length} active FYP group{projects.length === 1 ? "" : "s"}. Ratify proposals, manage AI-assisted supervisor allocations, inspect similarity vectors, and track milestone health.
             </p>
           </div>
 

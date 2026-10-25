@@ -30,11 +30,20 @@ export default function MyProjects() {
     const rawMembers = p.group_members
       ? p.group_members.split(",").map((m) => m.trim()).filter(Boolean)
       : [p.student_name];
-    const members = rawMembers.map((m, idx) => ({
-      name: m.replace(/\(Lead\)/i, "").trim(),
-      roll: `FA20-BSE-${(p.student_id || 10) + idx * 7}`,
-      lead: idx === 0,
-    }));
+    const members = rawMembers.map((m, idx) => {
+      // Parse "Name (ROLL-NO)" format — extract name and roll separately
+      const rollMatch = m.match(/\(([^)]+)\)/);
+      let name = m.replace(/\(.*?\)/g, "").replace(/\(Lead\)/i, "").trim();
+      let roll = "";
+      if (rollMatch) {
+        const candidate = rollMatch[1].trim();
+        // Only treat as roll number if it contains digits (e.g. FA21-BSE-025)
+        if (/\d/.test(candidate)) {
+          roll = candidate;
+        }
+      }
+      return { name, roll, lead: idx === 0 };
+    });
 
     const rawTech = p.technologies
       ? p.technologies.split(",").map((t) => t.trim()).filter(Boolean)
@@ -156,15 +165,15 @@ export default function MyProjects() {
                   Student Team
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  {p.members.map((m) => (
-                    <div key={m.roll} className="flex items-center gap-2 text-[13px]">
+                  {p.members.map((m, idx) => (
+                    <div key={m.name + idx} className="flex items-center gap-2 text-[13px]">
                       <span className="w-6 h-6 rounded-full bg-[#E1F4EA] text-[#0B5A3E] text-[11px] font-bold flex items-center justify-center">
                         {m.name[0]}
                       </span>
                       <span className="font-medium text-[#17302A]">
                         {m.name} {m.lead && <span className="text-[10px] text-[#EBB44B] font-bold">(Lead)</span>}
                       </span>
-                      <span className="text-[11px] text-[#5F6B66]">({m.roll})</span>
+                      {m.roll && <span className="text-[11px] text-[#5F6B66]">({m.roll})</span>}
                     </div>
                   ))}
                 </div>

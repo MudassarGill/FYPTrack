@@ -33,23 +33,24 @@ export default function SupervisorAllocation() {
       setFaculty(facList || []);
       setProjects(projList || []);
 
-      // Fetch AI recommendations for unassigned projects
-      const unassignedList = (projList || []).filter((p) => !p.supervisor_name);
+      // Fetch AI recommendations for all projects (unassigned and allocated)
       const recMap = {};
       const initialSelections = {};
 
       await Promise.all(
-        unassignedList.map(async (p) => {
+        (projList || []).map(async (p) => {
           try {
             const res = await getSupervisorRecommendations(p.id);
             if (res && res.recommendations && res.recommendations.length > 0) {
               recMap[p.id] = res.recommendations;
-              // Default selection is the top AI recommended supervisor with open slots
-              const bestCandidate =
-                res.recommendations.find((r) => r.free_slots > 0) ||
-                res.recommendations[0];
-              if (bestCandidate) {
-                initialSelections[p.id] = bestCandidate.id;
+              if (!p.supervisor_name) {
+                // Default selection is the top AI recommended supervisor with open slots
+                const bestCandidate =
+                  res.recommendations.find((r) => r.free_slots > 0) ||
+                  res.recommendations[0];
+                if (bestCandidate) {
+                  initialSelections[p.id] = bestCandidate.id;
+                }
               }
             }
           } catch {
@@ -198,17 +199,14 @@ export default function SupervisorAllocation() {
                         }
                         className="w-full rounded-[8px] border border-[#D3D8D4] bg-white px-3 py-2 text-[13px] outline-none font-medium text-[#17302A]"
                       >
-                        {recs.length > 0
-                          ? recs.map((r) => (
-                              <option key={r.id} value={r.id}>
-                                {r.name} - {r.ai_match_score}% Match ({r.free_slots} slots open &bull; {r.recommendation_badge})
-                              </option>
-                            ))
-                          : faculty.map((f) => (
-                              <option key={f.id} value={f.id}>
-                                {f.name} ({f.free_slots} slots available &bull; {f.assigned_count}/5 assigned)
-                              </option>
-                            ))}
+                        {faculty.map((f) => {
+                          const rec = recs.find((r) => r.id === f.id);
+                          return (
+                            <option key={f.id} value={f.id}>
+                              {f.name} ({f.email}) &bull; {rec ? `${rec.ai_match_score}% AI Match` : "Available"} ({f.assigned_count}/5 assigned)
+                            </option>
+                          );
+                        })}
                       </select>
                     </div>
 
@@ -222,12 +220,122 @@ export default function SupervisorAllocation() {
                         ? "Allocating Supervisor..."
                         : chosenFaculty.free_slots <= 0
                         ? `${chosenFaculty.name} is at Capacity (5/5)`
-                        : `Allocate ${chosenFaculty.name} (${chosenRec ? `${chosenRec.ai_match_score}% Match` : "Available"})`}
+                        : `Allocate ${chosenFaculty.name}`}
                     </button>
                   </div>
                 </Card>
               );
             })}
+          </div>
+        )}
+
+        {/* Allocated Projects with Reallocation Capability */}
+        {projects.filter((p) => p.supervisor_name).length > 0 && (
+          <div className="space-y-4 pt-6 border-t border-[#EEEEEA]">
+            <div>
+              <h2 className="font-['Bricolage_Grotesque'] text-[20px] font-bold text-[#17302A]">
+                Allocated Projects & Reallocation ({projects.filter((p) => p.supervisor_name).length})
+              </h2>
+              <span className="text-[13px] text-[#5F6B66]">
+                You can reallocate any project to a different supervisor as departmental workloads or requirements evolve.
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {projects.filter((p) => p.supervisor_name).map((g) => {
+                const recs = recommendationsByProject[g.id] || [];
+                const currentFac = faculty.find((f) => f.id === g.supervisor_id || f.name === g.supervisor_name) || faculty[0] || {};
+                const chosenFacultyId = selectedFacultyForProject[g.id] || currentFac.id;
+                const chosenFaculty = faculty.find((f) => f.id === parseInt(chosenFacultyId)) || currentFac;
+
+                return (
+                  <Card key={g.id} className="p-5 flex flex-col justify-between space-y-4 border border-[#E6E6E1]">
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className="text-[12px] font-bold px-2.5 py-0.5 rounded bg-[#17302A] text-white">
+                          {g.group_name}
+                        </span>
+                        <Badge variant="blue" size="sm">
+                          Supervisor: {g.supervisor_name}
+                        </Badge>
+                      </div>
+
+                      <h4 className="font-['Bricolage_Grotesque'] text-[18px] font-bold text-[#17302A] line-clamp-2">
+                        {g.title}
+                      </h4>
+                      <p className="text-[12px] text-[#5F6B66] mt-1">
+                        Lead: <span className="font-semibold text-[#17302A]">{g.student_name}</span> &bull; Domain: <span className="font-semibold text-[#0B5A3E]">{g.domain}</span>
+                      </p>
+
+                      {/* Top AI Match Highlight */}
+                      {recs[0] && (
+                        <div className="mt-3.5 p-3 rounded-xl bg-[#FAF9F5] border border-[#F0ECE1] space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B4700]">
+                              AI Recommended Supervisor
+                            </span>
+                            <span className="text-[11px] font-bold text-[#0B5A3E] bg-[#E1F4EA] border border-[#B5E2CE] px-2 py-0.5 rounded-full">
+                              {recs[0].ai_match_score}% Match
+                            </span>
+                          </div>
+                          <div className="text-[13px] font-bold text-[#17302A]">
+                            {recs[0].name} <span className="font-normal text-[11px] text-[#5F6B66]">({recs[0].designation})</span>
+                          </div>
+                          <div className="text-[11px] text-[#5F6B66] flex flex-wrap gap-1">
+                            {recs[0].reasons && recs[0].reasons.map((r, i) => (
+                              <span key={i} className="px-2 py-0.5 rounded bg-white border border-[#E6E6E1] text-[#17302A]">
+                                {r}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-3 border-t border-[#EEEEEA] space-y-3">
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#8A948F] mb-1">
+                          Reassign to Faculty Member
+                        </label>
+                        <select
+                          value={chosenFacultyId}
+                          onChange={(e) =>
+                            setSelectedFacultyForProject({
+                              ...selectedFacultyForProject,
+                              [g.id]: e.target.value,
+                            })
+                          }
+                          className="w-full rounded-[8px] border border-[#D3D8D4] bg-white px-3 py-2 text-[13px] outline-none font-medium text-[#17302A]"
+                        >
+                          {faculty.map((f) => {
+                            const rec = recs.find((r) => r.id === f.id);
+                            const isCurrent = f.id === g.supervisor_id || f.name === g.supervisor_name;
+                            return (
+                              <option key={f.id} value={f.id}>
+                                {isCurrent ? "✓ [Current] " : ""}{f.name} ({f.email}) &bull; {rec ? `${rec.ai_match_score}% Match` : "Available"} ({f.assigned_count}/5 assigned)
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+
+                      <button
+                        type="button"
+                        disabled={assigningId === g.id || chosenFaculty.id === g.supervisor_id}
+                        onClick={() => handleAssign(g, chosenFaculty)}
+                        className="w-full rounded-[8px] bg-[#17302A] hover:bg-[#23483F] disabled:bg-[#EEEEEA] disabled:text-[#8A948F] text-white font-bold text-[13px] py-2.5 transition-colors cursor-pointer text-center"
+                      >
+                        {assigningId === g.id
+                          ? "Reallocating Supervisor..."
+                          : chosenFaculty.id === g.supervisor_id
+                          ? `Currently Assigned to ${chosenFaculty.name}`
+                          : `Reassign to ${chosenFaculty.name}`}
+                      </button>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

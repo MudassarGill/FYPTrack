@@ -127,7 +127,6 @@ def get_my_students(
             "credits": credits,
             "eligible": float(cgpa) >= 2.5,
             "variant": "green",
-            "phone": f"+92 30{s_id % 9} {5550000 + s_id * 111}",
             "lastActive": "Today",
         })
 
