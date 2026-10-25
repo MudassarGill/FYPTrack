@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
-import { CheckCircle2, Inbox } from "lucide-react";
+import { CheckCircle2, Inbox, Trash2 } from "lucide-react";
 import {
   getNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  clearAllNotifications,
+  deleteNotification,
 } from "../../services/api";
 import { useToast } from "../../components/shared/Toast";
 
@@ -71,6 +73,27 @@ export default function SupervisorNotifications() {
     }
   };
 
+  const handleClearAll = async () => {
+    try {
+      await clearAllNotifications();
+      setList([]);
+      addToast("All notifications cleared.");
+    } catch (err) {
+      addToast("Failed to clear notifications.", "error");
+    }
+  };
+
+  const handleDeleteSingle = async (e, id) => {
+    e.stopPropagation();
+    try {
+      await deleteNotification(id);
+      setList((prev) => prev.filter((n) => n.id !== id));
+      addToast("Notification removed.");
+    } catch (err) {
+      console.error("Failed to delete notification:", err);
+    }
+  };
+
   const unreadCount = list.filter((n) => !n.is_read).length;
 
   return (
@@ -79,14 +102,26 @@ export default function SupervisorNotifications() {
         title="Faculty Notification Feed"
         description="Real-time alerts for student deliverable submissions, proposal revisions, and department milestone updates."
         action={
-          unreadCount > 0 ? (
-            <button
-              type="button"
-              onClick={handleMarkAllAsRead}
-              className="rounded-[10px] bg-[#17302A] hover:bg-[#23483F] text-white font-bold text-[13px] px-4 py-2 transition-colors cursor-pointer"
-            >
-              Mark All as Read ({unreadCount})
-            </button>
+          list.length > 0 ? (
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleMarkAllAsRead}
+                  className="rounded-[10px] bg-[#17302A] hover:bg-[#23483F] text-white font-bold text-[13px] px-3.5 py-2 transition-colors cursor-pointer"
+                >
+                  Mark All as Read ({unreadCount})
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleClearAll}
+                className="rounded-[10px] bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 font-bold text-[13px] px-3.5 py-2 transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                Clear All
+              </button>
+            </div>
           ) : (
             <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#E1F4EA] text-[#0B5A3E]">
               All caught up
@@ -146,7 +181,7 @@ export default function SupervisorNotifications() {
                     </div>
                   </div>
 
-                  <div className="sm:self-center shrink-0">
+                  <div className="sm:self-center shrink-0 flex items-center gap-3">
                     {isUnread ? (
                       <button
                         type="button"
@@ -163,6 +198,15 @@ export default function SupervisorNotifications() {
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#0B5A3E]" /> Read
                       </span>
                     )}
+
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeleteSingle(e, n.id)}
+                      title="Dismiss notification"
+                      className="p-1 rounded-md text-[#9BA8A2] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               </Card>

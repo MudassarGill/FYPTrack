@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import PageHeader from "../../components/shared/PageHeader";
 import Badge from "../../components/shared/Badge";
 import Card from "../../components/shared/Card";
-import { CheckCircle2, Inbox } from "lucide-react";
+import { CheckCircle2, Inbox, Trash2 } from "lucide-react";
 import {
   getNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  clearAllNotifications,
+  deleteNotification,
 } from "../../services/api";
 import { useToast } from "../../components/shared/Toast";
 
@@ -72,6 +74,27 @@ export default function CoordinatorNotifications() {
     }
   };
 
+  const handleClearAll = async () => {
+    try {
+      await clearAllNotifications();
+      setList([]);
+      addToast("All notifications cleared.");
+    } catch (err) {
+      addToast("Failed to clear notifications.", "error");
+    }
+  };
+
+  const handleDeleteSingle = async (e, id) => {
+    e.stopPropagation();
+    try {
+      await deleteNotification(id);
+      setList((prev) => prev.filter((n) => n.id !== id));
+      addToast("Notification removed.");
+    } catch (err) {
+      console.error("Failed to delete notification:", err);
+    }
+  };
+
   const unreadCount = list.filter((n) => !n.is_read).length;
 
   return (
@@ -80,15 +103,27 @@ export default function CoordinatorNotifications() {
         title="Department Activity & System Alerts"
         description="Real-time institutional log of proposal submissions, supervisor allocations, evaluation results, and originality flags."
         action={
-          unreadCount > 0 ? (
-            <button
-              type="button"
-              onClick={handleMarkAllRead}
-              className="inline-flex items-center gap-2 rounded-[10px] bg-[#17302A] hover:bg-[#24493F] text-white font-bold text-[13px] px-4 py-2 transition-colors cursor-pointer"
-            >
-              <CheckCircle2 className="w-4 h-4 text-[#EBB44B]" />
-              Mark all as read ({unreadCount})
-            </button>
+          list.length > 0 ? (
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleMarkAllRead}
+                  className="inline-flex items-center gap-2 rounded-[10px] bg-[#17302A] hover:bg-[#24493F] text-white font-bold text-[13px] px-3.5 py-2 transition-colors cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-[#EBB44B]" />
+                  Mark all as read ({unreadCount})
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleClearAll}
+                className="rounded-[10px] bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 font-bold text-[13px] px-3.5 py-2 transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                Clear All
+              </button>
+            </div>
           ) : (
             <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#E1F4EA] text-[#0B5A3E]">
               All caught up
@@ -139,9 +174,19 @@ export default function CoordinatorNotifications() {
                     </Badge>
                   )}
                 </div>
-                <span className="text-[12px] text-[#8A948F]">
-                  {formatRelativeTime(n.created_at)}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[12px] text-[#8A948F]">
+                    {formatRelativeTime(n.created_at)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteSingle(e, n.id)}
+                    title="Dismiss alert"
+                    className="p-1 rounded-md text-[#9BA8A2] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
 
               <p className="text-[14px] text-[#4A5651] leading-relaxed pl-5">

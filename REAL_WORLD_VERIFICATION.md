@@ -198,10 +198,16 @@ For this complete testing walkthrough, we use an authentic Computer Science caps
 
 #### Expected Visual Results on Screen
 - Within **8 seconds**, the notification badge counter on the bell icon automatically increments from `0` to `2` (via the periodic polling engine).
-- Click on the bell icon:
+- Click on the bell icon to open Notifications (`/student/notifications`):
   - Notification 1: *"Dr. Imran Shah has been assigned as your project supervisor."*
   - Notification 2: *"Supervisor Feedback Received: Supervisor marked proposal as 'Approved by Supervisor'."*
-- Click **Mark all as read**: Badge counter resets to zero cleanly.
+- **Action Buttons in Notification Header**:
+  - Click **Mark all as read**: Unread counters reset to zero and status changes to Read.
+  - Click **Clear all notifications**: All notifications are permanently cleared from the database, and the page transitions immediately to the clean empty state:
+    - Displays `Inbox` icon
+    - Heading: `No notifications yet`
+    - Description: *"When your supervisor reviews your deliverables or the coordinator broadcasts milestone updates, your alerts will appear here in real time."*
+  - Alternatively, click the trash icon on any individual notification card to dismiss it one-by-one.
 - Student Dashboard (`/student/dashboard`) displays:
   - Proposal Status: `Approved` (with green badge `Approved by Supervisor`).
   - Supervisor Allocation: `Dr. Imran Shah` (with blue badge `Allocated by Coordinator`).

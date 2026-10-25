@@ -186,6 +186,19 @@ export async function markAllNotificationsAsRead() {
   });
 }
 
+export async function clearAllNotifications() {
+  return authFetch("/notifications/clear-all", {
+    method: "DELETE",
+  });
+}
+
+export async function deleteNotification(id) {
+  return authFetch(`/notifications/${id}`, {
+    method: "DELETE",
+  });
+}
+
+
 
 /* ============================================================
    Supervisors Allocation API

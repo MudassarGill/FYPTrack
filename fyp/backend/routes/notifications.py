@@ -102,3 +102,42 @@ def mark_all_as_read(
         n.is_read = True
     db.commit()
     return {"status": "ok", "marked_read": len(notifs)}
+
+
+@router.delete("/clear-all", summary="Clear and permanently delete all notifications for current user")
+def clear_all_notifications(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    notifs = (
+        db.scalars(
+            select(Notification)
+            .where(
+                or_(
+                    Notification.user_id == current_user.id,
+                    Notification.role_target == current_user.role,
+                    Notification.role_target == "all",
+                )
+            )
+        )
+        .all()
+    )
+    count = len(notifs)
+    for n in notifs:
+        db.delete(n)
+    db.commit()
+    return {"status": "ok", "cleared_count": count}
+
+
+@router.delete("/{notification_id}", summary="Delete single notification")
+def delete_notification(
+    notification_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    n = db.get(Notification, notification_id)
+    if n and (n.user_id == current_user.id or n.role_target in [current_user.role, "all"]):
+        db.delete(n)
+        db.commit()
+    return {"status": "ok"}
+

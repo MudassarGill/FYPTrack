@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { Bell, CheckCircle2, Inbox } from "lucide-react";
+import { Bell, CheckCircle2, Inbox, Trash2 } from "lucide-react";
 import {
   getNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  clearAllNotifications,
+  deleteNotification,
 } from "../../services/api";
 import { useToast } from "../../components/shared/Toast";
 
@@ -68,11 +70,32 @@ export default function Notifications() {
     }
   };
 
+  const handleClearAll = async () => {
+    try {
+      await clearAllNotifications();
+      setList([]);
+      addToast("All notifications cleared.");
+    } catch (err) {
+      addToast("Failed to clear notifications.", "error");
+    }
+  };
+
+  const handleDeleteSingle = async (e, id) => {
+    e.stopPropagation();
+    try {
+      await deleteNotification(id);
+      setList((prev) => prev.filter((n) => n.id !== id));
+      addToast("Notification removed.");
+    } catch (err) {
+      console.error("Failed to delete notification:", err);
+    }
+  };
+
   const unreadCount = list.filter((n) => !n.is_read).length;
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Header = H1 30px Bricolage + muted subtitle + mark all as read */}
+      {/* Header = H1 30px Bricolage + muted subtitle + action buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
@@ -90,14 +113,24 @@ export default function Notifications() {
           </p>
         </div>
 
-        {unreadCount > 0 && (
-          <div>
+        {list.length > 0 && (
+          <div className="flex items-center gap-2.5">
+            {unreadCount > 0 && (
+              <button
+                type="button"
+                onClick={handleMarkAllAsRead}
+                className="rounded-[10px] border-[1.5px] border-[#17302A] text-[#17302A] hover:bg-[#17302A] hover:text-white font-bold text-[13px] px-3.5 py-2 transition-colors cursor-pointer"
+              >
+                Mark all as read
+              </button>
+            )}
             <button
               type="button"
-              onClick={handleMarkAllAsRead}
-              className="rounded-[10px] border-[1.5px] border-[#17302A] text-[#17302A] hover:bg-[#17302A] hover:text-white font-bold text-[14px] px-[18px] py-[10px] transition-colors cursor-pointer"
+              onClick={handleClearAll}
+              className="rounded-[10px] bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 font-bold text-[13px] px-3.5 py-2 transition-colors cursor-pointer flex items-center gap-1.5"
             >
-              Mark all as read
+              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+              Clear all notifications
             </button>
           </div>
         )}
@@ -153,7 +186,7 @@ export default function Notifications() {
                     </div>
                   </div>
 
-                  <div className="sm:self-center shrink-0">
+                  <div className="sm:self-center shrink-0 flex items-center gap-3">
                     {isUnread ? (
                       <button
                         type="button"
@@ -170,6 +203,15 @@ export default function Notifications() {
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#0B5A3E]" /> Read
                       </span>
                     )}
+
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeleteSingle(e, item.id)}
+                      title="Dismiss notification"
+                      className="p-1 rounded-md text-[#9BA8A2] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               );
