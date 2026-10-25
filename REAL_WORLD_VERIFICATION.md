@@ -225,11 +225,40 @@ For this complete testing walkthrough, we use an authentic Computer Science caps
   - Version: `v1.0`
   - Upload Timestamp: Current date and time
   - Status Badge: Amber `Pending Supervisor Review`
-  - Download Button: Clickable link to download the file directly from the backend server.
+  - Action Buttons:
+    - **Download**: Streams file binary from server.
+    - **Delete / Cross**: Allows removing an accidental or incorrect document upload.
 
-#### Expected Database & Disk State
-- The physical file is saved on the server disk under `fyp/backend/uploads/` with a unique timestamp prefix.
-- A row is inserted into the `documents` table referencing `project_id`, `file_path`, and `status = 'Pending'`.
+#### Deliverable Deletion Verification (Cross Option)
+1. To test deletion of an accidental document, click the **Delete** button next to the uploaded deliverable.
+2. Expected Result:
+   - Floating toast confirms: *"Deliverable deleted successfully."*
+   - The document is permanently removed from the table.
+   - The file is deleted from server disk `fyp/backend/uploads/` and removed from database.
+3. Re-upload your intended document (`Group14_SRS_v1.0.pdf`) for the remainder of testing.
+
+---
+
+### Phase 7B: Student Portal - Dynamic Milestone Status & Deliverable Sync
+
+#### Actions
+1. In the Student portal, click **Milestones** in the top navigation bar (`/student/milestones`).
+
+#### Expected Visual Results on Screen
+- **Dynamic Phase Statuses**:
+  - **Phase 1: Project Proposal Defense**: Automatically displays green badge `Completed` (since supervisor approved the proposal) with note: `Approved by Supervisor`.
+  - **Phase 2: Software Requirements Specification (SRS)**:
+    - If SRS is uploaded and under review: Displays amber badge `In progress` with note: `Uploaded (Pending Review)`.
+    - If SRS has been approved by supervisor: Displays green badge `Completed` with note: `Approved by Supervisor`.
+    - If no SRS is uploaded yet: Displays blue badge `Active` with note: `Awaiting SRS Deliverable`.
+  - **Phase 3: System Design Document & Architecture**: Displays `Active` or `Upcoming` based on Phase 2 completion.
+  - **Phase 4, 5, 6**: Display `Upcoming` with clear prerequisite gates.
+- **Evaluation Marks Bar Chart**:
+  - Proposal bar renders with evaluated fill (`#17302A`) and score (e.g. `85%`).
+  - Upcoming or unverified milestones display dashed outlines (`stroke-dasharray="4 4"`).
+  - Bottom card displays dynamically computed average of verified marks (e.g. `Average: 85%`), not hardcoded static numbers.
+- **Milestone Donut Chart**:
+  - Dynamically recalculates slice distribution for Done, In progress, and Upcoming counts.
 
 ---
 
@@ -333,6 +362,25 @@ For this complete testing walkthrough, we use an authentic Computer Science caps
 #### Expected Visual Results on Screen
 - Toast alert confirms: *"Milestone deadline updated and broadcasted to all departmental candidates and faculty."*
 - Student and Supervisor portals receive a system-wide calendar reminder.
+
+---
+
+### Phase 11B: Coordinator Portal - Master Registry & Interactive Project Dossier
+
+#### Actions
+1. In the Coordinator portal, click **Projects** in the top navigation bar (`/coordinator/projects`).
+2. Filter or search by Group Name (e.g. `Group 14` or `Group 07`).
+3. Click the **Dossier** button in the project row.
+
+#### Expected Visual Results on Screen
+- A comprehensive **Academic Project Dossier Modal** opens centered on screen with backdrop blur:
+  - **Header**: Group Identifier badge (`Group 14`), Project Title, and close button (`×`).
+  - **Key Metrics Grid**: Academic Domain (`Machine Learning`), Version (`v2.0`), Originality (`94%`), and Supervisor Authority Status (`Approved by Supervisor`).
+  - **Group Composition & Students**: Displays Project Lead name, university institutional email, and all registered teammates with their verified university roll numbers (`FA20-BSE-019`, `FA20-BSE-058`).
+  - **Faculty Supervision Allocation**: Shows allocated faculty member (`Dr. Imran Shah`) and departmental status (`Supervisor Allocated`).
+  - **Technology Stack**: Displays individual technology chips (e.g. `Python`, `FastAPI`, `PyTorch`, `React`, `PostgreSQL`).
+  - **Abstract & Problem Statement**: Full institutional abstract formatted in clean typography.
+- Click **Close Dossier** or outside the modal: Closes smoothly without refreshing the page.
 
 ---
 
